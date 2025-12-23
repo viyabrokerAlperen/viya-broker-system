@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors'; 
 import path from 'path';
 import { fileURLToPath } from 'url';
-import searoute from 'searoute-js'; // DOĞRU KÜTÜPHANE
+import searoute from 'searoute-js'; 
 import * as turf from '@turf/turf'; 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE (REAL DATA MODE) ---
+// --- VIYA BROKER ENGINE (REAL DATA MODE - FIXED) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
@@ -33,7 +33,7 @@ app.get('/sefer_onerisi', async (req, res) => {
     }
 
     try {
-        // 1. ADIM: KOORDİNATLARI BUL (Gemini ile)
+        // 1. ADIM: GEMINI İLE KOORDİNAT BULMA
         const geoPrompt = `
         Return JSON ONLY. Find exact latitude and longitude for these two ports.
         Port 1: ${konum}
@@ -57,44 +57,41 @@ app.get('/sefer_onerisi', async (req, res) => {
         let geoText = geoData.candidates?.[0]?.content?.parts?.[0]?.text;
         
         // Temizlik
+        if(!geoText) throw new Error("Google API koordinat veremedi.");
         geoText = geoText.replace(/```json/g, '').replace(/```/g, '').trim();
         const coords = JSON.parse(geoText);
         
-        console.log("📍 Koordinatlar Bulundu:", coords);
+        console.log("📍 Koordinatlar:", coords);
 
         // 2. ADIM: GERÇEK ROTAYI HESAPLA (searoute-js)
         console.log("🌊 Deniz Yolu Hesaplanıyor...");
 
-        // ÖNEMLİ DÜZELTME: Kütüphane GeoJSON objesi ister!
-        // Çıplak koordinat verirsen "Not a function" veya hata verir.
         const originGeo = {
             "type": "Feature",
             "properties": {},
-            "geometry": {
-                "type": "Point",
-                "coordinates": coords.origin // [Lon, Lat]
-            }
+            "geometry": { "type": "Point", "coordinates": coords.origin }
         };
 
         const destGeo = {
             "type": "Feature",
             "properties": {},
-            "geometry": {
-                "type": "Point",
-                "coordinates": coords.destination // [Lon, Lat]
-            }
+            "geometry": { "type": "Point", "coordinates": coords.destination }
         };
         
-        // Rota Hesapla (Nautical Miles)
-        const route = searoute(originGeo, destGeo, "nautical_miles");
+        // --- DÜZELTME BURADA ---
+        // Üçüncü parametre ("nautical_miles") SİLİNDİ. Hata yapan oydu.
+        const route = searoute(originGeo, destGeo);
         
         if (!route) {
             throw new Error("Rota çizilemedi (Deniz bağlantısı bulunamadı).");
         }
 
-        // Mesafe Hesabı (Route bir LineString döner)
+        // Mesafe Hesabı (Biz kendimiz yapıyoruz - En Sağlamı)
+        // Önce Kilometre olarak hesapla (Turf bunu sever)
         const line = route; 
         const distanceKm = turf.length(line, {units: 'kilometers'});
+        
+        // Sonra Deniz Miline Çevir (1 KM = 0.539957 NM)
         const distanceNM = (distanceKm * 0.539957).toFixed(0); 
 
         console.log(`✅ Rota Hazır! Mesafe: ${distanceNM} NM`);
@@ -113,7 +110,7 @@ app.get('/sefer_onerisi', async (req, res) => {
         
         OUTPUT: JSON ONLY.
         {
-          "tavsiyeGerekcesi": "Market analysis text (Turkish). Mention distance ${distanceNM} NM.",
+          "tavsiyeGerekcesi": "Piyasa analizi (Türkçe). Mesafeyi (${distanceNM} NM) belirt.",
           "finans": {
                 "navlunUSD": 0, 
                 "komisyonUSD": 0,
@@ -136,6 +133,9 @@ app.get('/sefer_onerisi', async (req, res) => {
 
         const finData = await finResp.json();
         let finText = finData.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if(!finText) throw new Error("Finansal analiz oluşturulamadı.");
+
         finText = finText.replace(/```json/g, '').replace(/```/g, '').replace(/^JSON:/i, '').trim();
         const firstBracket = finText.indexOf('{');
         const lastBracket = finText.lastIndexOf('}');
@@ -151,7 +151,7 @@ app.get('/sefer_onerisi', async (req, res) => {
                     rotaAdi: "Optimal Deniz Yolu",
                     detay: `${distanceNM} NM - Gerçek Deniz Rotası`,
                     finans: finJson.finans,
-                    geoJSON: line.geometry // Harita için geometri verisi
+                    geoJSON: line.geometry 
                 }
             ]
         };
@@ -160,6 +160,7 @@ app.get('/sefer_onerisi', async (req, res) => {
 
     } catch (error) {
         console.error("❌ HATASI:", error.message);
+        // Detaylı hatayı loga basalım
         console.error(error);
         res.status(500).json({ basari: false, error: "Sunucu hatası: " + error.message });
     }
