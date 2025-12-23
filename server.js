@@ -21,25 +21,25 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE (V2.0 POWERED) ---
+// --- VIYA BROKER ENGINE (V1.5 STABLE) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
-    console.log(`\n⚓ [İSTEK GELDİ]: ${gemiTipi} -> ${bolge}`);
+    console.log(`\n⚓ [İSTEK]: ${gemiTipi} -> ${bolge}`);
 
     const brokerPrompt = `
     ACT AS: Senior Ship Broker.
-    OUTPUT FORMAT: JSON ONLY. NO MARKDOWN. NO COMMENTS.
+    OUTPUT: JSON ONLY. NO MARKDOWN. NO EXPLANATIONS OUTSIDE JSON.
     
     TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
     
-    REQUIRED JSON STRUCTURE:
+    JSON STRUCTURE:
     {
-      "tavsiyeGerekcesi": "Market analysis text (Turkish)",
+      "tavsiyeGerekcesi": "Market analysis (Turkish)",
       "tumRotlarinAnalizi": [
         {
           "rotaAdi": "Route Name",
-          "detay": "Cargo example",
+          "detay": "Cargo type",
           "rotaSegmentleri": ["MED_EAST", "RED_SEA"],
           "finans": {
             "navlunUSD": 100000, 
@@ -57,27 +57,26 @@ app.get('/sefer_onerisi', async (req, res) => {
     `;
 
     try {
-        // SENİN İSTEDİĞİN MODEL: 2.0 FLASH EXPERIMENTAL
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }); 
+        // EN SAĞLAM MODEL: 1.5 FLASH
+        // 2.0 sunucuda bulunamadığı için bunu kullanmak ZORUNDAYIZ.
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
         
         const result = await model.generateContent(brokerPrompt);
         let text = result.response.text();
         
-        console.log("AI HAM CEVAP:", text); // Loglarda cevabı görelim
+        console.log("AI HAM CEVAP:", text); 
 
-        // TEMİZLİK: Markdown tırnaklarını (```json ... ```) temizle
+        // --- TEMİZLİK ROBOTU ---
+        // Eğer AI cevabı ```json ile süslerse temizliyoruz.
         let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-        // Parse Et
         const jsonCevap = JSON.parse(cleanJson);
-        
         res.json({ basari: true, tavsiye: jsonCevap });
 
     } catch (error) {
-        console.error("❌ [VIYA ENGINE ERROR]:", error);
-        // Hata detayını artık frontend'e göndermiyoruz, çünkü frontend okuyamıyor.
-        // Ama Render loglarında "❌" işaretli satırda hatayı göreceğiz.
-        res.status(500).json({ basari: false, error: "Sunucu Hatası" });
+        console.error("❌ [MOTOR HATASI]:", error);
+        // Hatayı artık gizlemiyoruz, ekrana basıyoruz ki görelim.
+        res.status(500).json({ basari: false, error: error.message });
     }
 });
 
