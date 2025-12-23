@@ -6,8 +6,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- BURAYA KENDİ API ANAHTARINI YAPIŞTIR ---
-const API_KEY = 'AIzaSyB9pGfQ3wVWpawhu5aIY2iRJpQ4J9soLTM'; 
+// --- API ANAHTARINI BURAYA YAPIŞTIR ---
+// .trim() ekledim ki yanlışlıkla boşluk kopyaladıysan silsin.
+const API_KEY = 'AIzaSyB9pGfQ3wVWpawhu5aIY2iRJpQ4J9soLTM'.trim(); 
 
 const app = express();
 const PORT = process.env.PORT || 3000; 
@@ -20,16 +21,15 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE (MANUEL VİTES / RAW HTTP) ---
+// --- VIYA BROKER ENGINE (V1 STABLE VERSION) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
     console.log(`\n⚓ [İSTEK]: ${gemiTipi} -> ${bolge}`);
 
-    // JSON Formatını zorlayan Prompt
     const brokerPrompt = `
     ACT AS: Senior Ship Broker.
-    OUTPUT: JSON ONLY. NO MARKDOWN. NO EXPLANATIONS.
+    OUTPUT: JSON ONLY. NO MARKDOWN.
     
     TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
     
@@ -57,37 +57,49 @@ app.get('/sefer_onerisi', async (req, res) => {
     `;
 
     try {
-        // ARACIYI DEVREDEN ÇIKARDIK. DİREKT ADRESE GİDİYORUZ.
-        // Model: gemini-1.5-flash (En yenisi ve hızlısı)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // --- DEĞİŞİKLİK BURADA ---
+        // 1. "v1beta" YERİNE "v1" (Kararlı Sürüm)
+        // 2. MODEL: "gemini-pro" (En garanti model)
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
         
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: brokerPrompt }]
-                }]
+                contents: [{ parts: [{ text: brokerPrompt }] }]
             })
         });
 
         const data = await response.json();
 
-        // Eğer Google hata dönerse (API Key yanlışsa vs.)
+        // HATA YAKALAMA (Detaylı Log)
         if (data.error) {
+            console.error("GOOGLE API HATASI:", JSON.stringify(data.error, null, 2));
             throw new Error(data.error.message);
         }
 
-        // Cevabı al
-        let text = data.candidates[0].content.parts[0].text;
+        // CEVAP İŞLEME
+        let text = data.candidates && data.candidates[0] && data.candidates[0].content 
+                   ? data.candidates[0].content.parts[0].text 
+                   : null;
+
+        if (!text) throw new Error("AI boş cevap döndü.");
+
         console.log("AI HAM CEVAP:", text); 
 
         // Temizlik
         let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Bazen en başta "JSON:" yazar, onu da silelim
+        cleanJson = cleanJson.replace(/^JSON:/i, '').trim();
+
+        // Sadece süslü parantez arasını al (Garanti Yöntem)
+        const firstBracket = cleanJson.indexOf('{');
+        const lastBracket = cleanJson.lastIndexOf('}');
+        if (firstBracket !== -1 && lastBracket !== -1) {
+            cleanJson = cleanJson.substring(firstBracket, lastBracket + 1);
+        }
+
         const jsonCevap = JSON.parse(cleanJson);
-        
         res.json({ basari: true, tavsiye: jsonCevap });
 
     } catch (error) {
