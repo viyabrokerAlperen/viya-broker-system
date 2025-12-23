@@ -4,11 +4,10 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Dosya yollarını tanımla
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// API ANAHTARIN BURAYA (Render'da Environment Variable olarak da ekleyebilirsin ama şimdilik burada kalsın)
+// --- DİKKAT: BURAYA KENDİ API ANAHTARINI YAPIŞTIR ---
 const genAI = new GoogleGenerativeAI('AIzaSyB9pGfQ3wVWpawhu5aIY2iRJpQ4J9soLTM'); 
 
 const app = express();
@@ -16,84 +15,74 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors()); 
 app.use(express.json());
-
-// Statik Dosyalar (HTML/CSS)
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER API ---
+// --- VIYA BROKER ENGINE ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
-    console.log(`\n⚓ [VIYA BROKER ENGINE]: ${gemiTipi} | ${konum} -> ${bolge}`);
+    console.log(`\n⚓ [İSTEK GELDİ]: ${gemiTipi} | ${konum} -> ${bolge}`);
 
+    // Prompt (Talimat)
     const brokerPrompt = `
-    SYSTEM: Elite Ship Broker & Commercial Manager (Viya Broker System).
-    USER PLAN: GOD MODE.
+    Role: Senior Ship Broker. 
+    Task: Create a shipping voyage plan in strictly valid JSON format.
+    Vessel: ${gemiTipi} (${dwt} DWT), Speed: ${hiz} knots.
+    From: ${konum}, To: ${bolge}.
     
-    TASK: Plan 3 realistic voyages with FULL FINANCIAL BREAKDOWN.
-    INPUT: Vessel ${gemiTipi} (${dwt} DWT) at ${konum}. Target: ${bolge}.
-    SPEED: ${hiz} knots.
+    Requirements:
+    - 3 distinct route options.
+    - Financials must be realistic (Revenue, Fuel Costs, Net Profit).
+    - Route Segments must use these keys: "MED_EAST", "RED_SEA", "INDIAN_OCEAN", "SOUTH_CHINA", "MED_WEST", "ATLANTIC_NA", "ATLANTIC_SA".
     
-    INSTRUCTIONS:
-    1. ROUTES: Select realistic SEA LANE SEGMENTS.
-    2. CARGO: Suggest specific cargo (e.g. 60,000mt Grain, Iron Ore, Coal).
-    3. BALLAST LEG: Distance from ${konum} to Load Port.
-    4. LADEN LEG: Distance from Load Port to Discharge Port.
-    
-    FINANCIALS (MANDATORY - DO NOT SKIP):
-    - Freight Rate: Realistic $/mt (e.g. $25/mt).
-    - Revenue: Rate * Cargo Qty.
-    - Commission: Total 2.5% (Broker 1.25% + Address 1.25%).
-    - Bunker Price: VLSFO $600/mt.
-    - Cons: Ballast (approx 25mt/day), Laden (approx 30mt/day).
-    - Port D/A: Load ($40k) + Disch ($40k).
-    - Canal Fees: Suez ($300k), Panama ($250k) if applicable.
-    
-    OUTPUT JSON (Strict, No Comments):
+    Output Format (JSON ONLY):
     {
-      "secilenRota": "Route Name",
-      "tavsiyeGerekcesi": "Detailed market and route analysis in Turkish.",
+      "tavsiyeGerekcesi": "Market analysis text here (Turkish).",
       "tumRotlarinAnalizi": [
         {
-          "rotaAdi": "Via Suez",
-          "detay": "60.000mt Grain, SF 45",
-          "rotaSegmentleri": ["MED_EAST", "RED_SEA", "INDIAN_OCEAN"],
+          "rotaAdi": "Route Name",
+          "detay": "Cargo details",
+          "rotaSegmentleri": ["MED_EAST", "RED_SEA"],
           "finans": {
-            "navlunUSD": 1500000, 
-            "komisyonUSD": 37500,
-            "ballastYakitUSD": 15000, 
-            "ladenYakitUSD": 270000,
-            "kanalUSD": 300000, 
-            "limanUSD": 80000, 
-            "opexUSD": 120000, 
-            "netKarUSD": 677500
-          },
-          "iletisim": { "sirket": "Global Chartering", "email": "fix@viyabroker.com" }
+            "navlunUSD": 1000000, 
+            "komisyonUSD": 25000,
+            "ballastYakitUSD": 10000, 
+            "ladenYakitUSD": 200000,
+            "kanalUSD": 0, 
+            "limanUSD": 50000, 
+            "opexUSD": 80000, 
+            "netKarUSD": 635000
+          }
         }
       ]
     }`;
 
     try {
-        // Model Tanımı (JSON Modu Açık)
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    generationConfig: { responseMimeType: "application/json" } 
-}); 
+        // MODEL AYARI: Gemini 1.5 Flash + JSON ZORLAMASI
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
 
-const result = await model.generateContent(brokerPrompt);
-        let text = result.response.text();
-console.log("AI HAM CEVAP:", text); // Loglara cevabı basalım ki hatayı görelim
-res.json({ basari: true, tavsiye: JSON.parse(text) });
+        const result = await model.generateContent(brokerPrompt);
+        const text = result.response.text();
+        
+        console.log("✅ [AI CEVABI BAŞARILI]");
+        
+        // Gelen cevap zaten saf JSON olduğu için direkt parse ediyoruz
+        const jsonCevap = JSON.parse(text);
+        
+        res.json({ basari: true, tavsiye: jsonCevap });
+
     } catch (error) {
-        console.error("❌ VIYA ENGINE ERROR:", error.message);
-        res.status(500).json({ basari: false, error: error.message });
+        console.error("❌ [VIYA ENGINE ERROR]:", error);
+        // Hata detayını frontend'e gönderelim ki görebilelim
+        res.status(500).json({ basari: false, error: error.message, details: error.toString() });
     }
 });
 
-
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
-
