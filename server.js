@@ -21,25 +21,26 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE (V1.5 STABLE) ---
+// --- VIYA BROKER ENGINE ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
     console.log(`\n⚓ [İSTEK]: ${gemiTipi} -> ${bolge}`);
 
+    // Prompt (Basit ve Net)
     const brokerPrompt = `
     ACT AS: Senior Ship Broker.
-    OUTPUT: JSON ONLY. NO MARKDOWN. NO EXPLANATIONS OUTSIDE JSON.
+    OUTPUT: JSON ONLY. NO MARKDOWN.
     
     TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
     
     JSON STRUCTURE:
     {
-      "tavsiyeGerekcesi": "Market analysis (Turkish)",
+      "tavsiyeGerekcesi": "Piyasa analizi (Turkce)",
       "tumRotlarinAnalizi": [
         {
-          "rotaAdi": "Route Name",
-          "detay": "Cargo type",
+          "rotaAdi": "Rota Ismi",
+          "detay": "Yuk Detayi",
           "rotaSegmentleri": ["MED_EAST", "RED_SEA"],
           "finans": {
             "navlunUSD": 100000, 
@@ -57,17 +58,17 @@ app.get('/sefer_onerisi', async (req, res) => {
     `;
 
     try {
-        // EN SAĞLAM MODEL: 1.5 FLASH
-        // 2.0 sunucuda bulunamadığı için bunu kullanmak ZORUNDAYIZ.
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+        // --- KRİTİK DEĞİŞİKLİK BURADA ---
+        // "gemini-1.5-flash" yerine "gemini-1.5-flash-001" yazıyoruz.
+        // Bu, modelin "Kimlikteki Tam Adı"dır. Hata yapma şansı yoktur.
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" }); 
         
         const result = await model.generateContent(brokerPrompt);
         let text = result.response.text();
         
         console.log("AI HAM CEVAP:", text); 
 
-        // --- TEMİZLİK ROBOTU ---
-        // Eğer AI cevabı ```json ile süslerse temizliyoruz.
+        // Temizlik (Markdown işaretleri varsa sil)
         let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
         const jsonCevap = JSON.parse(cleanJson);
@@ -75,7 +76,6 @@ app.get('/sefer_onerisi', async (req, res) => {
 
     } catch (error) {
         console.error("❌ [MOTOR HATASI]:", error);
-        // Hatayı artık gizlemiyoruz, ekrana basıyoruz ki görelim.
         res.status(500).json({ basari: false, error: error.message });
     }
 });
