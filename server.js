@@ -7,7 +7,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- YENİ ALDIĞIN "TEMİZ" ANAHTARI BURAYA YAPIŞTIR ---
-const API_KEY = 'AIzaSyB-c8rtC8_JgCKQsLbMV-UNWKANbwxnI9o'.trim(); 
+// Şifreyi artık kodun içine yazmıyoruz, Render'ın kasasından (Environment) çekiyoruz.
+const API_KEY = process.env.GEMINI_API_KEY;
+
+// Eğer kasa boşsa hata verelim ki anlayalım
+if (!API_KEY) {
+    console.error("❌ HATA: API Anahtarı bulunamadı! Render Environment ayarlarına 'GEMINI_API_KEY' eklemeyi unuttun.");
+} 
 
 const app = express();
 const PORT = process.env.PORT || 3000; 
@@ -79,3 +85,4 @@ app.get('/sefer_onerisi', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
+
