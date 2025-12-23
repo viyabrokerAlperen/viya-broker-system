@@ -78,7 +78,7 @@ app.get('/sefer_onerisi', async (req, res) => {
     }`;
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }); 
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
         const result = await model.generateContent(brokerPrompt);
         let text = result.response.text();
         let cleanJson = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1)
@@ -91,5 +91,6 @@ app.get('/sefer_onerisi', async (req, res) => {
         res.status(500).json({ basari: false, error: error.message });
     }
 });
+
 
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
