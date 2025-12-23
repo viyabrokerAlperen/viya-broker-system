@@ -59,7 +59,7 @@ app.get('/sefer_onerisi', async (req, res) => {
     try {
         // DEĞİŞİKLİK: En klasik ve uyumlu model "gemini-pro" kullanıyoruz.
         // Bu model her anahtarla çalışır.
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
         
         const result = await model.generateContent(brokerPrompt);
         const response = await result.response;
@@ -88,3 +88,4 @@ app.get('/sefer_onerisi', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
+
