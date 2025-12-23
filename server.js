@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors'; 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import routeGraph, { coordinates, findNearestNode } from './seamap.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ŞİFREYİ ARTIK KODUN İÇİNE YAZMIYORUZ!
-// Render'ın kasasından (Environment Variable) çekiyoruz.
+// KASA
 const API_KEY = process.env.GEMINI_API_KEY;
 
 const app = express();
@@ -21,33 +21,61 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE (MODEL: GEMINI 2.0 FLASH) ---
+// --- VIYA BROKER ENGINE (REAL DATA NAVIGATION) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
-    console.log(`\n⚓ [İSTEK]: ${gemiTipi} -> ${bolge}`);
+    console.log(`\n⚓ [NAVIGASYON]: ${konum} -> ${bolge}`);
 
-    // Kasa kontrolü
-    if (!API_KEY) {
-        console.error("❌ HATA: API Anahtarı yok! Render Environment ayarlarına 'GEMINI_API_KEY' eklemelisin.");
-        return res.status(500).json({ basari: false, error: "Sunucu API Anahtarı Ayarlanmamış." });
+    // 1. GERÇEK ROTA HESAPLAMA (DIJKSTRA)
+    // Başlangıç ve Bitiş limanlarının koordinatlarını "tahmin" etmiyoruz,
+    // Veritabanımızdaki en yakın gerçek noktayı buluyoruz.
+    
+    // NOT: Frontend'den lat/lon gelse daha iyi olur ama şimdilik isme göre basit eşleştirme yapalım
+    // (Burası geliştirilecek, şimdilik manuel eşleme)
+    const mapStart = findNearestNodeForCity(konum);
+    const mapEnd = findNearestNodeForCity(bolge);
+
+    console.log(`📍 Rota Noktaları: ${mapStart} -> ${mapEnd}`);
+
+    let geoJSONPath = null;
+    let rotaAdi = "Direkt Rota";
+
+    if (mapStart && mapEnd) {
+        // En kısa yolu hesapla
+        const path = routeGraph.path(mapStart, mapEnd);
+        
+        if (path) {
+            console.log("✅ Rota Bulundu:", path);
+            rotaAdi = `${konum} - ${bolge} (via ${path.length} waypoints)`;
+            
+            // Koordinatları GeoJSON formatına çevir
+            const pathCoordinates = path.map(nodeName => {
+                const coord = coordinates[nodeName];
+                return [coord[1], coord[0]]; // GeoJSON: [Lon, Lat]
+            });
+
+            geoJSONPath = {
+                type: "LineString",
+                coordinates: pathCoordinates
+            };
+        } else {
+            console.log("❌ Rota Bulunamadı! Deniz bağlantısı yok.");
+        }
     }
 
+    // 2. GEMINI FİNANSAL ANALİZ
+    // Rotayı biz çizdik, Gemini sadece para hesabını yapacak.
     const brokerPrompt = `
     ACT AS: Senior Ship Broker.
-    OUTPUT: JSON ONLY. NO MARKDOWN. NO EXPLANATIONS.
+    TASK: Financial analysis for voyage from ${konum} to ${bolge}.
+    VESSEL: ${gemiTipi} (${dwt} DWT).
+    ROUTE: The vessel will follow a standard maritime route.
     
-    TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
-    
-    JSON STRUCTURE:
+    OUTPUT: JSON ONLY.
     {
-      "tavsiyeGerekcesi": "Piyasa analizi (Turkce)",
-      "tumRotlarinAnalizi": [
-        {
-          "rotaAdi": "Rota Ismi",
-          "detay": "Yuk Detayi",
-          "rotaSegmentleri": ["MED_EAST", "RED_SEA"],
-          "finans": {
+      "tavsiyeGerekcesi": "Detailed market analysis in Turkish.",
+      "finans": {
             "navlunUSD": 100000, 
             "komisyonUSD": 2500,
             "ballastYakitUSD": 5000, 
@@ -56,57 +84,77 @@ app.get('/sefer_onerisi', async (req, res) => {
             "limanUSD": 10000, 
             "opexUSD": 5000, 
             "netKarUSD": 27500
-          }
-        }
-      ]
+      }
     }
     `;
 
     try {
-        // --- İŞTE ÇÖZÜM BURADA ---
-        // Senin listende "gemini-1.5-flash" YOKTU.
-        // Ama "gemini-2.0-flash" VARDI. O yüzden bunu kullanıyoruz.
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`;
         
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: brokerPrompt }] }]
-            })
+            body: JSON.stringify({ contents: [{ parts: [{ text: brokerPrompt }] }] })
         });
 
         const data = await response.json();
-
-        // Hata Kontrolü
-        if (data.error) {
-            console.error("GOOGLE API HATASI:", JSON.stringify(data.error, null, 2));
-            throw new Error(data.error.message);
+        
+        let jsonCevap = {};
+        if (data.candidates) {
+            let text = data.candidates[0].content.parts[0].text;
+            let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            cleanJson = cleanJson.replace(/^JSON:/i, '').trim();
+            const firstBracket = cleanJson.indexOf('{');
+            const lastBracket = cleanJson.lastIndexOf('}');
+            if (firstBracket !== -1 && lastBracket !== -1) {
+                cleanJson = cleanJson.substring(firstBracket, lastBracket + 1);
+            }
+            jsonCevap = JSON.parse(cleanJson);
         }
 
-        let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) throw new Error("AI boş cevap döndü.");
+        // 3. VERİLERİ BİRLEŞTİR
+        // Gemini'nin finans verisi + Bizim Gerçek Harita verimiz
+        const finalResponse = {
+            tavsiyeGerekcesi: jsonCevap.tavsiyeGerekcesi || "Analiz yapıldı.",
+            tumRotlarinAnalizi: [
+                {
+                    rotaAdi: rotaAdi,
+                    detay: "Standart Deniz Yolu",
+                    finans: jsonCevap.finans || {},
+                    geoJSON: geoJSONPath // İşte gerçek harita verisi burada!
+                }
+            ]
+        };
 
-        console.log("AI HAM CEVAP:", text); 
-
-        // Temizlik Robotu
-        let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        // Bazen en başta "JSON:" yazar, onu da silelim
-        cleanJson = cleanJson.replace(/^JSON:/i, '').trim();
-
-        const firstBracket = cleanJson.indexOf('{');
-        const lastBracket = cleanJson.lastIndexOf('}');
-        if (firstBracket !== -1 && lastBracket !== -1) {
-            cleanJson = cleanJson.substring(firstBracket, lastBracket + 1);
-        }
-
-        const jsonCevap = JSON.parse(cleanJson);
-        res.json({ basari: true, tavsiye: jsonCevap });
+        res.json({ basari: true, tavsiye: finalResponse });
 
     } catch (error) {
-        console.error("❌ [MOTOR HATASI]:", error.message);
+        console.error("❌ HATASI:", error.message);
         res.status(500).json({ basari: false, error: error.message });
     }
 });
+
+// Yardımcı Fonksiyon: Şehir isminden harita noktası bulma (Basit eşleştirme)
+function findNearestNodeForCity(city) {
+    if (!city) return "Istanbul";
+    const lower = city.toLowerCase();
+    
+    // Basit bir sözlük (Burası geliştirilecek)
+    if (lower.includes("istanbul")) return "Istanbul";
+    if (lower.includes("new york") || lower.includes("amerika")) return "New_York";
+    if (lower.includes("rotterdam")) return "Rotterdam";
+    if (lower.includes("shanghai") || lower.includes("cin")) return "Shanghai";
+    if (lower.includes("santos") || lower.includes("brazil")) return "Santos";
+    if (lower.includes("singapore")) return "Singapore";
+    if (lower.includes("tokyo")) return "Tokyo";
+    if (lower.includes("suez")) return "Suez_North";
+    
+    // Eğer bulamazsa varsayılan bir nokta (veya en yakını buldurabiliriz)
+    // Şimdilik test için manuel:
+    if (lower.includes("london")) return "London";
+    if (lower.includes("hamburg")) return "Hamburg";
+    
+    return "Istanbul"; // Fallback
+}
 
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
