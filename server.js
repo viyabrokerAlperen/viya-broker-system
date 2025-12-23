@@ -78,14 +78,16 @@ app.get('/sefer_onerisi', async (req, res) => {
     }`;
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
-        const result = await model.generateContent(brokerPrompt);
-        let text = result.response.text();
-        let cleanJson = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1)
-                            .replace(/\/\/.*$/gm, '')
-                            .replace(/,(\s*[}\]])/g, '$1');
+        // Model Tanımı (JSON Modu Açık)
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    generationConfig: { responseMimeType: "application/json" } 
+}); 
 
-        res.json({ basari: true, tavsiye: JSON.parse(cleanJson) });
+const result = await model.generateContent(brokerPrompt);
+        let text = result.response.text();
+console.log("AI HAM CEVAP:", text); // Loglara cevabı basalım ki hatayı görelim
+res.json({ basari: true, tavsiye: JSON.parse(text) });
     } catch (error) {
         console.error("❌ VIYA ENGINE ERROR:", error.message);
         res.status(500).json({ basari: false, error: error.message });
@@ -94,3 +96,4 @@ app.get('/sefer_onerisi', async (req, res) => {
 
 
 app.listen(PORT, () => console.log(`🟢 VIYA BROKER LIVE ON PORT ${PORT}`));
+
