@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- DİKKAT: BURAYA KENDİ API ANAHTARINI YAPIŞTIR ---
+// --- BURAYA KENDİ API ANAHTARINI YAPIŞTIR ---
 const genAI = new GoogleGenerativeAI('AIzaSyB9pGfQ3wVWpawhu5aIY2iRJpQ4J9soLTM'); 
 
 const app = express();
@@ -21,67 +21,63 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE ---
+// --- VIYA BROKER ENGINE (V2.0 POWERED) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
-    console.log(`\n⚓ [İSTEK GELDİ]: ${gemiTipi} | ${konum} -> ${bolge}`);
+    console.log(`\n⚓ [İSTEK GELDİ]: ${gemiTipi} -> ${bolge}`);
 
-    // Prompt (Talimat)
     const brokerPrompt = `
-    Role: Senior Ship Broker. 
-    Task: Create a shipping voyage plan in strictly valid JSON format.
-    Vessel: ${gemiTipi} (${dwt} DWT), Speed: ${hiz} knots.
-    From: ${konum}, To: ${bolge}.
+    ACT AS: Senior Ship Broker.
+    OUTPUT FORMAT: JSON ONLY. NO MARKDOWN. NO COMMENTS.
     
-    Requirements:
-    - 3 distinct route options.
-    - Financials must be realistic (Revenue, Fuel Costs, Net Profit).
-    - Route Segments must use these keys: "MED_EAST", "RED_SEA", "INDIAN_OCEAN", "SOUTH_CHINA", "MED_WEST", "ATLANTIC_NA", "ATLANTIC_SA".
+    TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
     
-    Output Format (JSON ONLY):
+    REQUIRED JSON STRUCTURE:
     {
-      "tavsiyeGerekcesi": "Market analysis text here (Turkish).",
+      "tavsiyeGerekcesi": "Market analysis text (Turkish)",
       "tumRotlarinAnalizi": [
         {
           "rotaAdi": "Route Name",
-          "detay": "Cargo details",
+          "detay": "Cargo example",
           "rotaSegmentleri": ["MED_EAST", "RED_SEA"],
           "finans": {
-            "navlunUSD": 1000000, 
-            "komisyonUSD": 25000,
-            "ballastYakitUSD": 10000, 
-            "ladenYakitUSD": 200000,
+            "navlunUSD": 100000, 
+            "komisyonUSD": 2500,
+            "ballastYakitUSD": 5000, 
+            "ladenYakitUSD": 50000,
             "kanalUSD": 0, 
-            "limanUSD": 50000, 
-            "opexUSD": 80000, 
-            "netKarUSD": 635000
+            "limanUSD": 10000, 
+            "opexUSD": 5000, 
+            "netKarUSD": 27500
           }
         }
       ]
-    }`;
+    }
+    `;
 
     try {
-        // MODEL AYARI: Gemini 1.5 Flash + JSON ZORLAMASI
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            generationConfig: { responseMimeType: "application/json" }
-        });
-
+        // SENİN İSTEDİĞİN MODEL: 2.0 FLASH EXPERIMENTAL
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" }); 
+        
         const result = await model.generateContent(brokerPrompt);
-        const text = result.response.text();
+        let text = result.response.text();
         
-        console.log("✅ [AI CEVABI BAŞARILI]");
-        
-        // Gelen cevap zaten saf JSON olduğu için direkt parse ediyoruz
-        const jsonCevap = JSON.parse(text);
+        console.log("AI HAM CEVAP:", text); // Loglarda cevabı görelim
+
+        // TEMİZLİK: Markdown tırnaklarını (```json ... ```) temizle
+        let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // Parse Et
+        const jsonCevap = JSON.parse(cleanJson);
         
         res.json({ basari: true, tavsiye: jsonCevap });
 
     } catch (error) {
         console.error("❌ [VIYA ENGINE ERROR]:", error);
-        // Hata detayını frontend'e gönderelim ki görebilelim
-        res.status(500).json({ basari: false, error: error.message, details: error.toString() });
+        // Hata detayını artık frontend'e göndermiyoruz, çünkü frontend okuyamıyor.
+        // Ama Render loglarında "❌" işaretli satırda hatayı göreceğiz.
+        res.status(500).json({ basari: false, error: "Sunucu Hatası" });
     }
 });
 
