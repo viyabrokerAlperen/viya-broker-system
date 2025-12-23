@@ -21,20 +21,19 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- VIYA BROKER ENGINE ---
+// --- VIYA BROKER ENGINE (CLASSIC GEMINI PRO) ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
 
     console.log(`\n⚓ [İSTEK]: ${gemiTipi} -> ${bolge}`);
 
-    // Prompt (Basit ve Net)
     const brokerPrompt = `
     ACT AS: Senior Ship Broker.
-    OUTPUT: JSON ONLY. NO MARKDOWN.
+    OUTPUT: JSON ONLY. DO NOT USE MARKDOWN. DO NOT WRITE EXPLANATIONS.
     
     TASK: Plan 3 voyages for ${gemiTipi} (${dwt} DWT) from ${konum} to ${bolge}.
     
-    JSON STRUCTURE:
+    STRICT JSON STRUCTURE:
     {
       "tavsiyeGerekcesi": "Piyasa analizi (Turkce)",
       "tumRotlarinAnalizi": [
@@ -58,21 +57,29 @@ app.get('/sefer_onerisi', async (req, res) => {
     `;
 
     try {
-        // --- KRİTİK DEĞİŞİKLİK BURADA ---
-        // "gemini-1.5-flash" yerine "gemini-1.5-flash-001" yazıyoruz.
-        // Bu, modelin "Kimlikteki Tam Adı"dır. Hata yapma şansı yoktur.
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" }); 
+        // DEĞİŞİKLİK: En klasik ve uyumlu model "gemini-pro" kullanıyoruz.
+        // Bu model her anahtarla çalışır.
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
         
         const result = await model.generateContent(brokerPrompt);
-        let text = result.response.text();
+        const response = await result.response;
+        let text = response.text();
         
         console.log("AI HAM CEVAP:", text); 
 
-        // Temizlik (Markdown işaretleri varsa sil)
-        let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-        const jsonCevap = JSON.parse(cleanJson);
-        res.json({ basari: true, tavsiye: jsonCevap });
+        // --- GÜÇLÜ TEMİZLİK ---
+        // Gemini Pro bazen en başa "Here is the JSON" yazar. Bunu siliyoruz.
+        // Sadece { ile } arasındaki kısmı alıyoruz.
+        const jsonBaslangic = text.indexOf('{');
+        const jsonBitis = text.lastIndexOf('}');
+        
+        if (jsonBaslangic !== -1 && jsonBitis !== -1) {
+            let cleanJson = text.substring(jsonBaslangic, jsonBitis + 1);
+            const jsonCevap = JSON.parse(cleanJson);
+            res.json({ basari: true, tavsiye: jsonCevap });
+        } else {
+            throw new Error("AI geçerli bir JSON üretmedi.");
+        }
 
     } catch (error) {
         console.error("❌ [MOTOR HATASI]:", error);
