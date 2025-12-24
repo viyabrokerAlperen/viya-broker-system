@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs'; // Dosya okumak için
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -13,53 +13,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- 1. LİMAN VERİTABANINI YÜKLE (ports.json) ---
-let PORT_DB = {};
-try {
-    // ports.json dosyasını senkron olarak oku
-    const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
-    const jsonData = JSON.parse(rawData);
-    
-    // Veriyi bizim formatımıza çevir (eğer format farklıysa)
-    // Senin attığın format: "shanghai": [121.47, 31.23] (Lng, Lat)
-    // Bizim kullandığımız: "SHANGHAI": { lat: 31.23, lng: 121.47 }
-    for (const [key, val] of Object.entries(jsonData)) {
-        PORT_DB[key.toUpperCase()] = { lat: val[1], lng: val[0] };
-    }
-    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully!`);
-} catch (error) {
-    console.error("❌ Error loading ports.json:", error.message);
-    // Fallback (Hata olursa en azından bunlar çalışsın)
-    PORT_DB = {
-        "ISTANBUL": { lat: 41.00, lng: 28.97 },
-        "NEW YORK": { lat: 40.71, lng: -74.00 }
-    };
-}
-
-// --- 2. WAYPOINTS (NO-FLY ZONES) ---
-const WAYPOINTS = {
-    "GIBRALTAR": [-5.6, 35.95],
-    "SUEZ_N": [32.56, 31.26],
-    "SUEZ_S": [32.56, 29.92],
-    "BAB_EL_MANDEB": [43.4, 12.6],
-    "SRI_LANKA": [80.6, 5.9],
-    "MALACCA": [103.8, 1.3],
-    "AEGEAN_EXIT": [26.0, 36.0],
-    "ATLANTIC_MID": [-40.0, 35.0]
-};
-
-function calculateDistance(coord1, coord2) {
-    const R = 3440; // NM
-    const lat1 = coord1[1]; const lon1 = coord1[0];
-    const lat2 = coord2[1]; const lon2 = coord2[0];
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-// --- FRONTEND KODU (AYNEN KORUNDU) ---
+// --- 1. FRONTEND KODU (GÖRSEL ŞÖLEN + DASHED LINE + NEON) ---
 const FRONTEND_HTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +25,6 @@ const FRONTEND_HTML = `
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
     <style>
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e0e6ed; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #00ff9d; --danger: #ff0055; --warning: #ffb700; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
@@ -141,7 +94,7 @@ const FRONTEND_HTML = `
 </head>
 <body>
     <div class="toast" id="toast"><i class="fa-solid fa-circle-info" id="toastIcon"></i><span id="toastMsg">Notification</span></div>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan);">CALCULATING PRECISE ROUTE...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan);">CALCULATING REALISTIC SEA ROUTE...</div></div></div>
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
         <div class="nav-links"><a href="#landing-view" onclick="showLanding()">Home</a><a href="#features" onclick="showLanding()">Features</a><a href="#pricing" onclick="showLanding()">Pricing</a><a href="#contact" onclick="showLanding()">Contact</a></div>
@@ -159,19 +112,16 @@ const FRONTEND_HTML = `
             <aside class="sidebar">
                 <h3><i class="fa-solid fa-ship"></i> VESSEL & POSITION</h3>
                 <div class="input-group"><label>VESSEL TYPE</label><select id="vType"><option value="Dry Bulk Carrier">Dry Bulk Carrier</option><option value="Crude Oil Tanker">Crude Oil Tanker</option><option value="Container Ship">Container Ship</option><option value="LNG Carrier">LNG Carrier</option></select></div>
-                <datalist id="portList">
-                    <option value="ISTANBUL"><option value="ROTTERDAM"><option value="NEW YORK"><option value="SHANGHAI"><option value="SINGAPORE">
-                    <option value="ALIAGA"><option value="MERSIN"><option value="AMBARLI"><option value="IZMIT">
-                    <option value="HOUSTON"><option value="SANTOS"><option value="BUSAN"><option value="JEBEL ALI">
-                    <option value="TOKYO"><option value="LOS ANGELES"><option value="HAMBURG"><option value="ANTWERP">
-                </datalist>
+                
+                <datalist id="portList"></datalist>
+                
                 <div class="input-group"><label>ORIGIN PORT</label><input type="text" id="vLoc" list="portList" value="ISTANBUL" placeholder="Start Port..." oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="input-group"><label>DESTINATION PORT</label><input type="text" id="vRegion" list="portList" value="NEW YORK" placeholder="End Port..." oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="sidebar-divider"></div>
                 <div class="input-group"><label>CARGO QTY (MT)</label><input type="number" id="vCargo" value="50000"></div>
                 <div class="input-group"><label>FREIGHT RATE ($/MT)</label><input type="number" id="vFreight" value="24.5"></div>
                 <button class="btn-hero" onclick="runCalculation()" style="width:100%; margin-top:20px; font-size:0.9rem; padding:12px;">CALCULATE VOYAGE</button>
-                <div style="margin-top:auto; font-size:0.7rem; color:#444; text-align:center;">Port Database: <span style="color:var(--neon-cyan)">CONNECTED</span><br>Route Engine: <span style="color:var(--success)">V8 (SMOOTH+DASHED)</span></div>
+                <div style="margin-top:auto; font-size:0.7rem; color:#444; text-align:center;">Port Database: <span style="color:var(--neon-cyan)" id="dbStatus">CONNECTING...</span><br>Route Engine: <span style="color:var(--success)">V11 (GLOBAL GRID)</span></div>
             </aside>
             <div class="map-container">
                 <div id="map"></div>
@@ -186,10 +136,25 @@ const FRONTEND_HTML = `
         function attemptLogin() { closeLogin(); document.getElementById('landing-view').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'block'; setTimeout(() => map.invalidateSize(), 100); showToast("System Ready", "success"); }
         function showLanding() { document.getElementById('dashboard-view').style.display = 'none'; document.getElementById('landing-view').style.display = 'block'; }
         function showToast(msg, type = 'info') { const t = document.getElementById('toast'); const icon = document.getElementById('toastIcon'); const txt = document.getElementById('toastMsg'); t.className = 'toast show ' + (type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')); icon.className = type === 'error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-check'; if(type === 'info') icon.className = 'fa-solid fa-circle-info'; txt.innerText = msg; t.style.display = 'flex'; setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.style.display = 'none', 300); }, 3000); }
-        const map = L.map('map', {zoomControl: false}).setView([30, 0], 2);
+        const map = L.map('map', {zoomControl: false}).setView([35, 20], 2);
         L.control.zoom({position: 'bottomright'}).addTo(map);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
+
+        async function loadPorts() {
+            try {
+                const res = await fetch('/api/ports');
+                const ports = await res.json();
+                const dl = document.getElementById('portList');
+                ports.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    dl.appendChild(opt);
+                });
+                document.getElementById('dbStatus').innerText = ports.length + " PORTS ONLINE";
+            } catch(e) { console.log("Port load error"); }
+        }
+        loadPorts();
 
         async function runCalculation() {
             const origin = document.getElementById('vLoc').value.toUpperCase();
@@ -202,7 +167,6 @@ const FRONTEND_HTML = `
             document.getElementById('resBox').style.display = 'none';
 
             try {
-                // KENDI BACKEND'İMİZE İSTEK ATIYORUZ
                 const res = await fetch(\`/sefer_onerisi?konum=\${origin}&bolge=\${dest}&dwt=\${dwt}\`);
                 const data = await res.json();
                 
@@ -223,44 +187,35 @@ const FRONTEND_HTML = `
         }
 
         function renderRoute(geoJSON, startLabel, endLabel) {
-            // DASHED & GLOWING CURVED ROUTE
-            let smoothGeo = geoJSON;
-            try {
-                const line = turf.lineString(geoJSON.coordinates);
-                smoothGeo = turf.bezierSpline(line, { resolution: 10000, sharpness: 0.5 });
-            } catch(e) { console.log("Smoothing skip"); }
+            const realisticGeo = geoJSON; // NO SMOOTHING - PURE DATA
 
-            // 1. GLOW (PARLAMA) - SABİT
-            L.geoJSON(smoothGeo, { style: { color: '#00f2ff', weight: 8, opacity: 0.3 } }).addTo(layerGroup);
+            // 1. NEON GLOW (Alttaki kalın çizgi)
+            L.geoJSON(realisticGeo, { style: { color: '#00f2ff', weight: 8, opacity: 0.3 } }).addTo(layerGroup);
             
-            // 2. ANA ROTA ÇİZGİSİ - KESİK (DASHED)
-            L.geoJSON(smoothGeo, { 
+            // 2. DASHED LINE (Üstteki kesik çizgi)
+            const routeLine = L.geoJSON(realisticGeo, { 
                 style: { 
                     color: '#00f2ff', 
                     weight: 3, 
                     opacity: 1,
-                    dashArray: '10, 15', // KESİK ÇİZGİ EFEKTİ
+                    dashArray: '10, 15', 
                     lineCap: 'round'
                 } 
             }).addTo(layerGroup);
 
             const c = geoJSON.coordinates;
-            // Leaflet LatLng vs GeoJSON LngLat fix
             const start = [c[0][1], c[0][0]];
             const end = [c[c.length-1][1], c[c.length-1][0]];
-            L.circleMarker(start, {radius:5, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(startLabel);
-            L.circleMarker(end, {radius:5, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(endLabel);
+            L.circleMarker(start, {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(startLabel);
+            L.circleMarker(end, {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(endLabel);
             
-            // Fit Bounds
-            const boundsLine = L.geoJSON(smoothGeo, {style:{opacity:0}});
-            map.fitBounds(boundsLine.getBounds(), {padding: [50, 50]});
+            map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
         }
 
         function updateUI(distStr, f, aiText) {
             const dist = parseInt(distStr.split(" ")[0]);
             const speed = 13.5;
             const days = dist / (speed * 24);
-            
             document.getElementById('hudDist').innerText = dist.toLocaleString() + " NM";
             document.getElementById('hudDays').innerText = days.toFixed(1) + " DAYS";
             document.getElementById('hudProfit').innerText = "$" + f.netKarUSD.toLocaleString();
@@ -288,61 +243,218 @@ const FRONTEND_HTML = `
 </html>
 `;
 
-// --- ANA ROUTE (Kullanıcı siteye girince HTML'i ver) ---
-app.get('/', (req, res) => {
-    res.send(FRONTEND_HTML);
+// --- 2. BACKEND & DATA ---
+
+let PORT_DB = {};
+try {
+    const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
+    const jsonData = JSON.parse(rawData);
+    for (const [key, val] of Object.entries(jsonData)) {
+        PORT_DB[key.toUpperCase()] = { lat: val[1], lng: val[0] };
+    }
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully!`);
+} catch (error) {
+    console.error("❌ Error loading ports.json:", error.message);
+    PORT_DB = { "ISTANBUL": { lat: 41.00, lng: 28.97 }, "NEW YORK": { lat: 40.71, lng: -74.00 } };
+}
+
+// --- GLOBAL DENİZ OTOYOLLARI (SEA HIGHWAYS) ---
+// Bu koordinatlar gemileri karadan uzak tutmak ve gerçekçi rotalar çizmek için hayati önem taşır.
+const SEA_HIGHWAYS = {
+    // 1. AKDENİZ ANA HATTI (Gibraltar <-> Süveyş)
+    MED_MAIN_LINE: [
+        [-5.6, 35.95],  // Gibraltar
+        [-4.0, 36.5],   // Alboran Sea
+        [5.0, 37.5],    // Cezayir Açıkları
+        [11.0, 37.5],   // Sicilya Boğazı Yaklaşımı
+        [12.5, 37.0],   // Sicilya Güneyi
+        [20.0, 35.5],   // İyon Denizi
+        [26.0, 34.0],   // Girit Güneyi
+        [32.0, 31.5],   // Mısır Açıkları
+        [32.55, 31.3]   // Süveyş Kuzey Girişi
+    ],
+    // 2. KIZILDENİZ HATTI
+    RED_SEA_LINE: [
+        [32.56, 29.92], // Süveyş Güney Çıkışı
+        [34.0, 27.0],   // Kuzey Kızıldeniz
+        [38.0, 22.0],   // Orta Kızıldeniz
+        [42.5, 14.0],   // Güney Kızıldeniz
+        [43.4, 12.6]    // Babülmendep Boğazı
+    ],
+    // 3. HİNT OKYANUSU (Asya'ya Gidiş)
+    INDIAN_OCEAN_TO_ASIA: [
+        [45.0, 11.8],   // Aden Körfezi Çıkışı
+        [55.0, 10.0],   // Arap Denizi Açıkları
+        [75.0, 6.0],    // Maldivler/Hindistan Güneyi
+        [80.6, 5.9],    // Sri Lanka Güney Ucu
+        [95.0, 5.8],    // Sumatra Yaklaşımı
+        [103.8, 1.3]    // Malakka Boğazı (Singapur)
+    ],
+    // 4. KUZEY ATLANTİK (Avrupa <-> Amerika)
+    NORTH_ATLANTIC_TRACK: [
+        [-6.0, 49.0],   // İngiliz Kanalı Girişi
+        [-15.0, 48.0],  // Açık Atlantik (Biscay açığı)
+        [-30.0, 45.0],  // Orta Atlantik
+        [-45.0, 42.0],  // Grand Banks Güneyi
+        [-60.0, 40.5],  // Nova Scotia Güneyi
+        [-70.0, 40.0]   // US East Coast Yaklaşımı
+    ],
+    // 5. GIBRALTAR -> AMERİKA
+    GIB_TO_US: [
+        [-6.0, 35.8],   // Gibraltar Çıkışı
+        [-20.0, 34.0],  // Madeira Açıkları
+        [-40.0, 32.0],  // Orta Atlantik
+        [-60.0, 30.0],  // Bermuda Yaklaşımı
+        [-74.0, 35.0]   // US East Coast
+    ],
+    // 6. PANAMA KANALI ERİŞİMİ (Atlantik Tarafı)
+    PANAMA_ATLANTIC_ACCESS: [
+        [-70.0, 20.0],  // Karayipler Girişi
+        [-75.0, 15.0],  // Orta Karayip
+        [-79.9, 9.3]    // Panama Colon Girişi
+    ],
+    // 7. PANAMA KANALI ERİŞİMİ (Pasifik Tarafı)
+    PANAMA_PACIFIC_ACCESS: [
+        [-79.5, 8.9],   // Panama Balboa Çıkışı
+        [-85.0, 5.0],   // Pasifik Açıkları
+        [-100.0, 10.0]  // Meksika Açıkları (Asya rotası için)
+    ],
+    // 8. EGE DENİZİ ÇIKIŞI
+    AEGEAN_EXIT: [
+        [26.0, 39.0],   // Ege Ortası
+        [25.0, 37.0],   // Kikladlar
+        [23.5, 36.0]    // Mora Güneyi / Kythira
+    ]
+};
+
+// Mesafe Hesaplama
+function calculateDistance(coord1, coord2) {
+    const R = 3440; 
+    const lat1 = coord1[1]; const lon1 = coord1[0];
+    const lat2 = coord2[1]; const lon2 = coord2[0];
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// --- GERÇEKÇİ ROTA MOTORU V11 ---
+function getRealisticRoute(startPort, endPort) {
+    const start = [startPort.lng, startPort.lat];
+    const end = [endPort.lng, endPort.lat];
+    
+    const isMed = (p) => p.lat > 30 && p.lat < 46 && p.lng > -6 && p.lng < 36;
+    const isAmericas = (p) => p.lng < -30;
+    const isAsia = (p) => p.lng > 60;
+    const isNorthEurope = (p) => p.lat > 48 && p.lng > -10 && p.lng < 30;
+    const isBlackSea = (p) => p.lng > 27 && p.lat > 40 && p.lat < 47;
+
+    let path = [start];
+    let description = "Direct / Coastal Route";
+    let canalFee = 0;
+
+    // --- SENARYO 1: AKDENİZ/KARADENİZ -> AMERİKA (ATLANTİK GEÇİŞİ) ---
+    if ((isMed(startPort) || isBlackSea(startPort)) && isAmericas(endPort)) {
+        // Karadeniz/İstanbul çıkışı
+        if (isBlackSea(startPort) || (startPort.lat > 40 && startPort.lng > 26)) {
+            path = path.concat(SEA_HIGHWAYS.AEGEAN_EXIT);
+        }
+        
+        // Akdeniz'i boydan boya geç (Tersten)
+        // Med Main Line'ı ters çevirip ekle (Süveyş'ten Gibraltar'a doğru değil, Gibraltar'a doğru)
+        // Burada basitçe Gibraltar'a yönlendiren noktalar ekleyelim:
+        if (startPort.lng > 20) path.push([20.0, 35.5]); // Yunanistan Güneyi
+        if (startPort.lng > 12) path.push([12.5, 37.0]); // Sicilya
+        if (startPort.lng > 0)  path.push([5.0, 37.5]);  // Cezayir
+        
+        path.push([-5.6, 35.95]); // Gibraltar
+        path = path.concat(SEA_HIGHWAYS.GIB_TO_US);
+        path.push(end);
+        description = "Via Gibraltar Strait (Trans-Atlantic)";
+    }
+
+    // --- SENARYO 2: AKDENİZ/AVRUPA -> ASYA (SÜVEYŞ KANALI) ---
+    else if ((isMed(startPort) || isNorthEurope(startPort)) && isAsia(endPort)) {
+        if (isNorthEurope(startPort)) {
+            path.push([-6.0, 49.0]); // Kanal Girişi
+            path.push([-9.0, 43.0]); // Finisterre
+            path.push([-5.6, 35.95]); // Gibraltar
+        }
+        // Akdeniz Hattı
+        path = path.concat(SEA_HIGHWAYS.MED_MAIN_LINE);
+        // Kızıldeniz Hattı
+        path = path.concat(SEA_HIGHWAYS.RED_SEA_LINE);
+        // Hint Okyanusu
+        path = path.concat(SEA_HIGHWAYS.INDIAN_OCEAN_TO_ASIA);
+        
+        // Şangay/Çin ise yukarı kır
+        if (endPort.lat > 20) {
+            path.push([115.0, 15.0]); // Güney Çin Denizi
+        }
+        
+        path.push(end);
+        description = "Via Suez Canal & Malacca Strait";
+        canalFee = 250000;
+    }
+
+    // --- SENARYO 3: AMERİKA -> ASYA (PANAMA KANALI) ---
+    else if (startPort.lng < -70 && endPort.lng > 100) {
+        path = path.concat(SEA_HIGHWAYS.PANAMA_ATLANTIC_ACCESS);
+        path = path.concat(SEA_HIGHWAYS.PANAMA_PACIFIC_ACCESS);
+        // Pasifik Geçişi
+        path.push([-160.0, 20.0]); // Hawaii Açıkları
+        path.push(end);
+        description = "Via Panama Canal (Trans-Pacific)";
+        canalFee = 180000;
+    }
+
+    // --- SENARYO 4: KUZEY AVRUPA -> AMERİKA ---
+    else if (isNorthEurope(startPort) && isAmericas(endPort)) {
+        path = path.concat(SEA_HIGHWAYS.NORTH_ATLANTIC_TRACK);
+        path.push(end);
+        description = "North Atlantic Route";
+    }
+
+    // --- DİĞERLERİ (DİREKT) ---
+    else {
+        path.push(end);
+    }
+
+    // Mesafeyi hesapla
+    let dist = 0;
+    for(let i=0; i<path.length-1; i++) dist += calculateDistance(path[i], path[i+1]);
+    dist = Math.round(dist * 1.1); // Sapma payı
+
+    return { path, dist, description, canalFee };
+}
+
+// --- ROUTES ---
+app.get('/', (req, res) => res.send(FRONTEND_HTML));
+
+app.get('/api/ports', (req, res) => {
+    res.json(Object.keys(PORT_DB).sort());
 });
 
-// --- API ROUTE (Hesaplama) ---
 app.get('/sefer_onerisi', (req, res) => {
     try {
-        const konumRaw = req.query.konum || "ISTANBUL";
-        const bolgeRaw = req.query.bolge || "NEW YORK";
-        const originName = konumRaw.toUpperCase().trim();
-        const destName = bolgeRaw.toUpperCase().trim();
+        const originName = (req.query.konum || "").toUpperCase().trim();
+        const destName = (req.query.bolge || "").toUpperCase().trim();
         const dwt = parseInt(req.query.dwt) || 50000;
         const hiz = 13.5;
 
-        // JSON'dan Limanı Bul
         const startPort = PORT_DB[originName];
         const endPort = PORT_DB[destName];
 
         if (!startPort || !endPort) {
-            return res.json({ basari: false, error: `Liman veritabanında bulunamadı: ${!startPort ? originName : destName}` });
+            return res.json({ basari: false, error: `Liman bulunamadı: ${!startPort ? originName : destName}` });
         }
 
-        let path = [];
-        let routeDescription = "Direct";
-        let canalFee = 0;
-        const startCoords = [startPort.lng, startPort.lat];
-        const endCoords = [endPort.lng, endPort.lat];
-
-        // COĞRAFİ KONTROLLER
-        const isMed = (lat, lng) => (lat > 30 && lat < 46 && lng > -6 && lng < 36);
-        const isAmericas = (lng) => (lng < -30);
-        const isAsia = (lng) => (lng > 60);
-
-        if (isMed(startPort.lat, startPort.lng) && isAmericas(endPort.lng)) {
-            let prefix = [startCoords];
-            if(startPort.lng > 25) prefix.push(WAYPOINTS.AEGEAN_EXIT);
-            path = [...prefix, WAYPOINTS.GIBRALTAR, WAYPOINTS.ATLANTIC_MID, endCoords];
-            routeDescription = "Via Gibraltar (Trans-Atlantic)";
-        } else if ((isMed(startPort.lat, startPort.lng) || startPort.lng < 30) && isAsia(endPort.lng)) {
-            let prefix = [];
-            if (startPort.lat > 48) { prefix = [startCoords, WAYPOINTS.GIBRALTAR]; } else { prefix = [startCoords]; if(startPort.lng > 25 && startPort.lng < 30) prefix.push(WAYPOINTS.AEGEAN_EXIT); }
-            path = [...prefix, WAYPOINTS.SUEZ_N, WAYPOINTS.SUEZ_S, WAYPOINTS.BAB_EL_MANDEB, WAYPOINTS.SRI_LANKA, WAYPOINTS.MALACCA, endCoords];
-            routeDescription = "Via Suez Canal";
-            canalFee = 250000; 
-        } else {
-            path = [startCoords, endCoords];
-            routeDescription = "Direct / Coastal Route";
-        }
-
-        let totalDistNM = 0;
-        for(let i=0; i<path.length-1; i++) { totalDistNM += calculateDistance(path[i], path[i+1]); }
-        totalDistNM = Math.round(totalDistNM * 1.1); 
-
-        const days = totalDistNM / (hiz * 24);
+        // --- ROTA HESAPLAMA ---
+        const routeData = getRealisticRoute(startPort, endPort);
+        
+        // --- FİNANSAL HESAPLAMA ---
+        const days = routeData.dist / (hiz * 24);
         const dailyFuelCons = 20 + (dwt / 10000) * 1.5; 
         const fuelPrice = 620; 
         const fuelCost = days * dailyFuelCons * fuelPrice;
@@ -351,21 +463,21 @@ app.get('/sefer_onerisi', (req, res) => {
         const portDues = 40000 + (dwt * 0.5); 
         const marketFreightRate = 22.5; 
         const revenue = dwt * 0.95 * marketFreightRate; 
-        const totalExpense = fuelCost + totalOpex + portDues + canalFee;
+        const totalExpense = fuelCost + totalOpex + portDues + routeData.canalFee;
         const netProfit = revenue - totalExpense;
 
         res.json({
             basari: true,
             tavsiye: {
-                tavsiyeGerekcesi: `Optimal route: ${routeDescription}. Distance: ${totalDistNM} NM.`,
+                tavsiyeGerekcesi: `Route: ${routeData.description}`,
                 tumRotlarinAnalizi: [{
-                    rotaAdi: routeDescription,
-                    detay: `${totalDistNM} NM @ ${hiz} kts`,
-                    geoJSON: { type: "LineString", coordinates: path },
+                    rotaAdi: routeData.description,
+                    detay: `${routeData.dist} NM @ ${hiz} kts`,
+                    geoJSON: { type: "LineString", coordinates: routeData.path },
                     finans: {
                         navlunUSD: Math.round(revenue),
                         netKarUSD: Math.round(netProfit),
-                        detaylar: { fuel: Math.round(fuelCost), opex: Math.round(totalOpex), port: Math.round(portDues), canal: Math.round(canalFee) }
+                        detaylar: { fuel: Math.round(fuelCost), opex: Math.round(totalOpex), port: Math.round(portDues), canal: Math.round(routeData.canalFee) }
                     }
                 }]
             }
@@ -378,5 +490,5 @@ app.get('/sefer_onerisi', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`VIYA BROKER FULL SYSTEM running on port ${port}`);
+    console.log(`VIYA BROKER V11 (GLOBAL GRID) running on port ${port}`);
 });
