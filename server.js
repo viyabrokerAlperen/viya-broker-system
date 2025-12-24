@@ -5,15 +5,24 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANE YÜKLEME (GÜVENLİ MOD) ---
+// --- KÜTÜPHANE YÜKLEME (FAIL-SAFE MEKANİZMASI) ---
 const require = createRequire(import.meta.url);
 let searoute = null;
+
 try {
+    // 1. Yöntem: Direkt require
     const pkg = require('searoute');
-    searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ Searoute Library: ACTIVE");
+    // 2. Yöntem: Fonksiyon mu, obje mi kontrol et
+    if (typeof pkg === 'function') {
+        searoute = pkg;
+    } else if (pkg && typeof pkg.default === 'function') {
+        searoute = pkg.default;
+    } else {
+        console.warn("⚠️ Searoute loaded but not a function. Using fallback.");
+    }
 } catch (e) {
-    console.log("⚠️ Searoute Library: FAILED (Using Manual Network)");
+    console.warn("⚠️ Searoute Library ERROR:", e.message);
+    searoute = null; // Kütüphane yok, manuel moda geçilecek
 }
 
 // Node 18+ Native Fetch
@@ -29,7 +38,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND (GÖRKEMLİ ARAYÜZ)
+// 1. FRONTEND (VİZYONA YAKIŞIR GÖRKEMLİ ARAYÜZ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -37,7 +46,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Hybrid Engine</title>
+    <title>VIYA BROKER | Redemption</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -64,8 +73,10 @@ const FRONTEND_HTML = `
 
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
+        
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
+        
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
@@ -291,7 +302,6 @@ try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
     const jsonData = JSON.parse(rawData);
     for (const [key, val] of Object.entries(jsonData)) {
-        // COORDINATE SANITIZATION: Force numbers
         PORT_DB[key.toUpperCase()] = { lat: parseFloat(val[1]), lng: parseFloat(val[0]) };
     }
     console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded.`);
@@ -352,7 +362,7 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- HİBRİT ROTA MOTORU (V25) ---
+// --- HİBRİT ROTA MOTORU (V26) ---
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
@@ -370,18 +380,17 @@ function getSmartRoute(startPort, endPort) {
                 desc = "Optimized Sea Route";
             }
         } catch (e) { 
-            // Kütüphane hata verirse (örn: liman karada) sessizce geç
+            // Kütüphane hata verirse sessizce geç
         }
     }
 
     // 2. MANUEL YEDEK PLAN (Eğer searoute çalışmazsa)
     if (!routeGeo) {
         let path = [origin];
-        // Basit akıllı bağlantı (Akdeniz-Atlantik)
         if (startPort.lng > 25 && endPort.lng < -10) { 
             path = path.concat(SEA_NETWORK.AEGEAN_EXIT, SEA_NETWORK.MED_TRUNK, SEA_NETWORK.ATLANTIC_NORTH);
         } else if (startPort.lat > 30 && endPort.lat > 30 && Math.abs(startPort.lng - endPort.lng) > 50) {
-             path = path.concat(SEA_NETWORK.ATLANTIC_NORTH); // Atlantik geçişi
+             path = path.concat(SEA_NETWORK.ATLANTIC_NORTH); 
         }
         path.push(dest);
         routeGeo = { type: "LineString", coordinates: path };
@@ -484,4 +493,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V25 (HYBRID ENGINE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V26 (REDEMPTION) running on port ${port}`));
