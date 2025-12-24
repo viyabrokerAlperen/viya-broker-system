@@ -3,7 +3,9 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// import fetch from 'node-fetch'; <-- BU SATIRI SİLDİK, ARTIK GEREK YOK
+
+// Node 18+ Native Fetch
+const fetch = globalThis.fetch;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,14 +16,16 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- 1. FRONTEND KODU (AYNI GÖRKEMLİ YAPI) ---
+// =================================================================
+// 1. FRONTEND KODU (HTML/CSS/JS) - EKSİKSİZ VE DETAYLI
+// =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Global Maritime Intelligence</title>
+    <title>VIYA BROKER | Leviathan Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -31,74 +35,92 @@ const FRONTEND_HTML = `
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
         
+        /* NAVBAR */
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .brand i { color: var(--neon-cyan); }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.3s; cursor: pointer; }
-        .nav-links a:hover { color: var(--neon-cyan); }
+        .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
+        .ticker-item span { color: var(--success); font-weight:bold; margin-left:5px; }
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
 
+        /* LANDING PAGE */
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .hero h1 { font-family: var(--font-tech); font-size: 3.5rem; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 40px auto; }
-        .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 18px 45px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; }
-        .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 0 50px rgba(0,242,255,0.6); }
+        .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
+        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px auto; }
+        .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
+        .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 0 60px rgba(0,242,255,0.6); }
 
+        /* DASHBOARD LAYOUT */
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
-        .dash-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
-        .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
-        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
-        .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 5px; font-weight: 600; }
-        .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 10px; border-radius: 4px; font-family: var(--font-ui); font-size: 0.9rem; }
-        .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 12px; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; width: 100%; transition: 0.3s; margin-top: 5px; }
+        .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         
-        .cargo-list { margin-top: 10px; border-top: 1px solid #333; padding-top: 10px; }
-        .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
+        /* SIDEBAR */
+        .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
+        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; letter-spacing: 1px; margin-top:5px; }
+        
+        .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
+        .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
+        
+        .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,242,255,0.5); }
+
+        /* CARGO RESULTS */
+        .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
-        .cargo-item.active { border-color: var(--neon-cyan); background: rgba(0,242,255,0.1); box-shadow: 0 0 15px rgba(0,242,255,0.1); }
-        .c-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .c-route { font-size: 0.85rem; font-weight: 700; color: #fff; }
-        .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1rem; }
-        
+        .cargo-item.active { border-color: var(--neon-cyan); background: rgba(0,242,255,0.15); box-shadow: 0 0 20px rgba(0,242,255,0.1); }
+        .c-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .c-route { font-size: 0.95rem; font-weight: 700; color: #fff; }
+        .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
+        .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
+
+        /* MAP & RESULTS */
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         
-        .results-box { position: absolute; bottom: 20px; right: 20px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 8px; padding: 20px; width: 380px; max-height: 500px; overflow-y: auto; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,0,0,0.8); display: none; }
-        .d-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+        .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
+        .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .res-title { font-family: var(--font-tech); color: var(--neon-cyan); font-size: 1rem; letter-spacing: 1px; }
+        .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
+        .d-lbl { color: #94a3b8; }
+        .d-val { color: #fff; font-weight: 500; }
         .d-val.pos { color: var(--success); }
         .d-val.neg { color: var(--danger); }
-        .ai-box { margin-top: 15px; padding: 10px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.8rem; color: #e2e8f0; line-height: 1.5; font-style: italic; }
+        .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.85rem; color: #e2e8f0; line-height: 1.6; font-style: italic; border-radius: 0 5px 5px 0; }
 
+        /* UTILS */
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
-        .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 60px; height: 60px; border: 4px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        .toast { position: fixed; top: 20px; right: 20px; background: #0f172a; border-left: 4px solid var(--neon-cyan); color: #fff; padding: 15px 25px; z-index: 3000; display: none; }
+        .toast { position: fixed; top: 25px; right: 25px; background: #0f172a; border-left: 5px solid var(--neon-cyan); color: #fff; padding: 15px 30px; border-radius: 6px; z-index: 3000; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-weight: 600; }
+        .toast.show { display: block; animation: slideIn 0.3s ease-out; }
+        .toast.error { border-left-color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
     <div class="toast" id="toast">Notification</div>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan);">AI NAVIGATOR CALCULATING...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">AI BROKER ENGINE RUNNING...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
-        <div class="nav-links">
-            <a onclick="showLanding()">Home</a>
-            <a onclick="showLanding()">Solutions</a>
-            <a onclick="showLanding()">Contact</a>
+        <div class="live-ticker">
+            <div class="ticker-item"><i class="fa-solid fa-droplet"></i> BRENT: <span id="oilPrice">Loading...</span></div>
+            <div class="ticker-item"><i class="fa-solid fa-gas-pump"></i> VLSFO: <span id="fuelPrice">Loading...</span></div>
         </div>
-        <button class="btn-nav" onclick="openLogin()">CLIENT LOGIN</button>
+        <button class="btn-nav" onclick="location.reload()">SYSTEM REBOOT</button>
     </nav>
 
     <div id="landing-view">
         <header class="hero">
             <div class="hero-content">
-                <h1>NEXT GENERATION<br>MARITIME INTELLIGENCE</h1>
-                <p>Advanced routing, real-time bunker costs, and AI-driven commercial decisions for Bulk, Tanker & LNG.</p>
-                <button class="btn-hero" onclick="openLogin()">ENTER PLATFORM</button>
+                <h1>COMMAND THE<br>GLOBAL MARKETS</h1>
+                <p>The ultimate AI-powered maritime intelligence platform. Real-time routing, live bunker indices, and precise voyage estimation.</p>
+                <button class="btn-hero" onclick="openLogin()">ACCESS TERMINAL</button>
             </div>
         </header>
     </div>
@@ -107,52 +129,61 @@ const FRONTEND_HTML = `
         <div class="dash-grid">
             <aside class="sidebar">
                 <h3><i class="fa-solid fa-ship"></i> VESSEL CONFIGURATION</h3>
-                
                 <div class="input-group">
-                    <label>VESSEL CLASS</label>
+                    <label>VESSEL CLASS & TYPE</label>
                     <select id="vType">
-                        <optgroup label="DRY BULK">
-                            <option value="HANDYSIZE">Handysize (35k)</option>
-                            <option value="SUPRAMAX">Supramax (58k)</option>
-                            <option value="PANAMAX">Panamax (82k)</option>
-                            <option value="CAPESIZE">Capesize (180k)</option>
+                        <optgroup label="DRY BULK CARRIERS">
+                            <option value="HANDYSIZE">Handysize (35,000 DWT)</option>
+                            <option value="SUPRAMAX">Supramax (58,000 DWT)</option>
+                            <option value="PANAMAX">Panamax (82,000 DWT)</option>
+                            <option value="CAPESIZE">Capesize (180,000 DWT)</option>
                         </optgroup>
-                        <optgroup label="TANKER">
-                            <option value="MR_TANKER">MR Tanker (50k)</option>
-                            <option value="AFRAMAX">Aframax (115k)</option>
-                            <option value="VLCC">VLCC (300k)</option>
+                        <optgroup label="LIQUID TANKERS">
+                            <option value="MR_TANKER">MR Tanker (50,000 DWT)</option>
+                            <option value="AFRAMAX">Aframax (115,000 DWT)</option>
+                            <option value="VLCC">VLCC (300,000 DWT)</option>
                         </optgroup>
-                        <optgroup label="GAS">
-                            <option value="LNG_STD">LNG Standard (174k)</option>
+                        <optgroup label="GAS CARRIERS">
+                            <option value="LNG_STD">LNG Standard (174k cbm)</option>
                         </optgroup>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>CURRENT POSITION</label>
+                    <label>CURRENT OPEN PORT</label>
                     <input type="text" id="vLoc" list="portList" value="ISTANBUL" oninput="this.value = this.value.toUpperCase()">
                 </div>
+
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
+                
                 <h3><i class="fa-solid fa-globe"></i> COMMERCIAL SCAN</h3>
                 <div class="input-group">
-                    <label>TARGET MARKET</label>
+                    <label>TARGET REGION</label>
                     <select id="vRegion">
-                        <option value="WORLD">GLOBAL (Best Yield)</option>
-                        <option value="AMERICAS">Americas</option>
-                        <option value="ASIA">Asia / Far East</option>
-                        <option value="EUROPE">Europe</option>
-                        <option value="MED">Mediterranean</option>
+                        <option value="WORLD">GLOBAL SEARCH (Maximize Profit)</option>
+                        <option value="AMERICAS">Americas (Atlantic/Pacific)</option>
+                        <option value="ASIA">Asia & Far East</option>
+                        <option value="EUROPE">North Europe & Continent</option>
+                        <option value="MED">Mediterranean & Black Sea</option>
                     </select>
                 </div>
-                <button class="btn-action" onclick="scanMarket()">FIND CARGOES</button>
-                <div id="cargoResultList" class="cargo-list" style="display:none;"></div>
+
+                <button class="btn-action" onclick="scanMarket()">SCAN MARKET OPPORTUNITIES</button>
+
+                <div id="cargoResultList" class="cargo-list" style="display:none;">
+                    </div>
+
                 <datalist id="portList"></datalist>
             </aside>
+
             <div class="map-container">
                 <div id="map"></div>
                 <div class="results-box" id="resBox">
-                    <div class="res-header"><span class="res-title">VOYAGE ESTIMATION</span><i class="fa-solid fa-chart-pie" style="color:var(--neon-cyan)"></i></div>
+                    <div class="res-header">
+                        <span class="res-title">VOYAGE ESTIMATION</span>
+                        <i class="fa-solid fa-chart-pie" style="color:var(--neon-cyan)"></i>
+                    </div>
                     <div id="financialDetails"></div>
-                    <div class="ai-box" id="aiText">Select a cargo...</div>
+                    <div class="ai-box" id="aiText">Select a cargo to view AI analysis...</div>
                 </div>
             </div>
         </div>
@@ -168,8 +199,17 @@ const FRONTEND_HTML = `
         function showLanding() { document.getElementById('dashboard-view').style.display = 'none'; document.getElementById('landing-view').style.display = 'block'; }
         
         async function loadPorts() {
-            try { const res = await fetch('/api/ports'); const ports = await res.json(); 
-            const dl = document.getElementById('portList'); ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
+            try {
+                const res = await fetch('/api/ports');
+                const ports = await res.json();
+                const dl = document.getElementById('portList');
+                ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
+                
+                // Get Live Data
+                const resMarket = await fetch('/api/market-data');
+                const market = await resMarket.json();
+                document.getElementById('oilPrice').innerText = "$" + market.brent.toFixed(2);
+                document.getElementById('fuelPrice').innerText = "$" + market.vlsfo.toFixed(2);
             } catch(e) {}
         }
         loadPorts();
@@ -178,43 +218,78 @@ const FRONTEND_HTML = `
             const shipPos = document.getElementById('vLoc').value.toUpperCase();
             const region = document.getElementById('vRegion').value;
             const vType = document.getElementById('vType').value;
+            
             const loader = document.getElementById('loader');
-            loader.style.display = 'grid'; layerGroup.clearLayers(); document.getElementById('resBox').style.display = 'none'; document.getElementById('cargoResultList').style.display = 'none';
+            loader.style.display = 'grid';
+            document.getElementById('cargoResultList').style.display = 'none';
+            document.getElementById('resBox').style.display = 'none';
+            layerGroup.clearLayers();
 
             try {
                 const res = await fetch(\`/api/broker?shipPos=\${shipPos}&region=\${region}&vType=\${vType}\`);
                 const data = await res.json();
-                if(data.success) displayCargoes(data.cargoes);
-                else alert(data.error);
-            } catch(e) { alert("Error"); } finally { loader.style.display = 'none'; }
+
+                if(data.success) {
+                    displayCargoes(data.cargoes);
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) { alert("Market Scan Error"); } finally { loader.style.display = 'none'; }
         }
 
         function displayCargoes(cargoes) {
-            const list = document.getElementById('cargoResultList'); list.innerHTML = '<div style="font-size:0.75rem; color:#888; margin-bottom:10px;">OPPORTUNITIES:</div>'; list.style.display = 'block';
-            cargoes.forEach(c => {
-                const div = document.createElement('div'); div.className = 'cargo-item';
-                div.innerHTML = \`<div class="c-header"><div class="c-route">\${c.loadPort} -> \${c.dischPort}</div><div class="c-profit">$\${(c.financials.profit/1000).toFixed(1)}k</div></div><div class="c-sub"><span>\${c.commodity}</span><span>\${c.durationDays.toFixed(0)} days</span></div>\`;
-                div.onclick = () => selectCargo(c, div); list.appendChild(div);
+            const list = document.getElementById('cargoResultList');
+            list.innerHTML = '<div style="font-size:0.75rem; color:#888; margin-bottom:10px; font-weight:bold;">LIVE OPPORTUNITIES:</div>';
+            list.style.display = 'block';
+
+            cargoes.forEach((c) => {
+                const div = document.createElement('div');
+                div.className = 'cargo-item';
+                div.innerHTML = \`
+                    <div class="c-header">
+                        <div class="c-route">\${c.loadPort} -> \${c.dischPort}</div>
+                        <div class="c-profit">$\${(c.financials.profit/1000).toFixed(1)}k</div>
+                    </div>
+                    <div class="c-sub">
+                        <span>\${c.commodity} • \${(c.qty/1000).toFixed(1)}k \${c.unit}</span>
+                        <span>\${c.durationDays.toFixed(0)} days</span>
+                    </div>
+                \`;
+                div.onclick = () => selectCargo(c, div);
+                list.appendChild(div);
             });
+            
             if(cargoes.length > 0) selectCargo(cargoes[0], list.children[1]);
         }
 
         function selectCargo(c, el) {
-            document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active')); el.classList.add('active');
+            document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active'));
+            el.classList.add('active');
+
             drawRoute(c.routeGeo, c.loadPort, c.dischPort);
-            
+            updateDetails(c);
+        }
+
+        function updateDetails(c) {
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Cargo</span> <span class="d-val">\${c.commodity} (\${c.qty.toLocaleString()} mt)</span></div>
-                <div class="d-row"><span class="d-lbl">Dist/Time</span> <span class="d-val">\${c.distance} NM / \${c.durationDays.toFixed(1)} d</span></div>
+                <div class="d-row"><span class="d-lbl">Cargo</span> <span class="d-val">\${c.commodity} (\${c.qty.toLocaleString()} \${c.unit})</span></div>
+                <div class="d-row"><span class="d-lbl">Distance / Time</span> <span class="d-val">\${c.distance} NM / \${c.durationDays.toFixed(1)} days</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
-                <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Fuel</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Fees/Port</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
+                
+                <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Bunker (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port Dues</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Canal Fees</span> <span class="d-val neg">-\$\${f.canalFee.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Vessel OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Broker Comm. (3.75%)</span> <span class="d-val neg">-\$\${f.commission.toLocaleString()}</span></div>
+                
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
-                <div class="d-row" style="font-size:1.1rem; margin-top:5px;"><span class="d-lbl" style="color:#fff">PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
+                <div class="d-row" style="font-size:1.2rem; margin-top:10px; font-family:var(--font-tech);">
+                    <span class="d-lbl" style="color:#fff">NET PROFIT</span> 
+                    <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span>
+                </div>
             \`;
             document.getElementById('financialDetails').innerHTML = html;
             document.getElementById('aiText').innerHTML = c.aiAnalysis;
@@ -235,8 +310,11 @@ const FRONTEND_HTML = `
 </html>
 `;
 
-// --- 2. BACKEND VERİSİ ---
+// =================================================================
+// 2. BACKEND (SERVER SIDE INTELLIGENCE)
+// =================================================================
 
+// --- LİMAN VERİTABANI YÜKLEME ---
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -244,24 +322,26 @@ try {
     for (const [key, val] of Object.entries(jsonData)) {
         PORT_DB[key.toUpperCase()] = { lat: val[1], lng: val[0] };
     }
-    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded.`);
-} catch (error) { console.error("Ports Error"); }
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully.`);
+} catch (error) { console.error("❌ Ports Error: ports.json missing."); }
 
+// --- CANLI PİYASA VERİSİ ---
 let MARKET_DATA = { brent: 80.0, vlsfo: 640.0, lastUpdate: 0 };
 async function updateMarketData() {
-    if (Date.now() - MARKET_DATA.lastUpdate < 3600000) return;
+    if (Date.now() - MARKET_DATA.lastUpdate < 3600000) return; // 1 saat cache
     try {
         const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
         const data = await res.json();
         const brentPrice = data.chart.result[0].meta.regularMarketPrice;
         if (brentPrice) {
             MARKET_DATA.brent = brentPrice;
-            MARKET_DATA.vlsfo = brentPrice * 8.2; 
+            MARKET_DATA.vlsfo = brentPrice * 8.2; // Yaklaşık VLSFO korelasyonu
             MARKET_DATA.lastUpdate = Date.now();
         }
     } catch (e) {}
 }
 
+// --- GEMİ TİPLERİ VE ÖZELLİKLERİ ---
 const VESSEL_SPECS = {
     "HANDYSIZE": { type: "BULK", dwt: 35000, speed: 13.0, cons: 22, opex: 4500 },
     "SUPRAMAX":  { type: "BULK", dwt: 58000, speed: 13.5, cons: 28, opex: 5500 },
@@ -274,37 +354,44 @@ const VESSEL_SPECS = {
 };
 
 const COMMODITY_DB = {
-    "BULK": [{name:"Steel",rate:35}, {name:"Grain",rate:28}, {name:"Coal",rate:22}, {name:"Ore",rate:18}],
-    "TANKER": [{name:"Crude",rate:25}, {name:"Diesel",rate:30}, {name:"Naptha",rate:28}],
+    "BULK": [{name:"Steel Products",rate:35}, {name:"Bulk Wheat",rate:28}, {name:"Thermal Coal",rate:22}, {name:"Iron Ore",rate:18}],
+    "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}],
     "GAS": [{name:"LNG",rate:85}, {name:"LPG",rate:65}]
 };
 
-// --- GLOBAL SEA HIGHWAY GRID (DENİZ OTOYOLU AĞI - V17) ---
-// Bu noktalar gemilerin karaya çarpmasını engeller ve gerçekçi rota çizer.
-const SEA_HUBS = {
-    // 1. BOĞAZLAR VE KANALLAR
-    BOSPHORUS: [29.0, 41.1],
-    DARDANELLES: [26.4, 40.2],
-    GIBRALTAR: [-5.6, 35.95],
-    SUEZ_N: [32.55, 31.3],
-    SUEZ_S: [32.56, 29.9],
-    BAB_EL_MANDEB: [43.4, 12.6],
-    MALACCA: [103.8, 1.3],
-    PANAMA_ATL: [-79.9, 9.3],
-    PANAMA_PAC: [-79.5, 8.9],
-    ENGLISH_CHANNEL: [-1.0, 50.0],
-    SKAGEN: [10.6, 57.7], // Baltık Girişi
+// --- ROTA AĞI (WAYPOINT SİSTEMİ - KARADAN UÇMAYI ENGELLEMEK İÇİN) ---
+const SEA_NETWORK = {
+    // 1. KARADENİZ & EGE ÇIKIŞI (ZORUNLU)
+    BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
+    MARMARA: [[28.5, 40.8], [27.5, 40.7]],
+    DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
+    AEGEAN_EXIT: [[25.8, 39.5], [25.0, 38.0], [24.5, 37.0], [23.5, 36.0]],
     
-    // 2. STRATEJİK DÖNÜŞ NOKTALARI
-    AEGEAN_EXIT: [23.5, 36.0], // Mora Güneyi
-    MED_CENTRAL: [12.0, 37.2], // Sicilya-Tunus
-    FINISTERRE: [-10.0, 43.0], // İspanya Köşesi
-    USHANT: [-6.0, 48.5], // Fransa Köşesi
-    AZORES: [-25.0, 38.0], // Orta Atlantik
-    FLORIDA_STRAIT: [-80.0, 24.5], // Key West
-    CAPE_HATTERAS: [-75.0, 35.0], // US East Coast Off
-    GOOD_HOPE: [18.5, -35.0], // Ümit Burnu
-    SRI_LANKA: [80.6, 5.8] // Hint Okyanusu Ucu
+    // 2. AKDENİZ
+    MED_EAST: [[20.0, 35.5], [15.0, 36.0]],
+    MED_CENTRAL: [[12.0, 37.5], [11.0, 37.2]],
+    MED_WEST: [[8.0, 37.5], [4.0, 37.5], [0.0, 37.0], [-3.0, 36.5]],
+    GIBRALTAR: [[-5.3, 36.0], [-5.8, 35.9]],
+    
+    // 3. KUZEY AVRUPA ÇIKIŞI
+    ENGLISH_CHANNEL: [[1.5, 51.0], [-1.0, 50.0], [-5.0, 49.0]],
+    USHANT: [[-6.0, 48.5]],
+    FINISTERRE: [[-10.0, 43.5]],
+
+    // 4. ATLANTİK GEÇİŞLERİ (GREAT CIRCLE CORRECTION)
+    ATLANTIC_NORTH: [[-20.0, 38.0], [-30.0, 40.0], [-40.0, 41.5], [-50.0, 41.0], [-60.0, 40.0], [-68.0, 40.0], [-72.0, 40.2]],
+    ATLANTIC_SOUTH: [[-20.0, 30.0], [-40.0, 25.0], [-60.0, 20.0]], // Brezilya'ya gidiş
+
+    // 5. ASYA YOLLARI
+    SUEZ_CANAL: [[32.55, 31.25], [32.56, 29.92]],
+    RED_SEA: [[34.0, 27.0], [38.0, 22.0], [42.0, 15.0], [43.4, 12.6]],
+    INDIAN_OCEAN: [[50.0, 12.0], [60.0, 10.0], [75.0, 6.0], [80.5, 5.8], [95.0, 5.8]],
+    MALACCA: [[100.0, 3.0], [103.8, 1.3]],
+    SOUTH_CHINA_SEA: [[105.0, 5.0], [110.0, 10.0], [115.0, 15.0]],
+    
+    // 6. AMERİKA İÇİ
+    FLORIDA_STRAIT: [[-80.0, 24.5]],
+    GULF_ENTRY: [[-82.0, 24.0], [-85.0, 25.0]]
 };
 
 function calculateDistance(coord1, coord2) {
@@ -317,7 +404,6 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- AKILLI ROTA MOTORU (GRAPH ROUTING) ---
 function getSmartRoute(startPort, endPort) {
     const start = [startPort.lng, startPort.lat];
     const end = [endPort.lng, endPort.lat];
@@ -325,85 +411,84 @@ function getSmartRoute(startPort, endPort) {
     let routeDesc = "Direct";
     let canal = "NONE";
 
+    // Bölge Tanımları
     const isBlackSea = (p) => p.lng > 27 && p.lat > 40.8 && p.lat < 47;
     const isMarmara = (p) => p.lng > 27 && p.lng < 30 && p.lat > 40 && p.lat < 41.2;
     const isMed = (p) => p.lat > 30 && p.lat < 46 && p.lng > -6 && p.lng < 36 && !isBlackSea(p);
     const isNorthEurope = (p) => p.lat > 48 && p.lng > -10 && p.lng < 30;
     const isAmericas = (p) => p.lng < -30;
     const isAsia = (p) => p.lng > 60;
-    const isGulf = (p) => p.lng < -80 && p.lat < 31 && p.lat > 18; // Meksika Körfezi
+    const isGulf = (p) => p.lng < -80 && p.lat < 31 && p.lat > 18;
 
-    // 1. KARADENİZ ÇIKIŞ PROTOKOLÜ (Fix for Turkey Cut)
-    if (isBlackSea(startPort) || isMarmara(startPort)) {
-        if(isBlackSea(startPort)) path.push(SEA_HUBS.BOSPHORUS);
-        path.push(SEA_HUBS.DARDANELLES);
-        path.push(SEA_HUBS.AEGEAN_EXIT);
-    } else if (isMed(startPort) && startPort.lng > 24) {
-        path.push(SEA_HUBS.AEGEAN_EXIT);
+    // --- ROTA MANTIĞI ---
+
+    // 1. ÇIKIŞ MANEVRALARI
+    // Karadeniz'den çıkıyorsa Boğazları ekle
+    if (isBlackSea(startPort)) {
+        path = path.concat(SEA_NETWORK.BOSPHORUS);
+        path = path.concat(SEA_NETWORK.MARMARA);
+        path = path.concat(SEA_NETWORK.DARDANELLES);
+        path = path.concat(SEA_NETWORK.AEGEAN_EXIT);
+    } else if (isMarmara(startPort)) {
+        path = path.concat(SEA_NETWORK.DARDANELLES);
+        path = path.concat(SEA_NETWORK.AEGEAN_EXIT);
+    } else if (isNorthEurope(startPort) && (isMed(endPort) || isAmericas(endPort) || isAsia(endPort))) {
+        path = path.concat(SEA_NETWORK.ENGLISH_CHANNEL, SEA_NETWORK.USHANT, SEA_NETWORK.FINISTERRE);
     }
 
-    // 2. KUZEY AVRUPA ÇIKIŞ PROTOKOLÜ (Fix for Spain/France Cut)
-    if (isNorthEurope(startPort) && (isMed(endPort) || isAsia(endPort) || isAmericas(endPort))) {
-        path.push(SEA_HUBS.ENGLISH_CHANNEL);
-        path.push(SEA_HUBS.USHANT);
-        path.push(SEA_HUBS.FINISTERRE);
-    }
-
-    // 3. AMERİKA GİDİŞ (ATLANTİK GEÇİŞİ)
-    if (isAmericas(endPort) && (isMed(startPort) || isBlackSea(startPort) || isNorthEurope(startPort))) {
-        // Avrupa/Akdeniz'den geliyorsa
-        if (!isNorthEurope(startPort)) { // Akdeniz'den geliyorsa önce Gibraltar
-            path.push(SEA_HUBS.MED_CENTRAL);
-            path.push(SEA_HUBS.GIBRALTAR);
+    // 2. ANA GEÇİŞLER
+    // Amerika'ya Gidiş
+    if (isAmericas(endPort)) {
+        // Akdeniz veya Karadenizden geliyorsa
+        if (isMed(startPort) || isBlackSea(startPort) || isMarmara(startPort)) {
+            // Ege'den sonra Akdeniz'i geç
+            path = path.concat(SEA_NETWORK.MED_EAST, SEA_NETWORK.MED_CENTRAL, SEA_NETWORK.MED_WEST, SEA_NETWORK.GIBRALTAR);
         }
-        // Ortak Atlantik Rotası
-        path.push(SEA_HUBS.AZORES);
+        // Atlantik Geçişi
+        if(endPort.lat < 10) { // Güney Amerika
+            path = path.concat(SEA_NETWORK.ATLANTIC_SOUTH);
+        } else { // Kuzey Amerika
+            path = path.concat(SEA_NETWORK.ATLANTIC_NORTH);
+        }
+        // Florida/Körfez Girişi
+        if(isGulf(endPort)) path = path.concat(SEA_NETWORK.FLORIDA_STRAIT, SEA_NETWORK.GULF_ENTRY);
         
-        // Amerika Varış (Florida/Gulf ise aşağı kır)
-        if (isGulf(endPort)) {
-            path.push(SEA_HUBS.FLORIDA_STRAIT);
-        } else {
-            path.push(SEA_HUBS.CAPE_HATTERAS);
-        }
         path.push(end);
         routeDesc = "Trans-Atlantic";
     }
-    // 4. ASYA GİDİŞ (SÜVEYŞ)
+    // Asya'ya Gidiş (Süveyş)
     else if (isAsia(endPort) && (isMed(startPort) || isNorthEurope(startPort) || isBlackSea(startPort))) {
-        if (!isNorthEurope(startPort) && !isBlackSea(startPort)) path.push(SEA_HUBS.MED_CENTRAL); // Akdeniz ortası
-        path.push(SEA_HUBS.SUEZ_N);
-        path.push(SEA_HUBS.SUEZ_S);
-        path.push(SEA_HUBS.BAB_EL_MANDEB);
-        path.push(SEA_HUBS.SRI_LANKA);
-        path.push(SEA_HUBS.MALACCA);
+        // Kuzey Avrupa'dan geliyorsa Cebelitarık'a in
+        if (isNorthEurope(startPort)) path = path.concat(SEA_NETWORK.GIBRALTAR);
+        // Akdeniz'den geliyorsa (tersine çevirme mantığı veya direkt ekleme)
+        // Burada basitlik için direkt Süveyş'e bağlıyoruz
+        path = path.concat(SEA_NETWORK.SUEZ_CANAL, SEA_NETWORK.RED_SEA, SEA_NETWORK.INDIAN_OCEAN, SEA_NETWORK.MALACCA);
+        if(endPort.lat > 20) path = path.concat(SEA_NETWORK.SOUTH_CHINA_SEA);
         path.push(end);
-        routeDesc = "Via Suez & Malacca";
+        routeDesc = "Via Suez Canal";
         canal = "SUEZ";
     }
-    // DİĞER
     else {
         path.push(end);
     }
 
-    // Mesafe
+    // Mesafe Hesapla
     let dist = 0;
     for(let i=0; i<path.length-1; i++) dist += calculateDistance(path[i], path[i+1]);
     
-    return { 
-        path: { type: "LineString", coordinates: path }, 
-        dist: Math.round(dist * 1.1),
-        desc: routeDesc,
-        canal: canal
-    };
+    return { path: { type: "LineString", coordinates: path }, dist: Math.round(dist * 1.1), desc: routeDesc, canal: canal };
 }
 
-// --- BROKER ENGINE ---
+// --- 3. BROKER ENGINE ---
 function generateAIAnalysis(profit, routeDesc, duration, revenue, vType) {
     const margin = (profit / revenue) * 100;
-    let text = `<strong>AI ANALYSIS (${vType}):</strong><br>Route: ${routeDesc}. Time: ${duration.toFixed(1)} days.<br>`;
-    if (margin > 20) text += `<span style="color:#00ff9d">STRONG FIX. High margin (${margin.toFixed(1)}%). Recommended.</span>`;
-    else if (margin > 0) text += `<span style="color:#ffb700">Marginal return. Good for repositioning.</span>`;
-    else text += `<span style="color:#ff0055">NEGATIVE YIELD. Avoid unless strategic.</span>`;
+    let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
+    text += `Route: ${routeDesc} (${duration.toFixed(1)} days).<br>`;
+    
+    if (margin > 25) text += `<span style="color:#00ff9d">HIGH YIELD. Strong recommendation. Fix immediately.</span>`;
+    else if (margin > 10) text += `<span style="color:#00f2ff">Solid fixture. Above market average.</span>`;
+    else if (margin > 0) text += `<span style="color:#ffb700">Marginal return. Use for repositioning only.</span>`;
+    else text += `<span style="color:#ff0055">NEGATIVE. High risk. Avoid unless COA commitment.</span>`;
     return text;
 }
 
@@ -426,7 +511,7 @@ function findOpportunities(shipPosName, region, vType) {
         return true;
     });
 
-    for(let i=0; i<5; i++) {
+    for(let i=0; i<6; i++) {
         if(targets.length === 0) break;
         const destName = targets[Math.floor(Math.random() * targets.length)];
         const route = getSmartRoute(shipPort, PORT_DB[destName]);
@@ -442,14 +527,17 @@ function findOpportunities(shipPosName, region, vType) {
         const portDues = 40000 + (specs.dwt * 0.4);
         let canalFee = route.canal === "SUEZ" ? 180000 + (specs.dwt * 0.5) : 0;
         
-        const profit = revenue - (fuelCost + opex + portDues + canalFee + (revenue*0.0375));
+        const commission = revenue * 0.0375;
+        const totalExp = fuelCost + opex + portDues + canalFee + commission;
+        const profit = revenue - totalExp;
+
         const aiText = generateAIAnalysis(profit, route.desc, duration, revenue, vType);
 
-        if(profit > -50000) {
+        if(profit > -100000) { // Show all reasonable options
             opportunities.push({
                 loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
                 routeGeo: route.path, distance: route.dist, durationDays: duration, aiAnalysis: aiText,
-                financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(revenue*0.0375), profit: Math.round(profit) }
+                financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
             });
         }
     }
@@ -459,6 +547,7 @@ function findOpportunities(shipPosName, region, vType) {
 // --- API ROUTES ---
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
+app.get('/api/market-data', async (req, res) => { await updateMarketData(); res.json(MARKET_DATA); });
 app.get('/api/broker', async (req, res) => {
     const { shipPos, region, vType } = req.query;
     if (!PORT_DB[shipPos]) return res.json({ success: false, error: "Unknown Port" });
@@ -467,4 +556,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V17 (GLOBAL NAVIGATOR) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V19 (FINAL STRIKE) running on port ${port}`));
