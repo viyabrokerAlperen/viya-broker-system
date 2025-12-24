@@ -1,5 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs'; // Dosya okumak için
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -7,8 +13,53 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- 1. FRONTEND KODU (HTML/CSS/JS) ---
-// HTML'i doğrudan buradan sunuyoruz. Dosya derdi yok.
+// --- 1. LİMAN VERİTABANINI YÜKLE (ports.json) ---
+let PORT_DB = {};
+try {
+    // ports.json dosyasını senkron olarak oku
+    const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
+    const jsonData = JSON.parse(rawData);
+    
+    // Veriyi bizim formatımıza çevir (eğer format farklıysa)
+    // Senin attığın format: "shanghai": [121.47, 31.23] (Lng, Lat)
+    // Bizim kullandığımız: "SHANGHAI": { lat: 31.23, lng: 121.47 }
+    for (const [key, val] of Object.entries(jsonData)) {
+        PORT_DB[key.toUpperCase()] = { lat: val[1], lng: val[0] };
+    }
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully!`);
+} catch (error) {
+    console.error("❌ Error loading ports.json:", error.message);
+    // Fallback (Hata olursa en azından bunlar çalışsın)
+    PORT_DB = {
+        "ISTANBUL": { lat: 41.00, lng: 28.97 },
+        "NEW YORK": { lat: 40.71, lng: -74.00 }
+    };
+}
+
+// --- 2. WAYPOINTS (NO-FLY ZONES) ---
+const WAYPOINTS = {
+    "GIBRALTAR": [-5.6, 35.95],
+    "SUEZ_N": [32.56, 31.26],
+    "SUEZ_S": [32.56, 29.92],
+    "BAB_EL_MANDEB": [43.4, 12.6],
+    "SRI_LANKA": [80.6, 5.9],
+    "MALACCA": [103.8, 1.3],
+    "AEGEAN_EXIT": [26.0, 36.0],
+    "ATLANTIC_MID": [-40.0, 35.0]
+};
+
+function calculateDistance(coord1, coord2) {
+    const R = 3440; // NM
+    const lat1 = coord1[1]; const lon1 = coord1[0];
+    const lat2 = coord2[1]; const lon2 = coord2[0];
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// --- FRONTEND KODU (AYNEN KORUNDU) ---
 const FRONTEND_HTML = `
 <!DOCTYPE html>
 <html lang="en">
@@ -108,14 +159,19 @@ const FRONTEND_HTML = `
             <aside class="sidebar">
                 <h3><i class="fa-solid fa-ship"></i> VESSEL & POSITION</h3>
                 <div class="input-group"><label>VESSEL TYPE</label><select id="vType"><option value="Dry Bulk Carrier">Dry Bulk Carrier</option><option value="Crude Oil Tanker">Crude Oil Tanker</option><option value="Container Ship">Container Ship</option><option value="LNG Carrier">LNG Carrier</option></select></div>
-                <datalist id="portList"><option value="ISTANBUL"><option value="ROTTERDAM"><option value="HAMBURG"><option value="NEW YORK"><option value="HOUSTON"><option value="SANTOS"><option value="SHANGHAI"><option value="SINGAPORE"><option value="TOKYO"><option value="JEBEL ALI"><option value="GIBRALTAR"><option value="SUEZ"><option value="RICHARDS BAY"><option value="NOVOROSSIYSK"><option value="CONSTANTA"></datalist>
+                <datalist id="portList">
+                    <option value="ISTANBUL"><option value="ROTTERDAM"><option value="NEW YORK"><option value="SHANGHAI"><option value="SINGAPORE">
+                    <option value="ALIAGA"><option value="MERSIN"><option value="AMBARLI"><option value="IZMIT">
+                    <option value="HOUSTON"><option value="SANTOS"><option value="BUSAN"><option value="JEBEL ALI">
+                    <option value="TOKYO"><option value="LOS ANGELES"><option value="HAMBURG"><option value="ANTWERP">
+                </datalist>
                 <div class="input-group"><label>ORIGIN PORT</label><input type="text" id="vLoc" list="portList" value="ISTANBUL" placeholder="Start Port..." oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="input-group"><label>DESTINATION PORT</label><input type="text" id="vRegion" list="portList" value="NEW YORK" placeholder="End Port..." oninput="this.value = this.value.toUpperCase()"></div>
                 <div class="sidebar-divider"></div>
                 <div class="input-group"><label>CARGO QTY (MT)</label><input type="number" id="vCargo" value="50000"></div>
                 <div class="input-group"><label>FREIGHT RATE ($/MT)</label><input type="number" id="vFreight" value="24.5"></div>
                 <button class="btn-hero" onclick="runCalculation()" style="width:100%; margin-top:20px; font-size:0.9rem; padding:12px;">CALCULATE VOYAGE</button>
-                <div style="margin-top:auto; font-size:0.7rem; color:#444; text-align:center;">Port Database: <span style="color:var(--neon-cyan)">CONNECTED</span><br>Status: <span style="color:var(--success)">ONLINE</span></div>
+                <div style="margin-top:auto; font-size:0.7rem; color:#444; text-align:center;">Port Database: <span style="color:var(--neon-cyan)">CONNECTED</span><br>Route Engine: <span style="color:var(--success)">V8 (SMOOTH+DASHED)</span></div>
             </aside>
             <div class="map-container">
                 <div id="map"></div>
@@ -167,15 +223,37 @@ const FRONTEND_HTML = `
         }
 
         function renderRoute(geoJSON, startLabel, endLabel) {
-            L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.9 } }).addTo(layerGroup);
+            // DASHED & GLOWING CURVED ROUTE
+            let smoothGeo = geoJSON;
+            try {
+                const line = turf.lineString(geoJSON.coordinates);
+                smoothGeo = turf.bezierSpline(line, { resolution: 10000, sharpness: 0.5 });
+            } catch(e) { console.log("Smoothing skip"); }
+
+            // 1. GLOW (PARLAMA) - SABİT
+            L.geoJSON(smoothGeo, { style: { color: '#00f2ff', weight: 8, opacity: 0.3 } }).addTo(layerGroup);
+            
+            // 2. ANA ROTA ÇİZGİSİ - KESİK (DASHED)
+            L.geoJSON(smoothGeo, { 
+                style: { 
+                    color: '#00f2ff', 
+                    weight: 3, 
+                    opacity: 1,
+                    dashArray: '10, 15', // KESİK ÇİZGİ EFEKTİ
+                    lineCap: 'round'
+                } 
+            }).addTo(layerGroup);
+
             const c = geoJSON.coordinates;
             // Leaflet LatLng vs GeoJSON LngLat fix
             const start = [c[0][1], c[0][0]];
             const end = [c[c.length-1][1], c[c.length-1][0]];
             L.circleMarker(start, {radius:5, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(startLabel);
             L.circleMarker(end, {radius:5, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup(endLabel);
-            const line = L.geoJSON(geoJSON, { style: { color: '#fff', weight: 0, opacity: 0 } }).addTo(layerGroup);
-            map.fitBounds(line.getBounds(), {padding: [50, 50]});
+            
+            // Fit Bounds
+            const boundsLine = L.geoJSON(smoothGeo, {style:{opacity:0}});
+            map.fitBounds(boundsLine.getBounds(), {padding: [50, 50]});
         }
 
         function updateUI(distStr, f, aiText) {
@@ -210,53 +288,6 @@ const FRONTEND_HTML = `
 </html>
 `;
 
-// --- 2. BACKEND (HESAPLAMA MOTORU) ---
-
-// PORT DATABASE
-const PORT_DB = {
-    "ISTANBUL": { lat: 41.00, lng: 28.97 },
-    "ROTTERDAM": { lat: 51.90, lng: 4.40 },
-    "HAMBURG": { lat: 53.55, lng: 9.99 },
-    "ANTWERP": { lat: 51.21, lng: 4.40 },
-    "NEW YORK": { lat: 40.71, lng: -74.00 },
-    "HOUSTON": { lat: 29.76, lng: -95.36 },
-    "SANTOS": { lat: -23.96, lng: -46.33 },
-    "SHANGHAI": { lat: 31.23, lng: 121.47 },
-    "SINGAPORE": { lat: 1.29, lng: 103.81 },
-    "TOKYO": { lat: 35.68, lng: 139.69 },
-    "JEBEL ALI": { lat: 25.02, lng: 55.02 },
-    "GIBRALTAR": { lat: 36.14, lng: -5.35 },
-    "SUEZ": { lat: 29.97, lng: 32.55 },
-    "RICHARDS BAY": { lat: -28.78, lng: 32.03 },
-    "NOVOROSSIYSK": { lat: 44.71, lng: 37.77 },
-    "CONSTANTA": { lat: 44.17, lng: 28.63 },
-    "LONDON": { lat: 51.50, lng: 0.12 },
-    "BARCELONA": { lat: 41.38, lng: 2.17 }
-};
-
-// WAYPOINTS
-const WAYPOINTS = {
-    "GIBRALTAR": [-5.6, 35.95],
-    "SUEZ_N": [32.56, 31.26],
-    "SUEZ_S": [32.56, 29.92],
-    "BAB_EL_MANDEB": [43.4, 12.6],
-    "SRI_LANKA": [80.6, 5.9],
-    "MALACCA": [103.8, 1.3],
-    "AEGEAN_EXIT": [26.0, 36.0],
-    "ATLANTIC_MID": [-40.0, 35.0]
-};
-
-function calculateDistance(coord1, coord2) {
-    const R = 3440; // NM
-    const lat1 = coord1[1]; const lon1 = coord1[0];
-    const lat2 = coord2[1]; const lon2 = coord2[0];
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
 // --- ANA ROUTE (Kullanıcı siteye girince HTML'i ver) ---
 app.get('/', (req, res) => {
     res.send(FRONTEND_HTML);
@@ -272,6 +303,7 @@ app.get('/sefer_onerisi', (req, res) => {
         const dwt = parseInt(req.query.dwt) || 50000;
         const hiz = 13.5;
 
+        // JSON'dan Limanı Bul
         const startPort = PORT_DB[originName];
         const endPort = PORT_DB[destName];
 
@@ -285,6 +317,7 @@ app.get('/sefer_onerisi', (req, res) => {
         const startCoords = [startPort.lng, startPort.lat];
         const endCoords = [endPort.lng, endPort.lat];
 
+        // COĞRAFİ KONTROLLER
         const isMed = (lat, lng) => (lat > 30 && lat < 46 && lng > -6 && lng < 36);
         const isAmericas = (lng) => (lng < -30);
         const isAsia = (lng) => (lng > 60);
