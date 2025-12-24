@@ -173,3 +173,24 @@ app.get('/sefer_onerisi', (req, res) => {
                             netKarUSD: Math.round(netProfit),
                             detaylar: {
                                 fuel: Math.round(fuelCost),
+                                opex: Math.round(totalOpex),
+                                port: Math.round(portDues),
+                                canal: Math.round(canalFee)
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+
+        res.json(responseData);
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ basari: false, error: "Internal Server Error" });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`VIYA BROKER Server listening on port ${port}`);
+});
