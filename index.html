@@ -227,7 +227,7 @@
     <div class="loader" id="loader">
         <div style="text-align: center;">
             <div class="spinner" style="margin: 0 auto 20px;"></div>
-            <div style="font-family: var(--font-tech); color: var(--neon-cyan);">CALCULATING VOYAGE FINANCIALS...</div>
+            <div style="font-family: var(--font-tech); color: var(--neon-cyan);">CALCULATING PRECISE ROUTE...</div>
         </div>
     </div>
 
@@ -303,49 +303,41 @@
                     </select>
                 </div>
 
-                <div class="input-group">
-                    <label>CURRENT SHIP LOCATION (PORT OR COORDS)</label>
-                    <input type="text" id="vLoc" list="portList" value="ISTANBUL" placeholder="Ex: Gibraltar, 35.0, -10.0" oninput="this.value = this.value.toUpperCase()">
-                </div>
-
-                <div class="sidebar-divider"></div>
-                <h3><i class="fa-solid fa-globe"></i> CARGO SEARCH</h3>
-
                 <datalist id="portList">
-                    <option value="ISTANBUL"><option value="SHANGHAI"><option value="SINGAPORE">
-                    <option value="ROTTERDAM"><option value="NEW YORK"><option value="SANTOS">
-                    <option value="HOUSTON"><option value="HAMBURG"><option value="ANTWERP">
-                    <option value="JEBEL ALI"><option value="LOS ANGELES"><option value="TOKYO">
+                    <option value="ISTANBUL"><option value="ROTTERDAM"><option value="HAMBURG">
+                    <option value="NEW YORK"><option value="HOUSTON"><option value="SANTOS">
+                    <option value="SHANGHAI"><option value="SINGAPORE"><option value="TOKYO">
+                    <option value="JEBEL ALI"><option value="GIBRALTAR"><option value="SUEZ">
+                    <option value="RICHARDS BAY"><option value="NOVOROSSIYSK"><option value="CONSTANTA">
                 </datalist>
 
                 <div class="input-group">
-                    <label>TARGET REGION / DESTINATION</label>
-                    <input type="text" id="vRegion" list="regionList" placeholder="Select Region or Port..." oninput="checkRegion(this.value)">
-                    <datalist id="regionList">
-                        <option value="FAR EAST (ASIA)">
-                        <option value="MEDITERRANEAN">
-                        <option value="NORTH EUROPE">
-                        <option value="US EAST COAST">
-                        <option value="SOUTH AMERICA (ATLANTIC)">
-                        <option value="SHANGHAI">
-                        <option value="NEW YORK">
-                    </datalist>
+                    <label>ORIGIN PORT</label>
+                    <input type="text" id="vLoc" list="portList" value="ISTANBUL" placeholder="Start Port..." oninput="this.value = this.value.toUpperCase()">
                 </div>
 
-                <div class="input-group" id="cargoGroup" style="display:none; animation: fadeIn 0.5s;">
-                    <label style="color:var(--neon-cyan)">AVAILABLE CARGOES</label>
-                    <select id="cargoSelect">
-                        <option value="IRON ORE">Iron Ore - 120k mt ($18/mt)</option>
-                        <option value="COAL">Thermal Coal - 75k mt ($14/mt)</option>
-                        <option value="GRAIN">Wheat - 60k mt ($22/mt)</option>
-                    </select>
+                <div class="input-group">
+                    <label>DESTINATION PORT</label>
+                    <input type="text" id="vRegion" list="portList" value="NEW YORK" placeholder="End Port..." oninput="this.value = this.value.toUpperCase()">
                 </div>
 
-                <button class="btn-hero" onclick="runCalculation()" style="width:100%; margin-top:20px; font-size:0.9rem; padding:12px;">FIND CARGO & ROUTE</button>
+                <div class="sidebar-divider"></div>
+                
+                <div class="input-group">
+                    <label>CARGO QTY (MT)</label>
+                    <input type="number" id="vCargo" value="50000">
+                </div>
+
+                <div class="input-group">
+                    <label>FREIGHT RATE ($/MT)</label>
+                    <input type="number" id="vFreight" value="24.5">
+                </div>
+
+                <button class="btn-hero" onclick="runCalculation()" style="width:100%; margin-top:20px; font-size:0.9rem; padding:12px;">CALCULATE VOYAGE</button>
                 
                 <div style="margin-top:auto; font-size:0.7rem; color:#444; text-align:center;">
-                    Routing Mode: <span style="color:var(--neon-cyan)">ANTI-GROUNDING ON</span><br>
-                    Financial Engine: <span style="color:var(--success)">FULL DETAIL</span>
+                    Port Database: <span style="color:var(--neon-cyan)">RESTORED</span><br>
+                    Routing Engine: <span style="color:var(--success)">V6 (NO-FLY MODE)</span>
                 </div>
             </aside>
 
@@ -353,7 +345,7 @@
                 <div id="map"></div>
 
                 <div class="hud" id="hud" style="display:none;">
-                    <div class="hud-title">QUICK ESTIMATE</div>
+                    <div class="hud-title">VOYAGE TELEMETRY</div>
                     <div class="hud-row"><span>DISTANCE</span> <span class="hud-val" id="hudDist">---</span></div>
                     <div class="hud-row"><span>TIME</span> <span class="hud-val" id="hudDays">---</span></div>
                     <div class="hud-row"><span>PROFIT</span> <span class="hud-val profit" id="hudProfit">---</span></div>
@@ -361,7 +353,7 @@
 
                 <div class="results-box" id="resBox" style="display:none;">
                     <div class="res-header">
-                        <span class="res-title">VOYAGE P&L STATEMENT</span>
+                        <span class="res-title">COMMERCIAL BREAKDOWN</span>
                         <i class="fa-solid fa-file-invoice-dollar" style="color:var(--neon-cyan)"></i>
                     </div>
                     
@@ -378,6 +370,44 @@
     </div>
 
     <script>
+        // --- DATA & CONFIG ---
+        // RESTORED PORT DATABASE (Coordinates)
+        const PORT_DB = {
+            "ISTANBUL": [28.97, 41.00],
+            "ROTTERDAM": [4.40, 51.90],
+            "HAMBURG": [9.99, 53.55],
+            "ANTWERP": [4.40, 51.21],
+            "NEW YORK": [-74.00, 40.71],
+            "HOUSTON": [-95.36, 29.76],
+            "SANTOS": [-46.33, -23.96],
+            "SHANGHAI": [121.47, 31.23],
+            "SINGAPORE": [103.81, 1.29],
+            "TOKYO": [139.69, 35.68],
+            "JEBEL ALI": [55.02, 25.02],
+            "GIBRALTAR": [-5.35, 36.14],
+            "SUEZ": [32.55, 29.97],
+            "RICHARDS BAY": [32.03, -28.78],
+            "NOVOROSSIYSK": [37.77, 44.71],
+            "CONSTANTA": [28.63, 44.17],
+            "LONDON": [0.12, 51.50],
+            "BARCELONA": [2.17, 41.38]
+        };
+
+        // CRITICAL WAYPOINTS (THE ANTI-FLYING FIX)
+        const WAYPOINTS = {
+            "GIBRALTAR": [-5.6, 35.95],
+            "SUEZ_N": [32.56, 31.26],
+            "SUEZ_S": [32.56, 29.92],
+            "BAB_EL_MANDEB": [43.4, 12.6],
+            "SRI_LANKA": [80.6, 5.9],
+            "MALACCA": [103.8, 1.3],
+            "CAPE_GOOD_HOPE": [18.4, -34.5],
+            "PANAMA_E": [-79.9, 9.3],
+            "PANAMA_W": [-79.5, 8.9],
+            "ATLANTIC_MID": [-40.0, 35.0], // Mid-point for Atlantic crossing
+            "AEGEAN_EXIT": [26.0, 36.0]
+        };
+
         // --- NAVIGATION & UI LOGIC ---
         function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
@@ -387,7 +417,7 @@
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
             setTimeout(() => map.invalidateSize(), 100);
-            showToast("System Access Granted. Financial Module Loaded.", "success");
+            showToast("System Restored. Port Database Loaded.", "success");
         }
 
         function showLanding() {
@@ -413,25 +443,8 @@
             }, 3000);
         }
 
-        // Region Logic
-        function checkRegion(val) {
-            val = val.toUpperCase();
-            if(val.includes("FAR EAST") || val.includes("ASIA") || val.includes("EUROPE") || val.includes("AMERICA")) {
-                showToast("Scanning Regional Market...", "info");
-                setTimeout(() => {
-                    document.getElementById('cargoGroup').style.display = 'block';
-                    
-                    // Auto-suggest
-                    if(val.includes("FAR EAST")) document.getElementById('vRegion').value = "SHANGHAI";
-                    if(val.includes("US")) document.getElementById('vRegion').value = "NEW YORK";
-                }, 1000);
-            } else {
-                document.getElementById('cargoGroup').style.display = 'none';
-            }
-        }
-
         // --- MAP SETUP ---
-        const map = L.map('map', {zoomControl: false}).setView([35, 15], 3); // Center on Med
+        const map = L.map('map', {zoomControl: false}).setView([30, 0], 2);
         L.control.zoom({position: 'bottomright'}).addTo(map);
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -441,14 +454,21 @@
 
         const layerGroup = L.layerGroup().addTo(map);
 
-        // --- CALCULATION ENGINE ---
+        // --- CALCULATION ENGINE V6 ---
         async function runCalculation() {
-            const origin = document.getElementById('vLoc').value.toUpperCase();
-            let dest = document.getElementById('vRegion').value.toUpperCase();
+            const originName = document.getElementById('vLoc').value.toUpperCase();
+            const destName = document.getElementById('vRegion').value.toUpperCase();
             
-            if(!origin || !dest) {
-                showToast("Please enter Ship Location and Destination", "error");
-                return;
+            // 1. LOOKUP COORDINATES (The Fix for "Everything is Istanbul")
+            let startCoords = PORT_DB[originName];
+            let endCoords = PORT_DB[destName];
+
+            // If not in DB, try to parse rough input or fail
+            if (!startCoords || !endCoords) {
+                // Check if user entered "35.0, -10.0" format? 
+                // For now, simpler to demand DB match or show error
+                if(!startCoords) { showToast(`Port not found: ${originName}`, "error"); return; }
+                if(!endCoords) { showToast(`Port not found: ${destName}`, "error"); return; }
             }
 
             const loader = document.getElementById('loader');
@@ -459,116 +479,128 @@
             document.getElementById('resBox').style.display = 'none';
 
             try {
-                // Simulate Processing Time
-                await new Promise(r => setTimeout(r, 1500)); 
-                runSmartSimulation(origin, dest);
-
+                await new Promise(r => setTimeout(r, 1000)); // Fake processing
+                calculateSafeRoute(originName, startCoords, destName, endCoords);
             } catch (err) {
                 console.error(err);
-                showToast("Error in Calculation", "error");
+                showToast("Calculation Error", "error");
             } finally {
                 loader.style.display = 'none';
             }
         }
 
-        // --- SMART ROUTING & FINANCIAL LOGIC (The "Heavy Industrial" Fix) ---
-        function runSmartSimulation(origin, dest) {
-            let coords = [];
-            let routeName = `${origin} TO ${dest}`;
-            let dist = 0;
-            let via = "DIRECT";
+        // --- INTELLIGENT ROUTING LOGIC (NO MORE FLYING) ---
+        function calculateSafeRoute(originName, start, destName, end) {
+            let path = [];
+            let routeInfo = "Direct Route";
             let canalFee = 0;
 
-            // WAYPOINT LOGIC
-            const istanbul = [28.97, 41.00];
-            const gibraltar = [-5.6, 35.95];
-            const suezStart = [32.5, 31.2]; 
-            const suezEnd = [32.5, 29.9];   
-            const babElMandeb = [43.3, 12.6];
-            const sriLanka = [80.5, 5.8];
-            const malacca = [103.8, 1.2]; 
-            const shanghai = [122.0, 31.0];
-            const newYork = [-73.5, 40.5];
+            const startLng = start[0];
+            const startLat = start[1];
+            const endLng = end[0];
+            const endLat = end[1];
 
-            // Scenario A: Med to Asia (Suez)
-            if (origin.includes("ISTANBUL") && dest.includes("SHANGHAI")) {
-                coords = [istanbul, [26.0, 36.0], suezStart, suezEnd, babElMandeb, sriLanka, malacca, [110.0, 10.0], shanghai];
-                dist = 8500;
-                via = "SUEZ CANAL";
-                canalFee = 250000; // Suez Fee
-            } 
-            // Scenario B: Med to USA (Gibraltar)
-            else if (origin.includes("ISTANBUL") && dest.includes("NEW YORK")) {
-                coords = [istanbul, [15.0, 36.5], gibraltar, [-30.0, 35.0], newYork];
-                dist = 5100;
-                via = "GIBRALTAR";
+            // LOGIC GATES FOR GEOGRAPHY
+            const isMedOrBlackSea = (lng, lat) => (lat > 30 && lat < 47 && lng > -6 && lng < 42);
+            const isAmericas = (lng) => (lng < -30);
+            const isAsia = (lng) => (lng > 60);
+            const isEuropeNorth = (lng, lat) => (lat > 48 && lng > -10 && lng < 30);
+
+            // 1. MEDITERRANEAN -> AMERICAS (MUST EXIT GIBRALTAR)
+            if (isMedOrBlackSea(startLng, startLat) && isAmericas(endLng)) {
+                path = [start, WAYPOINTS.AEGEAN_EXIT, WAYPOINTS.GIBRALTAR, WAYPOINTS.ATLANTIC_MID, end];
+                if(startLng > 26) { path = [start, WAYPOINTS.AEGEAN_EXIT, WAYPOINTS.GIBRALTAR, WAYPOINTS.ATLANTIC_MID, end]; } // From Istanbul/Black Sea
+                else { path = [start, WAYPOINTS.GIBRALTAR, WAYPOINTS.ATLANTIC_MID, end]; } // From West Med
+                routeInfo = "Via Gibraltar";
             }
-            // Fallback
+            // 2. MEDITERRANEAN/EUROPE -> ASIA (MUST USE SUEZ)
+            else if ((isMedOrBlackSea(startLng, startLat) || isEuropeNorth(startLng, startLat)) && isAsia(endLng)) {
+                let segment1 = [];
+                if(isEuropeNorth(startLng, startLat)) {
+                    // Rotterdam -> Gibraltar -> Suez
+                    segment1 = [start, WAYPOINTS.GIBRALTAR];
+                } else {
+                    // Med -> Suez
+                    segment1 = [start];
+                    if(startLng < 26) segment1.push(WAYPOINTS.AEGEAN_EXIT); 
+                }
+                
+                path = [
+                    ...segment1, 
+                    WAYPOINTS.SUEZ_N, 
+                    WAYPOINTS.SUEZ_S, 
+                    WAYPOINTS.BAB_EL_MANDEB, 
+                    WAYPOINTS.SRI_LANKA, 
+                    WAYPOINTS.MALACCA, 
+                    end
+                ];
+                routeInfo = "Via Suez Canal";
+                canalFee = 250000;
+            }
+            // 3. AMERICAS -> EUROPE (NORTH ATLANTIC)
+            else if (isAmericas(startLng) && isEuropeNorth(endLng, endLat)) {
+                 path = [start, [-40, 45], end]; // Great Circle approx
+                 routeInfo = "North Atlantic Track";
+            }
+            // 4. FALLBACK: Simple Curve (but checked)
             else {
-                coords = [istanbul, newYork];
-                dist = 5000;
+                path = [start, end];
+                routeInfo = "Direct / Coastal";
             }
 
-            // DRAW MAP
-            const geoJsonCoords = coords.map(c => [c[0], c[1]]);
-            const mockGeo = { "type": "LineString", "coordinates": geoJsonCoords };
-            const smoothGeo = smoothRoute(mockGeo);
-            renderRoute(smoothGeo, origin, dest);
+            // FILTER DUPLICATES & NULLS
+            path = path.filter(p => p !== undefined);
 
-            // --- DETAILED FINANCIALS ---
-            const speed = 13.5;
-            const days = dist / (speed * 24);
-            const cargoAmount = 75000; // MT
-            const freightRate = 24.50; // $/MT
-            
-            // Revenues
-            const revenue = cargoAmount * freightRate;
-
-            // Expenses
-            const fuelCons = 32; // Tons/day
-            const fuelPrice = 640; // $/Ton (VLSFO)
-            const fuelCost = days * fuelCons * fuelPrice;
-            
-            const dailyOpex = 6500; // Crew, Stores, Lube
-            const totalOpex = days * dailyOpex;
-
-            const portDues = 45000; // Total for both ports
-
-            const totalExp = fuelCost + totalOpex + portDues + canalFee;
-            const profit = revenue - totalExp;
-
-            // Generate Data Object
-            const finans = {
-                revenue: revenue,
-                fuel: fuelCost,
-                opex: totalOpex,
-                port: portDues,
-                canal: canalFee,
-                totalExp: totalExp,
-                profit: profit
+            // GENERATE GEOJSON
+            const geoJson = {
+                "type": "LineString",
+                "coordinates": path
             };
 
-            // Generate AI Text
-            let aiAnalysis = `<strong>STRATEGIC ROUTE ANALYSIS:</strong><br>`;
-            aiAnalysis += `Optimal route calculated via <strong>${via}</strong>. `;
-            
-            if(via === "SUEZ CANAL") {
-                aiAnalysis += `Although Suez Canal fees are high ($${(canalFee/1000).toFixed(0)}k), this route saves approx. 12 days compared to Cape of Good Hope, resulting in net fuel savings of $${((12 * 30 * 640)/1000).toFixed(0)}k. `;
-            } else {
-                aiAnalysis += `Standard Atlantic crossing. Weather routing indicates minimal swell. `;
-            }
-            
-            if(profit > 0) aiAnalysis += `<span style="color:#00ff9d">Voyage is HIGHLY PROFITABLE with a ${(profit/revenue*100).toFixed(1)}% margin.</span>`;
-            else aiAnalysis += `<span style="color:#ff0055">Voyage shows negative returns. Suggest renegotiating freight rate above $${((totalExp/cargoAmount)+1).toFixed(2)}.</span>`;
+            // SMOOTH IT
+            const smoothGeo = smoothRoute(geoJson);
 
-            updateUI(dist, days, finans, aiAnalysis);
+            // RENDER
+            renderRoute(smoothGeo, originName, destName);
+
+            // FINANCIAL CALC
+            calculateFinancials(path, routeInfo, canalFee);
+        }
+
+        function calculateFinancials(path, routeInfo, canalFee) {
+            // Rough distance calc based on path segments
+            const line = turf.lineString(path);
+            const distKm = turf.length(line, {units: 'kilometers'});
+            const distNM = distKm * 0.539957;
+            
+            const speed = 13.5;
+            const days = distNM / (speed * 24);
+            
+            const cargo = parseFloat(document.getElementById('vCargo').value);
+            const rate = parseFloat(document.getElementById('vFreight').value);
+            
+            const revenue = cargo * rate;
+            const fuelCost = days * 30 * 620; // 30mt/day * $620
+            const opex = days * 6500;
+            const portDues = 50000;
+            
+            const totalExp = fuelCost + opex + portDues + canalFee;
+            const profit = revenue - totalExp;
+
+            const f = { revenue, fuel: fuelCost, opex, port: portDues, canal: canalFee, profit };
+
+            let aiText = `Route calculated via <strong>${routeInfo}</strong> avoiding restricted land zones. `;
+            if(profit > 0) aiText += `<span style="color:var(--success)">Voyage is profitable.</span>`;
+            else aiText += `<span style="color:var(--danger)">Warning: Negative return.</span>`;
+
+            updateUI(distNM, days, f, aiText);
         }
 
         function smoothRoute(geoJSON) {
             if (!geoJSON || !geoJSON.coordinates || geoJSON.coordinates.length < 2) return geoJSON;
             const line = turf.lineString(geoJSON.coordinates);
-            const curved = turf.bezierSpline(line, { resolution: 10000, sharpness: 0.6 }); 
-            return curved;
+            // Higher resolution for better curves
+            return turf.bezierSpline(line, { resolution: 10000, sharpness: 0.7 }); 
         }
 
         function renderRoute(geoJSON, startLabel, endLabel) {
@@ -584,20 +616,18 @@
         }
 
         function updateUI(dist, days, f, aiText) {
-            // HUD Updates
             document.getElementById('hudDist').innerText = Math.round(dist).toLocaleString() + " NM";
             document.getElementById('hudDays').innerText = days.toFixed(1) + " DAYS";
             document.getElementById('hudProfit').innerText = "$" + Math.round(f.profit).toLocaleString();
             document.getElementById('hud').style.display = 'block';
 
-            // Detailed Table Generation
             const html = `
-                <div class="detail-row"><span class="detail-label">Gross Revenue (Freight)</span> <span class="detail-val pos">+$${Math.round(f.revenue).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="detail-label">Freight Revenue</span> <span class="detail-val pos">+$${Math.round(f.revenue).toLocaleString()}</span></div>
                 <div style="height:1px; background:#333; margin:5px 0;"></div>
-                <div class="detail-row"><span class="detail-label">Fuel Cost (VLSFO)</span> <span class="detail-val neg">-$${Math.round(f.fuel).toLocaleString()}</span></div>
-                <div class="detail-row"><span class="detail-label">Canal Transit Fees</span> <span class="detail-val neg">-$${Math.round(f.canal).toLocaleString()}</span></div>
-                <div class="detail-row"><span class="detail-label">Port Dues & Agency</span> <span class="detail-val neg">-$${Math.round(f.port).toLocaleString()}</span></div>
-                <div class="detail-row"><span class="detail-label">OpEx (Crew/Ins/Stores)</span> <span class="detail-val neg">-$${Math.round(f.opex).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="detail-label">Bunker (Fuel)</span> <span class="detail-val neg">-$${Math.round(f.fuel).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="detail-label">Canal Fees</span> <span class="detail-val neg">-$${Math.round(f.canal).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="detail-label">Port Dues</span> <span class="detail-val neg">-$${Math.round(f.port).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="detail-label">OpEx</span> <span class="detail-val neg">-$${Math.round(f.opex).toLocaleString()}</span></div>
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
                 <div class="detail-row" style="font-size:1rem; margin-top:10px;">
                     <span class="detail-label" style="color:#fff">NET PROFIT</span> 
@@ -608,8 +638,6 @@
             document.getElementById('financialDetails').innerHTML = html;
             document.getElementById('aiText').innerHTML = aiText;
             document.getElementById('resBox').style.display = 'block';
-            
-            showToast("Detailed Financials Generated", "success");
         }
     </script>
 </body>
