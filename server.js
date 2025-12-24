@@ -3,8 +3,11 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// Searoute import ediyoruz ama aşağıda güvenli şekilde atayacağız
-import * as searoutePkg from 'searoute'; 
+import { createRequire } from 'module'; // <--- NÜKLEER SİLAH
+
+// --- SEAROUTE KÜTÜPHANESİNİ ZORLA ÇAĞIRMA (Force Require) ---
+const require = createRequire(import.meta.url);
+const searoute = require('searoute'); // <--- Artık kesinlikle bir fonksiyon
 
 // Node 18+ Native Fetch
 const fetch = globalThis.fetch;
@@ -18,13 +21,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// --- ÖNEMLİ DÜZELTME: SEAROUTE FONKSİYONUNU GÜVENLİ AL ---
-// Bazı sunucularda searoutePkg.default, bazılarında direkt searoutePkg gelir.
-// Bu satır her iki ihtimali de dener ve doğru fonksiyonu 'searoute' değişkenine atar.
-const searoute = searoutePkg.default || searoutePkg;
-
 // =================================================================
-// 1. FRONTEND KODU (HTML/CSS/JS)
+// 1. FRONTEND KODU (AYNI GÖRKEMLİ HALİYLE)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -246,8 +244,8 @@ const FRONTEND_HTML = `
                 <div class="d-row"><span class="d-lbl">Distance / Time</span> <span class="d-val">\${c.distance} NM / \${c.durationDays.toFixed(1)} days</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Bunker Cost (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Port Dues & Agency</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Bunker (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port Dues</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Canal Fees</span> <span class="d-val neg">-\$\${f.canalFee.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Vessel OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Broker Comm. (3.75%)</span> <span class="d-val neg">-\$\${f.commission.toLocaleString()}</span></div>
@@ -277,7 +275,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND (SERVER SIDE INTELLIGENCE)
+// 2. BACKEND & DATA
 // =================================================================
 
 // --- LİMAN VERİTABANI YÜKLEME ---
@@ -325,16 +323,12 @@ const COMMODITY_DB = {
 };
 
 // --- ROTA MOTORU: SEAROUTE LIBRARY INTEGRATION ---
-// "searoute" kütüphanesi yüklendiği için artık manuel koordinata gerek yok.
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
 
     try {
-        // Safe check for searoute function
-        const routeFunc = searoutePkg.default || searoutePkg;
-        const route = routeFunc(origin, dest); 
-        
+        const route = searoute(origin, dest); 
         const distNM = Math.round(route.properties.length / 1852);
         
         // Kanal kontrolü (Basit mantık)
@@ -446,4 +440,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V21 (LEVIATHAN) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V22 (FINAL FIX) running on port ${port}`));
