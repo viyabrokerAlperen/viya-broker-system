@@ -3,7 +3,8 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import searoute from 'searoute'; // <--- PROFESYONEL ROTA KÜTÜPHANESİ
+// Searoute import ediyoruz ama aşağıda güvenli şekilde atayacağız
+import * as searoutePkg from 'searoute'; 
 
 // Node 18+ Native Fetch
 const fetch = globalThis.fetch;
@@ -17,8 +18,13 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// --- ÖNEMLİ DÜZELTME: SEAROUTE FONKSİYONUNU GÜVENLİ AL ---
+// Bazı sunucularda searoutePkg.default, bazılarında direkt searoutePkg gelir.
+// Bu satır her iki ihtimali de dener ve doğru fonksiyonu 'searoute' değişkenine atar.
+const searoute = searoutePkg.default || searoutePkg;
+
 // =================================================================
-// 1. FRONTEND KODU (HTML/CSS/JS) - EKSİKSİZ VE DETAYLI
+// 1. FRONTEND KODU (HTML/CSS/JS)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -36,7 +42,6 @@ const FRONTEND_HTML = `
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
         
-        /* NAVBAR */
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .brand i { color: var(--neon-cyan); }
@@ -45,7 +50,6 @@ const FRONTEND_HTML = `
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
 
-        /* LANDING PAGE */
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
@@ -53,22 +57,16 @@ const FRONTEND_HTML = `
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
         .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 0 60px rgba(0,242,255,0.6); }
 
-        /* DASHBOARD LAYOUT */
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
-        
-        /* SIDEBAR */
-        .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
-        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; letter-spacing: 1px; margin-top:5px; }
-        
+        .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
+        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
-        
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .btn-action:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,242,255,0.5); }
 
-        /* CARGO RESULTS */
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -78,7 +76,6 @@ const FRONTEND_HTML = `
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
 
-        /* MAP & RESULTS */
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         
@@ -92,7 +89,6 @@ const FRONTEND_HTML = `
         .d-val.neg { color: var(--danger); }
         .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.85rem; color: #e2e8f0; line-height: 1.6; font-style: italic; border-radius: 0 5px 5px 0; }
 
-        /* UTILS */
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 60px; height: 60px; border: 4px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -329,13 +325,16 @@ const COMMODITY_DB = {
 };
 
 // --- ROTA MOTORU: SEAROUTE LIBRARY INTEGRATION ---
-// Gemi artık karadan yürümez. Searoute kütüphanesi en kısa deniz yolunu bulur.
+// "searoute" kütüphanesi yüklendiği için artık manuel koordinata gerek yok.
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
 
     try {
-        const route = searoute(origin, dest); // Returns GeoJSON Feature
+        // Safe check for searoute function
+        const routeFunc = searoutePkg.default || searoutePkg;
+        const route = routeFunc(origin, dest); 
+        
         const distNM = Math.round(route.properties.length / 1852);
         
         // Kanal kontrolü (Basit mantık)
@@ -354,6 +353,7 @@ function getSmartRoute(startPort, endPort) {
         };
     } catch (e) {
         console.error("Searoute Error:", e);
+        // Fallback
         return {
             path: { type: "LineString", coordinates: [origin, dest] },
             dist: 1000,
@@ -395,9 +395,12 @@ function findOpportunities(shipPosName, region, vType) {
         return true;
     });
 
-    for(let i=0; i<6; i++) {
+    for(let i=0; i<5; i++) {
         if(targets.length === 0) break;
-        const destName = targets[Math.floor(Math.random() * targets.length)];
+        const randIndex = Math.floor(Math.random() * targets.length);
+        const destName = targets[randIndex];
+        targets.splice(randIndex, 1);
+        
         const route = getSmartRoute(shipPort, PORT_DB[destName]);
         
         const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -409,6 +412,7 @@ function findOpportunities(shipPosName, region, vType) {
         const fuelCost = duration * specs.cons * MARKET_DATA.vlsfo; 
         const opex = duration * specs.opex;
         const portDues = 40000 + (specs.dwt * 0.4);
+        
         let canalFee = 0;
         if(route.canal === "SUEZ") canalFee = 180000 + (specs.dwt * 0.5);
         if(route.canal === "PANAMA") canalFee = 150000 + (specs.dwt * 0.4);
@@ -442,4 +446,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V20 (LEVIATHAN) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V21 (LEVIATHAN) running on port ${port}`));
