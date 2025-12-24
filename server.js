@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import searoute from 'searoute'; // <--- PROFESYONEL ROTA KÜTÜPHANESİ
 
 // Node 18+ Native Fetch
 const fetch = globalThis.fetch;
@@ -104,7 +105,7 @@ const FRONTEND_HTML = `
 </head>
 <body>
     <div class="toast" id="toast">Notification</div>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">AI BROKER ENGINE RUNNING...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">AI NAVIGATOR CALCULATING...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -152,12 +153,10 @@ const FRONTEND_HTML = `
                     <label>CURRENT OPEN PORT</label>
                     <input type="text" id="vLoc" list="portList" value="ISTANBUL" oninput="this.value = this.value.toUpperCase()">
                 </div>
-
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
-                
                 <h3><i class="fa-solid fa-globe"></i> COMMERCIAL SCAN</h3>
                 <div class="input-group">
-                    <label>TARGET REGION</label>
+                    <label>TARGET MARKET</label>
                     <select id="vRegion">
                         <option value="WORLD">GLOBAL SEARCH (Maximize Profit)</option>
                         <option value="AMERICAS">Americas (Atlantic/Pacific)</option>
@@ -166,22 +165,14 @@ const FRONTEND_HTML = `
                         <option value="MED">Mediterranean & Black Sea</option>
                     </select>
                 </div>
-
                 <button class="btn-action" onclick="scanMarket()">SCAN MARKET OPPORTUNITIES</button>
-
-                <div id="cargoResultList" class="cargo-list" style="display:none;">
-                    </div>
-
+                <div id="cargoResultList" class="cargo-list" style="display:none;"></div>
                 <datalist id="portList"></datalist>
             </aside>
-
             <div class="map-container">
                 <div id="map"></div>
                 <div class="results-box" id="resBox">
-                    <div class="res-header">
-                        <span class="res-title">VOYAGE ESTIMATION</span>
-                        <i class="fa-solid fa-chart-pie" style="color:var(--neon-cyan)"></i>
-                    </div>
+                    <div class="res-header"><span class="res-title">VOYAGE ESTIMATION</span><i class="fa-solid fa-chart-pie" style="color:var(--neon-cyan)"></i></div>
                     <div id="financialDetails"></div>
                     <div class="ai-box" id="aiText">Select a cargo to view AI analysis...</div>
                 </div>
@@ -204,8 +195,6 @@ const FRONTEND_HTML = `
                 const ports = await res.json();
                 const dl = document.getElementById('portList');
                 ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
-                
-                // Get Live Data
                 const resMarket = await fetch('/api/market-data');
                 const market = await resMarket.json();
                 document.getElementById('oilPrice').innerText = "$" + market.brent.toFixed(2);
@@ -218,7 +207,6 @@ const FRONTEND_HTML = `
             const shipPos = document.getElementById('vLoc').value.toUpperCase();
             const region = document.getElementById('vRegion').value;
             const vType = document.getElementById('vType').value;
-            
             const loader = document.getElementById('loader');
             loader.style.display = 'grid';
             document.getElementById('cargoResultList').style.display = 'none';
@@ -228,12 +216,8 @@ const FRONTEND_HTML = `
             try {
                 const res = await fetch(\`/api/broker?shipPos=\${shipPos}&region=\${region}&vType=\${vType}\`);
                 const data = await res.json();
-
-                if(data.success) {
-                    displayCargoes(data.cargoes);
-                } else {
-                    alert(data.error);
-                }
+                if(data.success) { displayCargoes(data.cargoes); } 
+                else { alert(data.error); }
             } catch (err) { alert("Market Scan Error"); } finally { loader.style.display = 'none'; }
         }
 
@@ -241,31 +225,19 @@ const FRONTEND_HTML = `
             const list = document.getElementById('cargoResultList');
             list.innerHTML = '<div style="font-size:0.75rem; color:#888; margin-bottom:10px; font-weight:bold;">LIVE OPPORTUNITIES:</div>';
             list.style.display = 'block';
-
             cargoes.forEach((c) => {
                 const div = document.createElement('div');
                 div.className = 'cargo-item';
-                div.innerHTML = \`
-                    <div class="c-header">
-                        <div class="c-route">\${c.loadPort} -> \${c.dischPort}</div>
-                        <div class="c-profit">$\${(c.financials.profit/1000).toFixed(1)}k</div>
-                    </div>
-                    <div class="c-sub">
-                        <span>\${c.commodity} • \${(c.qty/1000).toFixed(1)}k \${c.unit}</span>
-                        <span>\${c.durationDays.toFixed(0)} days</span>
-                    </div>
-                \`;
+                div.innerHTML = \`<div class="c-header"><div class="c-route">\${c.loadPort} -> \${c.dischPort}</div><div class="c-profit">$\${(c.financials.profit/1000).toFixed(1)}k</div></div><div class="c-sub"><span>\${c.commodity} • \${(c.qty/1000).toFixed(1)}k \${c.unit}</span><span>\${c.durationDays.toFixed(0)} days</span></div>\`;
                 div.onclick = () => selectCargo(c, div);
                 list.appendChild(div);
             });
-            
             if(cargoes.length > 0) selectCargo(cargoes[0], list.children[1]);
         }
 
         function selectCargo(c, el) {
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active'));
             el.classList.add('active');
-
             drawRoute(c.routeGeo, c.loadPort, c.dischPort);
             updateDetails(c);
         }
@@ -277,14 +249,12 @@ const FRONTEND_HTML = `
                 <div class="d-row"><span class="d-lbl">Cargo</span> <span class="d-val">\${c.commodity} (\${c.qty.toLocaleString()} \${c.unit})</span></div>
                 <div class="d-row"><span class="d-lbl">Distance / Time</span> <span class="d-val">\${c.distance} NM / \${c.durationDays.toFixed(1)} days</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
-                
                 <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Bunker (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Port Dues</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Bunker Cost (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port Dues & Agency</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Canal Fees</span> <span class="d-val neg">-\$\${f.canalFee.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Vessel OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Broker Comm. (3.75%)</span> <span class="d-val neg">-\$\${f.commission.toLocaleString()}</span></div>
-                
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
                 <div class="d-row" style="font-size:1.2rem; margin-top:10px; font-family:var(--font-tech);">
                     <span class="d-lbl" style="color:#fff">NET PROFIT</span> 
@@ -301,8 +271,8 @@ const FRONTEND_HTML = `
             L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 8, opacity: 0.3 } }).addTo(layerGroup);
             const line = L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 3, opacity: 1, dashArray: '10, 15', lineCap: 'round' } }).addTo(layerGroup);
             const c = geoJSON.coordinates;
-            L.circleMarker([c[0][1], c[0][0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD");
-            L.circleMarker([c[c.length-1][1], c[c.length-1][0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH");
+            L.circleMarker([c[0][1], c[0][0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
+            L.circleMarker([c[c.length-1][1], c[c.length-1][0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
             map.fitBounds(line.getBounds(), {padding: [50, 50]});
         }
     </script>
@@ -335,13 +305,12 @@ async function updateMarketData() {
         const brentPrice = data.chart.result[0].meta.regularMarketPrice;
         if (brentPrice) {
             MARKET_DATA.brent = brentPrice;
-            MARKET_DATA.vlsfo = brentPrice * 8.2; // Yaklaşık VLSFO korelasyonu
+            MARKET_DATA.vlsfo = brentPrice * 8.2; 
             MARKET_DATA.lastUpdate = Date.now();
         }
     } catch (e) {}
 }
 
-// --- GEMİ TİPLERİ VE ÖZELLİKLERİ ---
 const VESSEL_SPECS = {
     "HANDYSIZE": { type: "BULK", dwt: 35000, speed: 13.0, cons: 22, opex: 4500 },
     "SUPRAMAX":  { type: "BULK", dwt: 58000, speed: 13.5, cons: 28, opex: 5500 },
@@ -359,131 +328,46 @@ const COMMODITY_DB = {
     "GAS": [{name:"LNG",rate:85}, {name:"LPG",rate:65}]
 };
 
-// --- ROTA AĞI (WAYPOINT SİSTEMİ - KARADAN UÇMAYI ENGELLEMEK İÇİN) ---
-const SEA_NETWORK = {
-    // 1. KARADENİZ & EGE ÇIKIŞI (ZORUNLU)
-    BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
-    MARMARA: [[28.5, 40.8], [27.5, 40.7]],
-    DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
-    AEGEAN_EXIT: [[25.8, 39.5], [25.0, 38.0], [24.5, 37.0], [23.5, 36.0]],
-    
-    // 2. AKDENİZ
-    MED_EAST: [[20.0, 35.5], [15.0, 36.0]],
-    MED_CENTRAL: [[12.0, 37.5], [11.0, 37.2]],
-    MED_WEST: [[8.0, 37.5], [4.0, 37.5], [0.0, 37.0], [-3.0, 36.5]],
-    GIBRALTAR: [[-5.3, 36.0], [-5.8, 35.9]],
-    
-    // 3. KUZEY AVRUPA ÇIKIŞI
-    ENGLISH_CHANNEL: [[1.5, 51.0], [-1.0, 50.0], [-5.0, 49.0]],
-    USHANT: [[-6.0, 48.5]],
-    FINISTERRE: [[-10.0, 43.5]],
-
-    // 4. ATLANTİK GEÇİŞLERİ (GREAT CIRCLE CORRECTION)
-    ATLANTIC_NORTH: [[-20.0, 38.0], [-30.0, 40.0], [-40.0, 41.5], [-50.0, 41.0], [-60.0, 40.0], [-68.0, 40.0], [-72.0, 40.2]],
-    ATLANTIC_SOUTH: [[-20.0, 30.0], [-40.0, 25.0], [-60.0, 20.0]], // Brezilya'ya gidiş
-
-    // 5. ASYA YOLLARI
-    SUEZ_CANAL: [[32.55, 31.25], [32.56, 29.92]],
-    RED_SEA: [[34.0, 27.0], [38.0, 22.0], [42.0, 15.0], [43.4, 12.6]],
-    INDIAN_OCEAN: [[50.0, 12.0], [60.0, 10.0], [75.0, 6.0], [80.5, 5.8], [95.0, 5.8]],
-    MALACCA: [[100.0, 3.0], [103.8, 1.3]],
-    SOUTH_CHINA_SEA: [[105.0, 5.0], [110.0, 10.0], [115.0, 15.0]],
-    
-    // 6. AMERİKA İÇİ
-    FLORIDA_STRAIT: [[-80.0, 24.5]],
-    GULF_ENTRY: [[-82.0, 24.0], [-85.0, 25.0]]
-};
-
-function calculateDistance(coord1, coord2) {
-    const R = 3440;
-    const lat1 = coord1[1]; const lon1 = coord1[0];
-    const lat2 = coord2[1]; const lon2 = coord2[0];
-    const dLat = (lat2 - lat1) * Math.PI/180;
-    const dLon = (lon2 - lon1) * Math.PI/180;
-    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
+// --- ROTA MOTORU: SEAROUTE LIBRARY INTEGRATION ---
+// Gemi artık karadan yürümez. Searoute kütüphanesi en kısa deniz yolunu bulur.
 function getSmartRoute(startPort, endPort) {
-    const start = [startPort.lng, startPort.lat];
-    const end = [endPort.lng, endPort.lat];
-    let path = [start];
-    let routeDesc = "Direct";
-    let canal = "NONE";
+    const origin = [startPort.lng, startPort.lat];
+    const dest = [endPort.lng, endPort.lat];
 
-    // Bölge Tanımları
-    const isBlackSea = (p) => p.lng > 27 && p.lat > 40.8 && p.lat < 47;
-    const isMarmara = (p) => p.lng > 27 && p.lng < 30 && p.lat > 40 && p.lat < 41.2;
-    const isMed = (p) => p.lat > 30 && p.lat < 46 && p.lng > -6 && p.lng < 36 && !isBlackSea(p);
-    const isNorthEurope = (p) => p.lat > 48 && p.lng > -10 && p.lng < 30;
-    const isAmericas = (p) => p.lng < -30;
-    const isAsia = (p) => p.lng > 60;
-    const isGulf = (p) => p.lng < -80 && p.lat < 31 && p.lat > 18;
-
-    // --- ROTA MANTIĞI ---
-
-    // 1. ÇIKIŞ MANEVRALARI
-    // Karadeniz'den çıkıyorsa Boğazları ekle
-    if (isBlackSea(startPort)) {
-        path = path.concat(SEA_NETWORK.BOSPHORUS);
-        path = path.concat(SEA_NETWORK.MARMARA);
-        path = path.concat(SEA_NETWORK.DARDANELLES);
-        path = path.concat(SEA_NETWORK.AEGEAN_EXIT);
-    } else if (isMarmara(startPort)) {
-        path = path.concat(SEA_NETWORK.DARDANELLES);
-        path = path.concat(SEA_NETWORK.AEGEAN_EXIT);
-    } else if (isNorthEurope(startPort) && (isMed(endPort) || isAmericas(endPort) || isAsia(endPort))) {
-        path = path.concat(SEA_NETWORK.ENGLISH_CHANNEL, SEA_NETWORK.USHANT, SEA_NETWORK.FINISTERRE);
-    }
-
-    // 2. ANA GEÇİŞLER
-    // Amerika'ya Gidiş
-    if (isAmericas(endPort)) {
-        // Akdeniz veya Karadenizden geliyorsa
-        if (isMed(startPort) || isBlackSea(startPort) || isMarmara(startPort)) {
-            // Ege'den sonra Akdeniz'i geç
-            path = path.concat(SEA_NETWORK.MED_EAST, SEA_NETWORK.MED_CENTRAL, SEA_NETWORK.MED_WEST, SEA_NETWORK.GIBRALTAR);
-        }
-        // Atlantik Geçişi
-        if(endPort.lat < 10) { // Güney Amerika
-            path = path.concat(SEA_NETWORK.ATLANTIC_SOUTH);
-        } else { // Kuzey Amerika
-            path = path.concat(SEA_NETWORK.ATLANTIC_NORTH);
-        }
-        // Florida/Körfez Girişi
-        if(isGulf(endPort)) path = path.concat(SEA_NETWORK.FLORIDA_STRAIT, SEA_NETWORK.GULF_ENTRY);
+    try {
+        const route = searoute(origin, dest); // Returns GeoJSON Feature
+        const distNM = Math.round(route.properties.length / 1852);
         
-        path.push(end);
-        routeDesc = "Trans-Atlantic";
-    }
-    // Asya'ya Gidiş (Süveyş)
-    else if (isAsia(endPort) && (isMed(startPort) || isNorthEurope(startPort) || isBlackSea(startPort))) {
-        // Kuzey Avrupa'dan geliyorsa Cebelitarık'a in
-        if (isNorthEurope(startPort)) path = path.concat(SEA_NETWORK.GIBRALTAR);
-        // Akdeniz'den geliyorsa (tersine çevirme mantığı veya direkt ekleme)
-        // Burada basitlik için direkt Süveyş'e bağlıyoruz
-        path = path.concat(SEA_NETWORK.SUEZ_CANAL, SEA_NETWORK.RED_SEA, SEA_NETWORK.INDIAN_OCEAN, SEA_NETWORK.MALACCA);
-        if(endPort.lat > 20) path = path.concat(SEA_NETWORK.SOUTH_CHINA_SEA);
-        path.push(end);
-        routeDesc = "Via Suez Canal";
-        canal = "SUEZ";
-    }
-    else {
-        path.push(end);
-    }
+        // Kanal kontrolü (Basit mantık)
+        let canal = "NONE";
+        const hasSuez = route.geometry.coordinates.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33);
+        const hasPanama = route.geometry.coordinates.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79);
+        
+        if (hasSuez) canal = "SUEZ";
+        if (hasPanama) canal = "PANAMA";
 
-    // Mesafe Hesapla
-    let dist = 0;
-    for(let i=0; i<path.length-1; i++) dist += calculateDistance(path[i], path[i+1]);
-    
-    return { path: { type: "LineString", coordinates: path }, dist: Math.round(dist * 1.1), desc: routeDesc, canal: canal };
+        return {
+            path: route.geometry,
+            dist: distNM,
+            desc: "Optimized Sea Route",
+            canal: canal
+        };
+    } catch (e) {
+        console.error("Searoute Error:", e);
+        return {
+            path: { type: "LineString", coordinates: [origin, dest] },
+            dist: 1000,
+            desc: "Direct (Fallback)",
+            canal: "NONE"
+        };
+    }
 }
 
-// --- 3. BROKER ENGINE ---
+// --- BROKER ENGINE ---
 function generateAIAnalysis(profit, routeDesc, duration, revenue, vType) {
     const margin = (profit / revenue) * 100;
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
-    text += `Route: ${routeDesc} (${duration.toFixed(1)} days).<br>`;
+    text += `Route: ${routeDesc}. Duration: ${duration.toFixed(1)} days.<br>`;
     
     if (margin > 25) text += `<span style="color:#00ff9d">HIGH YIELD. Strong recommendation. Fix immediately.</span>`;
     else if (margin > 10) text += `<span style="color:#00f2ff">Solid fixture. Above market average.</span>`;
@@ -525,7 +409,9 @@ function findOpportunities(shipPosName, region, vType) {
         const fuelCost = duration * specs.cons * MARKET_DATA.vlsfo; 
         const opex = duration * specs.opex;
         const portDues = 40000 + (specs.dwt * 0.4);
-        let canalFee = route.canal === "SUEZ" ? 180000 + (specs.dwt * 0.5) : 0;
+        let canalFee = 0;
+        if(route.canal === "SUEZ") canalFee = 180000 + (specs.dwt * 0.5);
+        if(route.canal === "PANAMA") canalFee = 150000 + (specs.dwt * 0.4);
         
         const commission = revenue * 0.0375;
         const totalExp = fuelCost + opex + portDues + canalFee + commission;
@@ -533,7 +419,7 @@ function findOpportunities(shipPosName, region, vType) {
 
         const aiText = generateAIAnalysis(profit, route.desc, duration, revenue, vType);
 
-        if(profit > -100000) { // Show all reasonable options
+        if(profit > -100000) { 
             opportunities.push({
                 loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
                 routeGeo: route.path, distance: route.dist, durationDays: duration, aiAnalysis: aiText,
@@ -556,4 +442,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V19 (FINAL STRIKE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V20 (LEVIATHAN) running on port ${port}`));
