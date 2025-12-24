@@ -5,19 +5,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- GÜVENLİ IMPORT MEKANİZMASI ---
+// --- KÜTÜPHANE YÜKLEME (GÜVENLİ MOD) ---
 const require = createRequire(import.meta.url);
 let searoute = null;
-
 try {
-    // Kütüphaneyi çağırmayı dene
     const pkg = require('searoute');
-    // Eğer direkt fonksiyon değilse, .default'u dene, o da yoksa kendisi
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ Searoute Library Loaded Successfully. Type:", typeof searoute);
+    console.log("✅ Searoute Library: ACTIVE");
 } catch (e) {
-    console.error("⚠️ Searoute Library Could Not Be Loaded:", e.message);
-    searoute = null; // Kütüphane yoksa null yap, aşağıda manuel rotaya düşecek
+    console.log("⚠️ Searoute Library: FAILED (Using Manual Network)");
 }
 
 // Node 18+ Native Fetch
@@ -33,7 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND KODU (AYNI GÖRKEMLİ HALİYLE)
+// 1. FRONTEND (GÖRKEMLİ ARAYÜZ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -41,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Final Stable</title>
+    <title>VIYA BROKER | Hybrid Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -68,10 +64,8 @@ const FRONTEND_HTML = `
 
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
-        
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
-        
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
@@ -297,15 +291,16 @@ try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
     const jsonData = JSON.parse(rawData);
     for (const [key, val] of Object.entries(jsonData)) {
-        PORT_DB[key.toUpperCase()] = { lat: val[1], lng: val[0] };
+        // COORDINATE SANITIZATION: Force numbers
+        PORT_DB[key.toUpperCase()] = { lat: parseFloat(val[1]), lng: parseFloat(val[0]) };
     }
-    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully.`);
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded.`);
 } catch (error) { console.error("❌ Ports Error: ports.json missing."); }
 
 // --- CANLI PİYASA VERİSİ ---
 let MARKET_DATA = { brent: 80.0, vlsfo: 640.0, lastUpdate: 0 };
 async function updateMarketData() {
-    if (Date.now() - MARKET_DATA.lastUpdate < 3600000) return; // 1 saat cache
+    if (Date.now() - MARKET_DATA.lastUpdate < 3600000) return; 
     try {
         const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
         const data = await res.json();
@@ -335,16 +330,16 @@ const COMMODITY_DB = {
     "GAS": [{name:"LNG",rate:85}, {name:"LPG",rate:65}]
 };
 
-// --- ROTA AĞI (MANUEL FALLBACK İÇİN) ---
-// Eğer searoute hata verirse devreye girecek
+// --- GÜÇLENDİRİLMİŞ MANUEL OTOYOL (FALLBACK NETWORK) ---
 const SEA_NETWORK = {
     BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
     MARMARA: [[28.5, 40.8], [27.5, 40.7]],
     DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
     AEGEAN_EXIT: [[25.8, 39.5], [25.0, 38.0], [24.5, 37.0], [23.5, 36.0]],
-    MED_TRUNK: [[20.0, 35.5], [12.0, 37.2], [5.0, 37.5], [-4.0, 36.5], [-5.6, 35.95]],
+    MED_TRUNK: [[20.0, 35.5], [12.0, 37.2], [5.0, 37.5], [-4.0, 36.5], [-5.6, 35.95]], // Gibraltar
     ATLANTIC_NORTH: [[-20.0, 38.0], [-40.0, 41.5], [-60.0, 40.0]],
-    SUEZ: [[32.55, 31.3], [32.56, 29.9], [43.4, 12.6]]
+    SUEZ: [[32.55, 31.3], [32.56, 29.9], [43.4, 12.6]],
+    PANAMA_REGION: [[-80.0, 9.0], [-79.0, 9.0]]
 };
 
 function calculateDistance(coord1, coord2) {
@@ -357,47 +352,53 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- ROTA MOTORU: HİBRİT (SEAROUTE + MANUEL FALLBACK) ---
+// --- HİBRİT ROTA MOTORU (V25) ---
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
     let routeGeo = null;
     let distNM = 0;
-    let desc = "Manual Route (Fallback)";
+    let desc = "Manual (Fallback)";
     
-    // 1. SEAROUTE DENE
-    if (searoute && typeof searoute === 'function') {
+    // 1. SEAROUTE DENE (Eğer kütüphane yüklendiyse)
+    if (searoute) {
         try {
             const route = searoute(origin, dest);
-            routeGeo = route.geometry;
-            distNM = Math.round(route.properties.length / 1852);
-            desc = "Optimized Sea Route";
-        } catch (e) { console.error("Searoute calculation failed, using fallback."); }
+            if(route && route.geometry) {
+                routeGeo = route.geometry;
+                distNM = Math.round(route.properties.length / 1852);
+                desc = "Optimized Sea Route";
+            }
+        } catch (e) { 
+            // Kütüphane hata verirse (örn: liman karada) sessizce geç
+        }
     }
 
-    // 2. EĞER SEAROUTE PATLARSA MANUEL HESAPLA
+    // 2. MANUEL YEDEK PLAN (Eğer searoute çalışmazsa)
     if (!routeGeo) {
         let path = [origin];
-        // Basit bir manuel rota mantığı (Sistemi çökertmemek için)
-        if (startPort.lng > 25 && endPort.lng < -10) { // Akdeniz -> Atlantik
+        // Basit akıllı bağlantı (Akdeniz-Atlantik)
+        if (startPort.lng > 25 && endPort.lng < -10) { 
             path = path.concat(SEA_NETWORK.AEGEAN_EXIT, SEA_NETWORK.MED_TRUNK, SEA_NETWORK.ATLANTIC_NORTH);
+        } else if (startPort.lat > 30 && endPort.lat > 30 && Math.abs(startPort.lng - endPort.lng) > 50) {
+             path = path.concat(SEA_NETWORK.ATLANTIC_NORTH); // Atlantik geçişi
         }
         path.push(dest);
         routeGeo = { type: "LineString", coordinates: path };
-        
-        // Mesafe hesapla
         for(let i=0; i<path.length-1; i++) distNM += calculateDistance(path[i], path[i+1]);
     }
 
-    // Kanal Kontrolü
+    // KANAL KONTROLÜ
     let canal = "NONE";
-    const coords = routeGeo.coordinates;
-    const hasSuez = coords.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33);
-    const hasPanama = coords.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79);
-    if (hasSuez) canal = "SUEZ";
-    if (hasPanama) canal = "PANAMA";
+    if (routeGeo && routeGeo.coordinates) {
+        const coords = routeGeo.coordinates;
+        const hasSuez = coords.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33);
+        const hasPanama = coords.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79);
+        if (hasSuez) canal = "SUEZ";
+        if (hasPanama) canal = "PANAMA";
+    }
 
-    return { path: routeGeo, dist: distNM, desc: desc, canal: canal };
+    return { path: routeGeo, dist: distNM || 1000, desc: desc, canal: canal };
 }
 
 // --- BROKER ENGINE ---
@@ -483,4 +484,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V24 (STABLE CORE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V25 (HYBRID ENGINE) running on port ${port}`));
