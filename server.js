@@ -1,11 +1,28 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Dosya yollarını tanımlamak için (ES Module olduğu için __dirname manuel tanımlanır)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// --- ÖNEMLİ: Statik Dosyaları (HTML, CSS) Sunucuya Tanıt ---
+// Bu satır, sunucunun bulunduğu klasördeki dosyaları dışarıya açar.
+app.use(express.static(__dirname));
+
+// --- ANA SAYFA ROTASI (BEYAZ EKRAN ÇÖZÜMÜ) ---
+// Kullanıcı siteye girdiğinde (root /), index.html dosyasını gönder.
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 
 // --- 1. GLOBAL PORT DATABASE ---
 const PORT_DB = {
