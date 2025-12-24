@@ -5,12 +5,20 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KRİTİK DÜZELTME: SEAROUTE SAFE IMPORT ---
-// Bu blok, kütüphane ne şekilde gelirse gelsin (CommonJS veya ES Module)
-// doğru fonksiyonu yakalayıp 'searoute' değişkenine atar.
+// --- GÜVENLİ IMPORT MEKANİZMASI ---
 const require = createRequire(import.meta.url);
-const searoutePkg = require('searoute');
-const searoute = (typeof searoutePkg === 'function') ? searoutePkg : searoutePkg.default;
+let searoute = null;
+
+try {
+    // Kütüphaneyi çağırmayı dene
+    const pkg = require('searoute');
+    // Eğer direkt fonksiyon değilse, .default'u dene, o da yoksa kendisi
+    searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
+    console.log("✅ Searoute Library Loaded Successfully. Type:", typeof searoute);
+} catch (e) {
+    console.error("⚠️ Searoute Library Could Not Be Loaded:", e.message);
+    searoute = null; // Kütüphane yoksa null yap, aşağıda manuel rotaya düşecek
+}
 
 // Node 18+ Native Fetch
 const fetch = globalThis.fetch;
@@ -25,7 +33,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND KODU (FULL DETAYLI VE GÖRKEMLİ ARAYÜZ)
+// 1. FRONTEND KODU (AYNI GÖRKEMLİ HALİYLE)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -33,7 +41,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Leviathan Edition</title>
+    <title>VIYA BROKER | Final Stable</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -43,7 +51,6 @@ const FRONTEND_HTML = `
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
         
-        /* NAVBAR */
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .brand i { color: var(--neon-cyan); }
@@ -52,7 +59,6 @@ const FRONTEND_HTML = `
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
 
-        /* LANDING PAGE */
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
@@ -60,22 +66,18 @@ const FRONTEND_HTML = `
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
         .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 0 60px rgba(0,242,255,0.6); }
 
-        /* DASHBOARD LAYOUT */
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         
-        /* SIDEBAR */
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
-        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; letter-spacing: 1px; margin-top:5px; }
+        .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
         
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
-        
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
         .btn-action:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,242,255,0.5); }
 
-        /* CARGO RESULTS */
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -85,7 +87,6 @@ const FRONTEND_HTML = `
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
 
-        /* MAP & RESULTS */
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         
@@ -99,7 +100,6 @@ const FRONTEND_HTML = `
         .d-val.neg { color: var(--danger); }
         .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.85rem; color: #e2e8f0; line-height: 1.6; font-style: italic; border-radius: 0 5px 5px 0; }
 
-        /* UTILS */
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 60px; height: 60px; border: 4px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -335,42 +335,69 @@ const COMMODITY_DB = {
     "GAS": [{name:"LNG",rate:85}, {name:"LPG",rate:65}]
 };
 
-// --- ROTA MOTORU: SEAROUTE LIBRARY INTEGRATION ---
-// Gemi artık karadan yürümez. Searoute kütüphanesi en kısa deniz yolunu bulur.
+// --- ROTA AĞI (MANUEL FALLBACK İÇİN) ---
+// Eğer searoute hata verirse devreye girecek
+const SEA_NETWORK = {
+    BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
+    MARMARA: [[28.5, 40.8], [27.5, 40.7]],
+    DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
+    AEGEAN_EXIT: [[25.8, 39.5], [25.0, 38.0], [24.5, 37.0], [23.5, 36.0]],
+    MED_TRUNK: [[20.0, 35.5], [12.0, 37.2], [5.0, 37.5], [-4.0, 36.5], [-5.6, 35.95]],
+    ATLANTIC_NORTH: [[-20.0, 38.0], [-40.0, 41.5], [-60.0, 40.0]],
+    SUEZ: [[32.55, 31.3], [32.56, 29.9], [43.4, 12.6]]
+};
+
+function calculateDistance(coord1, coord2) {
+    const R = 3440;
+    const lat1 = coord1[1]; const lon1 = coord1[0];
+    const lat2 = coord2[1]; const lon2 = coord2[0];
+    const dLat = (lat2 - lat1) * Math.PI/180;
+    const dLon = (lon2 - lon1) * Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// --- ROTA MOTORU: HİBRİT (SEAROUTE + MANUEL FALLBACK) ---
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
-
-    try {
-        // Fonksiyonu güvenli bir şekilde çağır (V23 Fix)
-        const route = searoute(origin, dest); 
-        
-        const distNM = Math.round(route.properties.length / 1852);
-        
-        // Kanal kontrolü
-        let canal = "NONE";
-        const hasSuez = route.geometry.coordinates.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33);
-        const hasPanama = route.geometry.coordinates.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79);
-        
-        if (hasSuez) canal = "SUEZ";
-        if (hasPanama) canal = "PANAMA";
-
-        return {
-            path: route.geometry,
-            dist: distNM,
-            desc: "Optimized Sea Route",
-            canal: canal
-        };
-    } catch (e) {
-        console.error("Searoute Error:", e);
-        // Fallback
-        return {
-            path: { type: "LineString", coordinates: [origin, dest] },
-            dist: 1000,
-            desc: "Direct (Fallback)",
-            canal: "NONE"
-        };
+    let routeGeo = null;
+    let distNM = 0;
+    let desc = "Manual Route (Fallback)";
+    
+    // 1. SEAROUTE DENE
+    if (searoute && typeof searoute === 'function') {
+        try {
+            const route = searoute(origin, dest);
+            routeGeo = route.geometry;
+            distNM = Math.round(route.properties.length / 1852);
+            desc = "Optimized Sea Route";
+        } catch (e) { console.error("Searoute calculation failed, using fallback."); }
     }
+
+    // 2. EĞER SEAROUTE PATLARSA MANUEL HESAPLA
+    if (!routeGeo) {
+        let path = [origin];
+        // Basit bir manuel rota mantığı (Sistemi çökertmemek için)
+        if (startPort.lng > 25 && endPort.lng < -10) { // Akdeniz -> Atlantik
+            path = path.concat(SEA_NETWORK.AEGEAN_EXIT, SEA_NETWORK.MED_TRUNK, SEA_NETWORK.ATLANTIC_NORTH);
+        }
+        path.push(dest);
+        routeGeo = { type: "LineString", coordinates: path };
+        
+        // Mesafe hesapla
+        for(let i=0; i<path.length-1; i++) distNM += calculateDistance(path[i], path[i+1]);
+    }
+
+    // Kanal Kontrolü
+    let canal = "NONE";
+    const coords = routeGeo.coordinates;
+    const hasSuez = coords.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33);
+    const hasPanama = coords.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79);
+    if (hasSuez) canal = "SUEZ";
+    if (hasPanama) canal = "PANAMA";
+
+    return { path: routeGeo, dist: distNM, desc: desc, canal: canal };
 }
 
 // --- BROKER ENGINE ---
@@ -456,4 +483,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V23 (LEVIATHAN FIX) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V24 (STABLE CORE) running on port ${port}`));
