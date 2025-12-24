@@ -1,14 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+import express from 'express';
+import cors from 'cors';
 
-// Render'ın atadığı portu kullan, yoksa 3000
+const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// --- 1. GLOBAL PORT DATABASE (Backend'in Beyni) ---
+// --- 1. GLOBAL PORT DATABASE ---
 const PORT_DB = {
     "ISTANBUL": { lat: 41.00, lng: 28.97 },
     "ROTTERDAM": { lat: 51.90, lng: 4.40 },
@@ -30,7 +29,7 @@ const PORT_DB = {
     "BARCELONA": { lat: 41.38, lng: 2.17 }
 };
 
-// --- 2. STRATEJİK GEÇİŞ NOKTALARI (Waypoint System) ---
+// --- 2. STRATEJİK GEÇİŞ NOKTALARI ---
 const WAYPOINTS = {
     "GIBRALTAR": [-5.6, 35.95],
     "SUEZ_N": [32.56, 31.26],
@@ -42,10 +41,9 @@ const WAYPOINTS = {
     "ATLANTIC_MID": [-40.0, 35.0]
 };
 
-// Mesafe Hesaplama (Haversine - Deniz Mili)
+// Mesafe Hesaplama (Haversine)
 function calculateDistance(coord1, coord2) {
     const R = 3440; // NM
-    // GeoJSON [lng, lat] formatından hesaplama için [lat, lng]
     const lat1 = coord1[1];
     const lon1 = coord1[0];
     const lat2 = coord2[1];
@@ -73,13 +71,10 @@ app.get('/sefer_onerisi', (req, res) => {
         const dwt = parseInt(req.query.dwt) || 50000;
         const hiz = parseFloat(req.query.hiz) || 13.5;
 
-        // Liman Kontrolü
         const startPort = PORT_DB[originName];
         const endPort = PORT_DB[destName];
 
         if (!startPort || !endPort) {
-            // Eğer veritabanında yoksa, basit bir hata dönmek yerine
-            // Front-end'in hata göstermesini sağla.
             return res.json({ 
                 basari: false, 
                 error: `Liman veritabanında bulunamadı: ${!startPort ? originName : destName}` 
@@ -98,10 +93,9 @@ app.get('/sefer_onerisi', (req, res) => {
         const isAmericas = (lng) => (lng < -30);
         const isAsia = (lng) => (lng > 60);
 
-        // SENARYO 1: Akdeniz -> Amerika (Cebelitarık Zorunlu)
         if (isMed(startPort.lat, startPort.lng) && isAmericas(endPort.lng)) {
             let prefix = [startCoords];
-            if(startPort.lng > 25) prefix.push(WAYPOINTS.AEGEAN_EXIT); // Ege çıkışı
+            if(startPort.lng > 25) prefix.push(WAYPOINTS.AEGEAN_EXIT);
 
             path = [
                 ...prefix,
@@ -111,7 +105,6 @@ app.get('/sefer_onerisi', (req, res) => {
             ];
             routeDescription = "Via Gibraltar (Trans-Atlantic)";
         }
-        // SENARYO 2: Akdeniz/Avrupa -> Asya (Süveyş Zorunlu)
         else if ((isMed(startPort.lat, startPort.lng) || startPort.lng < 30) && isAsia(endPort.lng)) {
             let prefix = [];
             if (startPort.lat > 48) { 
@@ -133,7 +126,6 @@ app.get('/sefer_onerisi', (req, res) => {
             routeDescription = "Via Suez Canal";
             canalFee = 250000; 
         }
-        // SENARYO 3: Varsayılan
         else {
             path = [startCoords, endCoords];
             routeDescription = "Direct / Coastal Route";
@@ -145,11 +137,9 @@ app.get('/sefer_onerisi', (req, res) => {
             totalDistNM += calculateDistance(path[i], path[i+1]);
         }
         
-        // Sapma Payı (%10)
         totalDistNM = Math.round(totalDistNM * 1.1); 
 
         const days = totalDistNM / (hiz * 24);
-        
         const dailyFuelCons = 20 + (dwt / 10000) * 1.5; 
         const fuelPrice = 620; 
         
@@ -164,7 +154,6 @@ app.get('/sefer_onerisi', (req, res) => {
         const totalExpense = fuelCost + totalOpex + portDues + canalFee;
         const netProfit = revenue - totalExpense;
 
-        // --- 6. CEVAP ---
         const responseData = {
             basari: true,
             tavsiye: {
@@ -184,24 +173,3 @@ app.get('/sefer_onerisi', (req, res) => {
                             netKarUSD: Math.round(netProfit),
                             detaylar: {
                                 fuel: Math.round(fuelCost),
-                                opex: Math.round(totalOpex),
-                                port: Math.round(portDues),
-                                canal: Math.round(canalFee)
-                            }
-                        }
-                    }
-                ]
-            }
-        };
-
-        res.json(responseData);
-
-    } catch (error) {
-        console.error("Server Error:", error);
-        res.status(500).json({ basari: false, error: "Internal Server Error" });
-    }
-});
-
-app.listen(port, () => {
-    console.log(`VIYA BROKER Server listening on port ${port}`);
-});
