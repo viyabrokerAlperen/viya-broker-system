@@ -1,7 +1,7 @@
 import express from 'express'; 
 import cors from 'cors'; 
 import path from 'path';
-import fs from 'fs'; // Dosya okuma modülü
+import fs from 'fs'; 
 import { fileURLToPath } from 'url';
 import searoute from 'searoute-js'; 
 import * as turf from '@turf/turf'; 
@@ -22,53 +22,60 @@ app.use(express.static(__dirname));
 // --- LİMAN VERİTABANINI YÜKLE ---
 let PORTS_DB = {};
 try {
-    // ports.json dosyasını senkron olarak oku
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'), 'utf-8');
     PORTS_DB = JSON.parse(rawData);
-    console.log(`✅ LİMAN VERİTABANI YÜKLENDİ: ${Object.keys(PORTS_DB).length} liman hafızada.`);
+    console.log(`✅ LİMAN VERİTABANI: ${Object.keys(PORTS_DB).length} liman online.`);
 } catch (error) {
-    console.error("❌ Veritabanı okuma hatası:", error);
-    // Yedek olarak en kritik limanları elle ekle (Crash olmasın diye)
-    PORTS_DB = {
-        "istanbul": [28.9784, 41.0082],
-        "shanghai": [121.4737, 31.2304],
-        "rotterdam": [4.47917, 51.9225],
-        "singapore": [103.8198, 1.3521],
-        "santos": [-46.3322, -23.9618]
-    };
+    console.error("❌ Veritabanı okuma hatası, varsayılanlar devrede.");
+    PORTS_DB = { "istanbul": [28.9784, 41.0082], "shanghai": [121.4737, 31.2304] };
 }
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- AKILLI KOORDİNAT BULUCU ---
+// --- YENİ NESİL ROTA OPTİMİZASYONU (HIGH PRECISION) ---
+function optimizeRoute(routeGeoJSON) {
+    try {
+        // 1. CLEANING: Hatalı veya üst üste binmiş noktaları temizle
+        let clean = turf.cleanCoords(routeGeoJSON);
+
+        // 2. SMOOTHING (AKILLI YUMUŞATMA)
+        // DİKKAT: "simplify" (basitleştirme) kullanmıyoruz! 
+        // Çünkü basitleştirme, Boğaz gibi dar kanallardaki detayları silip gemiyi karaya bindirir.
+        
+        // Bezier Spline Ayarları:
+        // resolution: 20000 -> Çizgi kalitesini artırır (daha az kırık görünür).
+        // sharpness: 0.90 -> (0 ile 1 arası). 
+        // Düşük değer (0.5) rotayı çok yayar, karaya çarpar. 
+        // Yüksek değer (0.90-0.95) rotaya sadık kalır ama köşeleri tatlı sert yumuşatır.
+        
+        const smoothed = turf.bezierSpline(clean, {
+            resolution: 20000, 
+            sharpness: 0.90 
+        });
+
+        return smoothed;
+    } catch (e) {
+        console.log("⚠️ Optimizasyon pas geçildi (Hata):", e.message);
+        return routeGeoJSON; // Hata olursa orijinal, güvenli ham rotayı döndür
+    }
+}
+
+// --- KOORDİNAT BULUCU ---
 async function getCoordinates(locationName) {
     if(!locationName) return null;
-    
     const cleanName = locationName.toLowerCase().trim();
     
-    // 1. JSON VERİTABANI KONTROLÜ
-    // Tam eşleşme
-    if (PORTS_DB[cleanName]) {
-        console.log(`⚡ [DB] Koordinat hafızadan: ${cleanName}`);
-        return PORTS_DB[cleanName];
-    }
-    // Benzerlik (Örn: "Port of Shanghai" -> "shanghai")
+    // 1. DB KONTROL
+    if (PORTS_DB[cleanName]) return PORTS_DB[cleanName];
     const foundKey = Object.keys(PORTS_DB).find(key => cleanName.includes(key));
-    if (foundKey) {
-        console.log(`⚡ [DB] Benzerlik bulundu: ${cleanName} -> ${foundKey}`);
-        return PORTS_DB[foundKey];
-    }
+    if (foundKey) return PORTS_DB[foundKey];
 
-    // 2. GOOGLE'A SOR (Yedek Plan)
-    console.log(`🌍 [API] Bilinmeyen liman, Google'a soruluyor: ${locationName}`);
+    // 2. GOOGLE API
+    console.log(`🌍 [API] Google'a soruluyor: ${locationName}`);
+    const geoPrompt = `Return JSON ONLY. Exact coords [lon, lat] for port: ${locationName}. Format: {"coords": [lon, lat]}`;
     
-    const geoPrompt = `
-    Return JSON ONLY. Exact coordinates [longitude, latitude] for maritime port: ${locationName}.
-    Format: {"coords": [lon, lat]}
-    `;
-
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
         const response = await fetch(url, {
@@ -78,57 +85,55 @@ async function getCoordinates(locationName) {
         });
         
         const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-        
         let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) throw new Error("API cevap vermedi.");
-
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const json = JSON.parse(text);
+        if (!text) throw new Error("Cevap yok");
+        
+        const json = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
         return json.coords;
-
     } catch (error) {
-        console.error(`❌ Koordinat Hatası (${locationName}):`, error.message);
-        throw new Error(`Liman bulunamadı: ${locationName}`);
+        console.error(`❌ Koordinat Hatası: ${error.message}`);
+        throw new Error("Liman bulunamadı.");
     }
 }
 
-// --- ENGINE ---
+// --- MOTOR ---
 app.get('/sefer_onerisi', async (req, res) => {
     const { bolge, gemiTipi, dwt, crane, hiz, konum } = req.query;
+    console.log(`\n⚓ [ROTALAMA]: ${konum} -> ${bolge}`);
 
-    console.log(`\n⚓ [İŞLEM]: ${konum} -> ${bolge}`);
-
-    if (!API_KEY) return res.status(500).json({ basari: false, error: "API Anahtarı Eksik!" });
+    if (!API_KEY) return res.status(500).json({ basari: false, error: "API Key Eksik" });
 
     try {
-        const [originCoords, destCoords] = await Promise.all([
-            getCoordinates(konum),
-            getCoordinates(bolge)
-        ]);
+        const [originCoords, destCoords] = await Promise.all([getCoordinates(konum), getCoordinates(bolge)]);
+        if (!originCoords || !destCoords) throw new Error("Koordinat bulunamadı.");
 
-        if (!originCoords || !destCoords) throw new Error("Liman koordinatları bulunamadı.");
-
-        const route = searoute(
+        // HAM ROTA HESAPLA
+        let route = searoute(
             { type: "Feature", geometry: { type: "Point", coordinates: originCoords } },
             { type: "Feature", geometry: { type: "Point", coordinates: destCoords } }
         );
 
-        if (!route) throw new Error("Deniz rotası çizilemedi.");
+        if (!route) throw new Error("Rota çizilemedi.");
 
-        const distanceKm = turf.length(route, {units: 'kilometers'});
+        // --- KUSURSUZLAŞTIRMA ---
+        const optimizedRoute = optimizeRoute(route);
+        
+        // Mesafe Hesabı (Optimize rota üzerinden)
+        const distanceKm = turf.length(optimizedRoute, {units: 'kilometers'});
         const distanceNM = (distanceKm * 0.539957).toFixed(0);
-        console.log(`🌊 Mesafe: ${distanceNM} NM`);
+        
+        console.log(`🌊 Mesafe (Hassas): ${distanceNM} NM`);
 
+        // FİNANSAL ANALİZ
         const brokerPrompt = `
         ACT AS: Senior Ship Broker.
         TASK: Financial analysis for voyage from ${konum} to ${bolge}.
         VESSEL: ${gemiTipi} (${dwt} DWT).
         SPEED: ${hiz} knots.
         DISTANCE: ${distanceNM} NM.
-        OUTPUT: JSON ONLY. Use realistic 2025 rates.
+        OUTPUT: JSON ONLY. 2025 Market Rates.
         {
-          "tavsiyeGerekcesi": "Piyasa analizi (Türkçe). Mesafeyi (${distanceNM} NM) ve süreyi belirt.",
+          "tavsiyeGerekcesi": "Piyasa analizi (Türkçe). Mesafeyi (${distanceNM} NM) belirt.",
           "finans": { "navlunUSD": 0, "komisyonUSD": 0, "ballastYakitUSD": 0, "ladenYakitUSD": 0, "kanalUSD": 0, "limanUSD": 0, "opexUSD": 0, "netKarUSD": 0 }
         }
         `;
@@ -149,19 +154,12 @@ app.get('/sefer_onerisi', async (req, res) => {
         });
 
         const finData = await response.json();
-        let finJson = {
-            tavsiyeGerekcesi: "Rota hesaplandı ancak AI finansal analizi alınamadı. Lütfen tekrar deneyin.",
-            finans: { navlunUSD:0, komisyonUSD:0, ballastYakitUSD:0, ladenYakitUSD:0, kanalUSD:0, limanUSD:0, opexUSD:0, netKarUSD:0 }
-        };
+        let finJson = { tavsiyeGerekcesi: "Analiz bekleniyor...", finans: { navlunUSD:0, netKarUSD:0 } };
 
-        if (finData.candidates && finData.candidates[0].content) {
-            let finText = finData.candidates[0].content.parts[0].text;
-            finText = finText.replace(/```json/g, '').replace(/```/g, '').replace(/^JSON:/i, '').trim();
-            const firstBracket = finText.indexOf('{');
-            const lastBracket = finText.lastIndexOf('}');
-            if (firstBracket !== -1 && lastBracket !== -1) {
-                finJson = JSON.parse(finText.substring(firstBracket, lastBracket + 1));
-            }
+        if (finData.candidates?.[0]?.content?.parts?.[0]?.text) {
+            let txt = finData.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const s = txt.indexOf('{'), e = txt.lastIndexOf('}');
+            if (s !== -1 && e !== -1) finJson = JSON.parse(txt.substring(s, e + 1));
         }
 
         res.json({
@@ -170,9 +168,9 @@ app.get('/sefer_onerisi', async (req, res) => {
                 tavsiyeGerekcesi: finJson.tavsiyeGerekcesi,
                 tumRotlarinAnalizi: [{
                     rotaAdi: `${konum} - ${bolge}`,
-                    detay: `${distanceNM} NM - Deniz Rotası`,
+                    detay: `${distanceNM} NM - Hassas Deniz Yolu`,
                     finans: finJson.finans,
-                    geoJSON: route.geometry
+                    geoJSON: optimizedRoute.geometry || optimizedRoute 
                 }]
             }
         });
