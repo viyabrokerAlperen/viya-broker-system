@@ -5,25 +5,26 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANE YÜKLEME (FAIL-SAFE MEKANİZMASI) ---
+// --- GÜVENLİ KÜTÜPHANE YÜKLEME ---
 const require = createRequire(import.meta.url);
-let searoute = null;
 
+// 1. SEAROUTE (Rota Motoru)
+let searoute = null;
 try {
-    // 1. Yöntem: Direkt require
     const pkg = require('searoute');
-    // 2. Yöntem: Fonksiyon mu, obje mi kontrol et
-    if (typeof pkg === 'function') {
-        searoute = pkg;
-    } else if (pkg && typeof pkg.default === 'function') {
-        searoute = pkg.default;
-    } else {
-        console.warn("⚠️ Searoute loaded but not a function. Using fallback.");
-    }
+    searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
+    console.log("✅ Rota Motoru: AKTİF");
 } catch (e) {
-    console.warn("⚠️ Searoute Library ERROR:", e.message);
-    searoute = null; // Kütüphane yok, manuel moda geçilecek
+    console.log("⚠️ Rota Motoru: PASİF (Manuel Moda Geçiliyor)");
+    searoute = null;
 }
+
+// 2. TURF (Matematik & Kavis Motoru)
+let turf = null;
+try {
+    turf = require('@turf/turf');
+    console.log("✅ Kavis Motoru (Turf): AKTİF");
+} catch (e) { console.log("⚠️ Kavis Motoru Yüklenemedi."); }
 
 // Node 18+ Native Fetch
 const fetch = globalThis.fetch;
@@ -38,7 +39,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND (VİZYONA YAKIŞIR GÖRKEMLİ ARAYÜZ)
+// 1. FRONTEND
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -46,7 +47,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Redemption</title>
+    <title>VIYA BROKER | Ocean Master</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -73,10 +74,8 @@ const FRONTEND_HTML = `
 
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
-        
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .sidebar h3 { font-family: var(--font-tech); color: var(--neon-cyan); border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9rem; margin-top:10px; }
-        
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.15); }
@@ -263,7 +262,7 @@ const FRONTEND_HTML = `
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Bunker Cost (Fuel)</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Port Dues & Agency</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port Dues</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Canal Fees</span> <span class="d-val neg">-\$\${f.canalFee.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Vessel OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Broker Comm. (3.75%)</span> <span class="d-val neg">-\$\${f.commission.toLocaleString()}</span></div>
@@ -304,7 +303,7 @@ try {
     for (const [key, val] of Object.entries(jsonData)) {
         PORT_DB[key.toUpperCase()] = { lat: parseFloat(val[1]), lng: parseFloat(val[0]) };
     }
-    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded.`);
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded Successfully.`);
 } catch (error) { console.error("❌ Ports Error: ports.json missing."); }
 
 // --- CANLI PİYASA VERİSİ ---
@@ -340,7 +339,7 @@ const COMMODITY_DB = {
     "GAS": [{name:"LNG",rate:85}, {name:"LPG",rate:65}]
 };
 
-// --- GÜÇLENDİRİLMİŞ MANUEL OTOYOL (FALLBACK NETWORK) ---
+// --- ROTA AĞI (MANUEL FALLBACK İÇİN) ---
 const SEA_NETWORK = {
     BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
     MARMARA: [[28.5, 40.8], [27.5, 40.7]],
@@ -362,7 +361,48 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- HİBRİT ROTA MOTORU (V26) ---
+// --- ROTA İŞLEME (TURF & CURVE LOGIC) ---
+function processRouteWithCurves(routeGeoJSON) {
+    if (!turf || !routeGeoJSON || !routeGeoJSON.coordinates) return routeGeoJSON;
+
+    try {
+        const originalCoords = routeGeoJSON.coordinates;
+        let newCoords = [];
+        
+        for (let i = 0; i < originalCoords.length - 1; i++) {
+            const start = originalCoords[i];
+            const end = originalCoords[i+1];
+            newCoords.push(start);
+
+            // Mesafe hesapla (Turf kullanarak)
+            const from = turf.point(start);
+            const to = turf.point(end);
+            const dist = turf.distance(from, to, {units: 'nauticalmiles'});
+
+            // 600 NM KURALI: Eğer mesafe uzunsa, araya Great Circle noktaları ekle
+            if (dist > 600) {
+                // Great Circle yayı oluştur
+                const line = turf.lineString([start, end]);
+                const curved = turf.greatCircle(start, end, {npoints: 10}); // 10 ara nokta
+                // Curved array'in başı ve sonu zaten start/end, sadece aradakileri al
+                const curvePoints = curved.geometry.coordinates;
+                // Aradaki noktaları ekle
+                for(let j=1; j<curvePoints.length-1; j++) {
+                    newCoords.push(curvePoints[j]);
+                }
+            }
+        }
+        newCoords.push(originalCoords[originalCoords.length - 1]); // Son nokta
+        
+        return { type: "LineString", coordinates: newCoords };
+
+    } catch(e) {
+        console.log("Turf curve error:", e);
+        return routeGeoJSON; // Hata varsa orijinali döndür
+    }
+}
+
+// --- HİBRİT ROTA MOTORU (V27) ---
 function getSmartRoute(startPort, endPort) {
     const origin = [startPort.lng, startPort.lat];
     const dest = [endPort.lng, endPort.lat];
@@ -396,6 +436,10 @@ function getSmartRoute(startPort, endPort) {
         routeGeo = { type: "LineString", coordinates: path };
         for(let i=0; i<path.length-1; i++) distNM += calculateDistance(path[i], path[i+1]);
     }
+
+    // 3. EĞRİSEL ROTA İŞLEME (BEAST MODE)
+    // Elde edilen rota (ister Searoute, ister Manuel) üzerinde 600NM kontrolü yap ve bük.
+    routeGeo = processRouteWithCurves(routeGeo);
 
     // KANAL KONTROLÜ
     let canal = "NONE";
@@ -493,4 +537,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V26 (REDEMPTION) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V27 (OCEAN MASTER) running on port ${port}`));
