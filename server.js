@@ -5,16 +5,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANE YÜKLEME ---
+// --- KÜTÜPHANE ZORUNLU ---
 const require = createRequire(import.meta.url);
 let searoute = null;
 
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE ENGINE: ONLINE (Precision Mode)");
+    console.log("✅ SEAROUTE: ACTIVE");
 } catch (e) {
-    console.error("⚠️ SEAROUTE FAILED. Fallback active.");
+    console.error("❌ SEAROUTE: CRITICAL ERROR. Library not found.");
     searoute = null;
 }
 
@@ -38,7 +38,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Precision</title>
+    <title>VIYA BROKER | Pure Logic</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -47,25 +47,21 @@ const FRONTEND_HTML = `
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e0e6ed; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #00ff9d; --danger: #ff0055; --warning: #ffb700; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
-        
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
-
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
-        
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -74,7 +70,6 @@ const FRONTEND_HTML = `
         .c-route { font-size: 0.95rem; font-weight: 700; color: #fff; }
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
-
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
@@ -241,11 +236,22 @@ const FRONTEND_HTML = `
 
         function drawRoute(geoJSON, load, disch) {
             layerGroup.clearLayers();
-            L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
-            const c = geoJSON.coordinates;
-            L.circleMarker([c[0][1], c[0][0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
-            L.circleMarker([c[c.length-1][1], c[c.length-1][0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
-            map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
+            if(geoJSON) {
+                L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
+                const c = geoJSON.coordinates;
+                // LineString için array yapısı kontrolü
+                let startPoint = c[0];
+                let endPoint = c[c.length-1];
+                if(Array.isArray(startPoint[0])) { // MultiLineString ise
+                     startPoint = c[0][0];
+                     endPoint = c[c.length-1][c[c.length-1].length-1];
+                }
+                L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
+                L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+                map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
+            } else {
+                alert("Rota çizilemedi! (Görsel Hesaplama Hatası)");
+            }
         }
     </script>
 </body>
@@ -263,7 +269,8 @@ try {
     for (const [key, val] of Object.entries(jsonData)) {
         PORT_DB[key.toUpperCase()] = { lat: parseFloat(val[1]), lng: parseFloat(val[0]) };
     }
-} catch (e) { console.error("Ports missing"); }
+    console.log(`✅ ${Object.keys(PORT_DB).length} Ports Loaded.`);
+} catch (error) { console.error("❌ Ports Error: ports.json missing."); }
 
 let MARKET_DATA = { brent: 80.0, vlsfo: 640.0, lastUpdate: 0 };
 async function updateMarketData() {
@@ -283,7 +290,8 @@ const VESSEL_SPECS = {
     "CAPESIZE":  { type: "BULK", dwt: 180000, speed: 12.5, cons: 45, opex: 8000 },
     "MR_TANKER": { type: "TANKER", dwt: 50000, speed: 13.0, cons: 26, opex: 6500 },
     "AFRAMAX":   { type: "TANKER", dwt: 115000, speed: 12.5, cons: 40, opex: 7500 },
-    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 }
+    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 },
+    "LNG_STD":   { type: "GAS", dwt: 90000, speed: 19.0, cons: 80, opex: 14000 }
 };
 
 const COMMODITY_DB = {
@@ -291,106 +299,56 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}]
 };
 
-// --- EFSANE V11 YEDEK PROTOKOLÜ (MANUEL OTOYOL) ---
-// Not: Searoute bozulursa devreye girecek olan kemik yapı.
-const SEA_NETWORK = {
-    BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
-    MARMARA: [[28.5, 40.8], [27.5, 40.7]],
-    DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
-    AEGEAN_EXIT: [[25.8, 39.5], [25.0, 38.0], [23.5, 36.0]],
-    GIBRALTAR: [[-5.6, 35.95]],
-    SUEZ: [[32.55, 31.3], [32.56, 29.9], [43.4, 12.6]],
-    PANAMA: [[-79.9, 9.3], [-79.6, 8.9]],
-    CAPE_GOOD_HOPE: [[20.0, -36.0]] // Afrika dolaşma ihtimali için
-};
+// --- AGRESSIVE ROUTE FINDER (SAF SEAROUTE) ---
+// Bu fonksiyon "Liman karada mı?" derdine çare bulmak için koordinatları denize doğru iter.
+function getPureSearoute(start, end) {
+    if (!searoute) return null;
 
-function calculateDistance(coord1, coord2) {
-    const R = 3440;
-    const lat1 = coord1[1]; const lon1 = coord1[0];
-    const lat2 = coord2[1]; const lon2 = coord2[0];
-    const dLat = (lat2 - lat1) * Math.PI/180;
-    const dLon = (lon2 - lon1) * Math.PI/180;
-    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-// --- JIGGLE (TİTREŞİM) FONKSİYONU ---
-// Searoute limanı karada sanarsa, denize doğru 4 yöne kaydırıp tekrar dener.
-function tryGetRoute(start, end) {
-    if (!searoute) return null; // Kütüphane yoksa direkt çık
-
-    // 1. Orijinal noktaları dene
+    // 1. Direkt Dene (Şanslıysak çalışır)
     try {
         const route = searoute([start.lng, start.lat], [end.lng, end.lat]);
-        if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), source: "Searoute (Direct)" };
+        if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), note: "Direct" };
     } catch(e) {}
 
-    // 2. Jiggle (Kaydırma) Dene (Kuzey, Güney, Doğu, Batı - 0.1 derece)
-    const shifts = [[0.1,0], [-0.1,0], [0,0.1], [0,-0.1]];
-    for (let s of shifts) {
-        try {
-            // Sadece Start noktasını kaydırıp dene
-            const newStart = [start.lng + s[0], start.lat + s[1]];
-            const route = searoute(newStart, [end.lng, end.lat]);
-            if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), source: "Searoute (Adjusted)" };
-        } catch(e) {}
-    }
+    // 2. "Snap to Sea" (Denize İtme) Algoritması
+    // Limanlar bazen haritada rıhtımda (kara) gözükür. Onları biraz açığa (denize) almak gerekir.
+    // Kuzey, Güney, Doğu, Batı yönlerine 0.05 derece (yaklaşık 5km) ile 0.2 derece arası kaydırıp deneriz.
+    const offsets = [0.05, -0.05, 0.1, -0.1, 0.2, -0.2];
     
-    return null; // Hala olmuyorsa null dön
-}
+    for (let latOff of offsets) {
+        for (let lngOff of offsets) {
+            try {
+                // Sadece başlangıç noktasını kaydırarak dene
+                const newStart = [start.lng + lngOff, start.lat + latOff];
+                // Sadece bitiş noktasını kaydırarak dene
+                const newEnd = [end.lng + lngOff, end.lat + latOff];
+                
+                // Kombinasyon 1: Start Kayık, End Orijinal
+                let route = searoute(newStart, [end.lng, end.lat]);
+                if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), note: "Adjusted Start" };
 
-// --- AKILLI ROTA MOTORU ---
-function getSmartRoute(startPort, endPort) {
-    let result = tryGetRoute(startPort, endPort);
-    
-    // Eğer Searoute başardıysa onu döndür
-    if (result) {
-        // Kanal kontrolü
-        let canal = "NONE";
-        const coords = result.geo.coordinates;
-        if (coords.some(c => c[1] > 29 && c[1] < 32 && c[0] > 32 && c[0] < 33)) canal = "SUEZ";
-        if (coords.some(c => c[1] > 8 && c[1] < 10 && c[0] > -80 && c[0] < -79)) canal = "PANAMA";
-        return { path: result.geo, dist: result.dist, desc: "Optimized Sea Route", canal: canal, method: result.source };
-    }
+                // Kombinasyon 2: Start Orijinal, End Kayık
+                route = searoute([start.lng, start.lat], newEnd);
+                if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), note: "Adjusted End" };
+                
+                // Kombinasyon 3: İkisi de Kayık
+                route = searoute(newStart, newEnd);
+                if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), note: "Adjusted Both" };
 
-    // --- FALLBACK: MANUEL ROTA (V11+) ---
-    // Searoute çalışmadıysa burası devreye girer
-    const origin = [startPort.lng, startPort.lat];
-    const dest = [endPort.lng, endPort.lat];
-    let path = [origin];
-    let canal = "NONE";
-
-    // Karadeniz Çıkışı
-    if (startPort.lng > 27 && startPort.lat > 40) {
-        path = path.concat(SEA_NETWORK.BOSPHORUS, SEA_NETWORK.MARMARA, SEA_NETWORK.DARDANELLES, SEA_NETWORK.AEGEAN_EXIT);
-    }
-
-    // Okyanus Geçişleri
-    if (endPort.lng < -30) { // Amerika
-        if (startPort.lng > 0) path.push(SEA_NETWORK.GIBRALTAR[0]);
-        if (endPort.lng < -80 && endPort.lat < 20) {
-            path = path.concat(SEA_NETWORK.PANAMA);
-            canal = "PANAMA";
+            } catch(e) { continue; }
         }
-    } else if (endPort.lng > 60 && startPort.lng < 40) { // Asya
-        path = path.concat(SEA_NETWORK.SUEZ);
-        canal = "SUEZ";
     }
-
-    path.push(dest);
-    let dist = 0;
-    for(let i=0; i<path.length-1; i++) dist += calculateDistance(path[i], path[i+1]);
     
-    return { path: { type: "LineString", coordinates: path }, dist: Math.round(dist * 1.15), desc: "Manual Fallback Route", canal: canal, method: "Fallback (V11)" };
+    return null; // Eğer hiçbir şekilde rota bulunamazsa NULL döner (Çizgi çizmez).
 }
 
 function generateAIAnalysis(profit, routeDesc, duration, revenue, vType) {
     const margin = (profit / revenue) * 100;
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
-    text += `Route: ${routeDesc}. Duration: ${duration.toFixed(1)} days.<br>`;
+    text += `Type: ${routeDesc}. Duration: ${duration.toFixed(1)} days.<br>`;
     if (margin > 25) text += `<span style="color:#00ff9d">HIGH YIELD. Recommended.</span>`;
     else if (margin > 10) text += `<span style="color:#00f2ff">Solid fixture.</span>`;
-    else text += `<span style="color:#ff0055">Low Margin. Caution.</span>`;
+    else text += `<span style="color:#ff0055">Low Margin / High Risk.</span>`;
     return text;
 }
 
@@ -417,35 +375,49 @@ function findOpportunities(shipPosName, region, vType) {
         const randIndex = Math.floor(Math.random() * targets.length);
         const destName = targets[randIndex];
         targets.splice(randIndex, 1);
+        const destPort = PORT_DB[destName];
         
-        const route = getSmartRoute(shipPort, PORT_DB[destName]);
+        // --- BURASI KRİTİK: SADECE SAF SEAROUTE KULLANIYORUZ ---
+        const route = getPureSearoute(shipPort, destPort);
         
-        const comm = commodities[Math.floor(Math.random() * commodities.length)];
-        const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
-        const revenue = qty * comm.rate;
-        const fuelCost = (route.dist / 24 / specs.speed) * specs.cons * MARKET_DATA.vlsfo; 
-        const opex = (route.dist / 24 / specs.speed) * specs.opex;
-        const portDues = 40000 + (specs.dwt * 0.4);
-        
-        let canalFee = 0;
-        if(route.canal === "SUEZ") canalFee = 200000;
-        if(route.canal === "PANAMA") canalFee = 180000;
-        
-        const commission = revenue * 0.0375;
-        const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
+        if (route) { // Eğer rota bulunabildiyse listeye ekle, bulunamadıysa pas geç (bozuk gösterme)
+            const comm = commodities[Math.floor(Math.random() * commodities.length)];
+            const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
+            const revenue = qty * comm.rate;
+            const fuelCost = (route.dist / 24 / specs.speed) * specs.cons * MARKET_DATA.vlsfo; 
+            const opex = (route.dist / 24 / specs.speed) * specs.opex;
+            const portDues = 40000 + (specs.dwt * 0.4);
+            
+            // Kanal Ücreti Tahmini (Koordinat bazlı)
+            let canalFee = 0;
+            const coords = route.geo.coordinates;
+            // Düzleştirmek gerekebilir (MultiLineString vs) ama basit kontrol yeterli
+            const flatCoords = coords.flat(Infinity); // Derinlikten kurtar
+            // Basit bölge kontrolü
+            // (Bu kısım çok hassas değil ama yaklaşık maliyet için yeterli)
+            // Panama civarı kontrolü vs. eklenebilir ama şimdilik sade tutuyoruz.
+            
+            if (shipPort.lng > -30 && destPort.lng < -100) canalFee += 180000; // Kabaca Panama
+            if (shipPort.lng < 40 && destPort.lng > 60) canalFee += 200000; // Kabaca Süveyş
 
-        if(profit > -100000) {
-            opportunities.push({
-                loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
-                routeGeo: route.path, distance: route.dist, durationDays: route.dist / (specs.speed * 24), aiAnalysis: generateAIAnalysis(profit, route.desc, route.dist / (specs.speed * 24), revenue, vType),
-                routeMethod: route.method,
-                financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
-            });
+            const commission = revenue * 0.0375;
+            const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
+
+            if(profit > -500000) {
+                opportunities.push({
+                    loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
+                    routeGeo: route.geo, distance: route.dist, durationDays: route.dist / (specs.speed * 24), 
+                    aiAnalysis: generateAIAnalysis(profit, route.note, route.dist / (specs.speed * 24), revenue, vType),
+                    routeMethod: "Real Sea Route",
+                    financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
+                });
+            }
         }
     }
     return opportunities.sort((a,b) => b.financials.profit - a.financials.profit);
 }
 
+// --- API ROUTES ---
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
 app.get('/api/market-data', async (req, res) => { await updateMarketData(); res.json(MARKET_DATA); });
@@ -457,4 +429,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V35 (PRECISION OPS) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V36 (PURE LOGIC) running on port ${port}`));
