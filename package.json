@@ -1,7 +1,7 @@
 {
   "name": "viya-broker-system",
-  "version": "47.0.0",
-  "description": "Viya Broker - Ghost Protocol",
+  "version": "48.0.0",
+  "description": "Viya Broker - Coordinate Swap Master",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "searoute": "*"
+    "searoute": "*", 
+    "@turf/turf": "^6.5.0"
   },
   "engines": {
     "node": "18.x"
