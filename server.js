@@ -44,7 +44,14 @@ const CARGOES = {
     ]
 };
 
-let MARKET = { brent: 82.5, vlsfo: 650, mgo: 920, lastUpdate: 0 };
+// GLOBAL MARKET STATE
+let MARKET = { 
+    brent: 0, 
+    heatingOil: 0, // NYMEX Heating Oil (Proxy for MGO)
+    vlsfo: 0, 
+    mgo: 0, 
+    lastUpdate: 0 
+};
 
 let PORT_DB = {};
 try {
@@ -66,7 +73,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | The Chronos</title>
+    <title>VIYA BROKER | Real-Time</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -132,20 +139,20 @@ const FRONTEND_HTML = `
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        .blinking { animation: blinker 1.5s linear infinite; color: var(--success); font-weight:bold;}
-        @keyframes blinker { 50% { opacity: 0; } }
+        .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
+        @keyframes blinker { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">CALCULATING VOYAGE TIME...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">BROKER AI CALCULATING...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
         <div class="live-ticker">
-            <div class="ticker-item"><span class="live-dot"></span> LIVE MARKET</div>
+            <div class="ticker-item"><span class="live-dot"></span> REAL-TIME EXCHANGE</div>
             <div class="ticker-item"><i class="fa-solid fa-droplet"></i> BRENT: <span id="oilPrice" class="blinking">Loading...</span></div>
-            <div class="ticker-item"><i class="fa-solid fa-gas-pump"></i> VLSFO: <span id="vlsfoPrice">Loading...</span></div>
-            <div class="ticker-item"><i class="fa-solid fa-truck"></i> MGO: <span id="mgoPrice">Loading...</span></div>
+            <div class="ticker-item"><i class="fa-solid fa-fire"></i> HEATING OIL (MGO): <span id="hoPrice">Loading...</span></div>
+            <div class="ticker-item"><i class="fa-solid fa-gas-pump"></i> EST. VLSFO: <span id="vlsfoPrice">Loading...</span></div>
         </div>
         <button class="btn-nav" onclick="location.reload()">SYSTEM REBOOT</button>
     </nav>
@@ -154,7 +161,7 @@ const FRONTEND_HTML = `
         <header class="hero">
             <div class="hero-content">
                 <h1>COMMAND THE<br>GLOBAL MARKETS</h1>
-                <p>Advanced position-based voyage estimation with customizable speed and proximity logic.</p>
+                <p>Advanced position-based voyage estimation with real-time live data and proximity-based cargo matching.</p>
                 <button class="btn-hero" onclick="openLogin()">LAUNCH TERMINAL</button>
             </div>
         </header>
@@ -253,7 +260,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // Vessel Specs for Frontend Speed Update
         const SPECS = {
             "SUPRAMAX": 13.5, "PANAMAX": 13.0, "CAPESIZE": 12.5,
             "MR_TANKER": 13.0, "AFRAMAX": 12.5, "VLCC": 12.0
@@ -276,8 +282,8 @@ const FRONTEND_HTML = `
                 const mRes = await fetch('/api/market');
                 const m = await mRes.json();
                 document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2);
+                document.getElementById('hoPrice').innerText = "$" + m.mgo.toFixed(0);
                 document.getElementById('vlsfoPrice').innerText = "$" + m.vlsfo.toFixed(0);
-                document.getElementById('mgoPrice').innerText = "$" + m.mgo.toFixed(0);
             } catch(e) {}
         }
         init();
@@ -404,36 +410,55 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC
+// 3. BACKEND LOGIC (REAL-TIME ENGINE)
 // =================================================================
 
+// --- REAL-TIME MARKET DATA FETCH ---
+async function updateMarketData() {
+    if (Date.now() - MARKET.lastUpdate < 900000) return; // 15 mins cache
+    
+    try {
+        // Fetch Brent (BZ=F) and Heating Oil (HO=F) for MGO proxy
+        // Yahoo Finance Query
+        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
+        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
+        
+        const brentData = await res.json();
+        const hoData = await resHO.json();
+
+        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
+        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice; // $/Gallon
+
+        if(brentPrice && hoPriceGal) {
+            MARKET.brent = brentPrice;
+            
+            // CONVERSION: Heating Oil ($/gal) to MGO ($/mt)
+            // 1 Metric Ton MGO approx 319 Gallons (varies by density)
+            // Real market formula approach
+            MARKET.mgo = Math.round(hoPriceGal * 319); 
+            
+            // VLSFO typically trades at 80-90% of MGO price or correlated to Brent
+            // Let's use a dynamic correlation: MGO * 0.75 is a safe modern estimate for VLSFO
+            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
+
+            MARKET.lastUpdate = Date.now();
+            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO(HO) $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
+        }
+    } catch(e) {
+        console.error("⚠️ Market Data Fetch Error (Using Defaults)");
+    }
+}
+
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
+    const R = 3440; // NM
     const dLat = (lat2 - lat1) * Math.PI/180;
     const dLon = (lon2 - lon1) * Math.PI/180;
     const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c * 1.15);
-}
-
-// Live Market Update
-async function updateMarketData() {
-    if (Date.now() - MARKET.lastUpdate < 3600000) return; 
-    try {
-        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
-        const data = await res.json();
-        const brentPrice = data.chart.result[0].meta.regularMarketPrice;
-        if(brentPrice) {
-            MARKET.brent = brentPrice;
-            MARKET.vlsfo = Math.round(brentPrice * 7.8);
-            MARKET.mgo = Math.round(brentPrice * 9.8);
-            MARKET.lastUpdate = Date.now();
-        }
-    } catch(e) {}
+    return Math.round(R * c * 1.15); // +15% Sea Margin
 }
 
 function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed) {
-    // USE USER SPEED IF PROVIDED, ELSE DEFAULT
     const speed = shipSpeed || specs.default_speed;
 
     // 1. BALLAST LEG
@@ -465,7 +490,9 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     
     const costOpex = totalDays * specs.opex;
     const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.025; // 2.5% Broker Comm
+    
+    // --- BROKER COMMISSION (2.5%) ---
+    const commission = grossRevenue * 0.025; 
 
     const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
     const profit = grossRevenue - totalCost;
@@ -522,7 +549,6 @@ app.post('/api/analyze', async (req, res) => {
     const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"];
     const suggestions = [];
 
-    // --- PROXIMITY LOGIC ---
     const allPorts = Object.keys(PORT_DB);
     const sortedPorts = allPorts.map(pName => {
         return {
@@ -532,7 +558,6 @@ app.post('/api/analyze', async (req, res) => {
         };
     }).sort((a,b) => a.dist - b.dist);
 
-    // Closest 30 ports
     const candidates = sortedPorts.slice(0, 30);
 
     for(let i=0; i<5; i++) {
@@ -542,7 +567,6 @@ app.post('/api/analyze', async (req, res) => {
 
         if(loadCand.name === dischName) continue;
 
-        // PASS USER SPEED TO CALCULATION
         const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed);
 
         if(calc.financials.profit > -20000) {
@@ -563,4 +587,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V55 (THE CHRONOS) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V56 (REAL-TIME TRADER) running on port ${port}`));
