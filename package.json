@@ -1,7 +1,7 @@
 {
   "name": "viya-broker-system",
-  "version": "54.0.0",
-  "description": "Viya Broker - The Reis Terminal",
+  "version": "55.0.0",
+  "description": "Viya Broker - The Chronos",
   "main": "server.js",
   "type": "module",
   "scripts": {
