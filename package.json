@@ -1,7 +1,7 @@
 {
   "name": "viya-broker-system",
-  "version": "36.0.0",
-  "description": "Viya Broker - Pure Searoute",
+  "version": "37.0.0",
+  "description": "Viya Broker - Pathfinder Engine",
   "main": "server.js",
   "type": "module",
   "scripts": {
