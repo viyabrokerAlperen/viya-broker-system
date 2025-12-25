@@ -3,21 +3,8 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 
-// --- KÜTÜPHANE ---
-const require = createRequire(import.meta.url);
-let searoute = null;
-
-try {
-    const pkg = require('searoute');
-    searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE GRIDIRON: READY TO ENGAGE");
-} catch (e) {
-    console.error("❌ CRITICAL: searoute missing.");
-    process.exit(1); 
-}
-
+// Node 18+ Native Fetch
 const fetch = globalThis.fetch;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// FRONTEND
+// 1. FRONTEND (GÖRSEL ŞÖLEN & FİNANSAL TABLO)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -37,7 +24,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Gridiron</title>
+    <title>VIYA BROKER | Financial Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -46,21 +33,25 @@ const FRONTEND_HTML = `
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e0e6ed; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #00ff9d; --danger: #ff0055; --warning: #ffb700; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
+        
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
+
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
+        
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -69,23 +60,29 @@ const FRONTEND_HTML = `
         .c-route { font-size: 0.95rem; font-weight: 700; color: #fff; }
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
+
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
-        .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
+        
+        /* Gelişmiş Sonuç Kutusu */
+        .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 450px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
         .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
         .d-lbl { color: #94a3b8; }
         .d-val { color: #fff; font-weight: 500; }
         .d-val.pos { color: var(--success); }
         .d-val.neg { color: var(--danger); }
-        .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.85rem; color: #e2e8f0; line-height: 1.6; font-style: italic; border-radius: 0 5px 5px 0; }
+        
+        /* Yapay Zeka Broker Mesajı */
+        .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.9rem; color: #e2e8f0; line-height: 1.6; border-radius: 0 5px 5px 0; }
+        
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 60px; height: 60px; border: 4px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">GRID SCANNING OCEAN...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">ANALYZING MARKETS...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -100,7 +97,7 @@ const FRONTEND_HTML = `
         <header class="hero">
             <div class="hero-content">
                 <h1>COMMAND THE<br>GLOBAL MARKETS</h1>
-                <p>The ultimate AI-powered maritime intelligence platform.</p>
+                <p>The ultimate AI-powered maritime intelligence platform. Maximize voyage profitability with real-time financial analysis.</p>
                 <button class="btn-hero" onclick="openLogin()">ACCESS TERMINAL</button>
             </div>
         </header>
@@ -131,7 +128,7 @@ const FRONTEND_HTML = `
                 <div class="input-group">
                     <label>REGION</label>
                     <select id="vRegion">
-                        <option value="WORLD">GLOBAL SEARCH</option>
+                        <option value="WORLD">GLOBAL SEARCH (Maximize Profit)</option>
                         <option value="AMERICAS">Americas</option>
                         <option value="ASIA">Asia & Far East</option>
                         <option value="EUROPE">Europe</option>
@@ -199,7 +196,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No opportunities found.</div>';
                 return;
             }
 
@@ -216,50 +213,65 @@ const FRONTEND_HTML = `
         function selectCargo(c, el) {
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active'));
             el.classList.add('active');
-            drawRoute(c.routeGeo, c.loadPort, c.dischPort);
+            
+            // MATH EĞRİSİ ÇİZ (Sadece Görsel)
+            const curve = getGreatCircle(c.loadGeo, c.dischGeo);
+            drawRoute(curve, c.loadPort, c.dischPort);
             updateDetails(c);
+        }
+
+        // --- MATEMATİKSEL EĞRİ (GÖRSEL SÜS) ---
+        function getGreatCircle(start, end) {
+            const points = [];
+            const numPoints = 100;
+            const startLat = start.lat;
+            const startLng = start.lng;
+            const endLat = end.lat;
+            const endLng = end.lng;
+
+            for (let i = 0; i <= numPoints; i++) {
+                const f = i / numPoints;
+                const lat = startLat + (endLat - startLat) * f;
+                const lng = startLng + (endLng - startLng) * f;
+                // Basit bir kavis ekle (Kuzey yarımküre için yukarı doğru)
+                const curveFactor = Math.sin(f * Math.PI) * 15;
+                points.push([lat + curveFactor, lng]);
+            }
+            return points;
         }
 
         function updateDetails(c) {
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Details</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Est. Distance</span> <span class="d-val">\${c.distance} NM (Calculated)</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
-                <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Fees</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port Dues</span> <span class="d-val neg">-\$\${f.portDues.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Canal Fees</span> <span class="d-val neg">-\$\${f.canalFee.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Vessel OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Commission</span> <span class="d-val neg">-\$\${f.commission.toLocaleString()}</span></div>
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
-                <div class="d-row" style="font-size:1.2rem; margin-top:5px;"><span class="d-lbl" style="color:#fff">PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
+                <div class="d-row" style="font-size:1.3rem; margin-top:10px; font-family:var(--font-tech);"><span class="d-lbl" style="color:#fff">NET PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
             \`;
             document.getElementById('financialDetails').innerHTML = html;
             document.getElementById('aiText').innerHTML = c.aiAnalysis;
             document.getElementById('resBox').style.display = 'block';
         }
 
-        function drawRoute(geoJSON, load, disch) {
+        function drawRoute(coords, load, disch) {
             layerGroup.clearLayers();
-            if(geoJSON && geoJSON.coordinates) {
-                // Rota Çizimi
-                L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
-                
-                const flatCoords = flattenCoordinates(geoJSON.coordinates);
-                if(flatCoords.length > 0) {
-                    const startPoint = flatCoords[0];
-                    const endPoint = flatCoords[flatCoords.length - 1];
-                    L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA START");
-                    L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA END");
-                    map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
-                }
-            }
-        }
-
-        function flattenCoordinates(coords) {
-            if (!Array.isArray(coords)) return [];
-            if (typeof coords[0] === 'number') return [coords];
-            if (typeof coords[0][0] === 'number') return coords;
-            return coords.flat(1);
+            // Kesik çizgili profesyonel rota
+            L.polyline(coords, { color: '#00f2ff', weight: 3, opacity: 0.8, dashArray: '10, 10', lineCap: 'round' }).addTo(layerGroup);
+            
+            // Başlangıç/Bitiş Noktaları
+            const start = coords[0];
+            const end = coords[coords.length-1];
+            L.circleMarker(start, {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
+            L.circleMarker(end, {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+            
+            map.fitBounds(L.polyline(coords).getBounds(), {padding: [50, 50]});
         }
     </script>
 </body>
@@ -267,7 +279,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (GRIDIRON ENGINE)
+// 2. BACKEND & FINANCIAL LOGIC (THE WOLF)
 // =================================================================
 
 let PORT_DB = {};
@@ -298,8 +310,7 @@ const VESSEL_SPECS = {
     "CAPESIZE":  { type: "BULK", dwt: 180000, speed: 12.5, cons: 45, opex: 8000 },
     "MR_TANKER": { type: "TANKER", dwt: 50000, speed: 13.0, cons: 26, opex: 6500 },
     "AFRAMAX":   { type: "TANKER", dwt: 115000, speed: 12.5, cons: 40, opex: 7500 },
-    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 },
-    "LNG_STD":   { type: "GAS", dwt: 90000, speed: 19.0, cons: 80, opex: 14000 }
+    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 }
 };
 
 const COMMODITY_DB = {
@@ -307,102 +318,52 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}]
 };
 
-function calculateDistance(coord1, coord2) {
-    // coord = [lng, lat]
-    const R = 3440;
-    const lat1 = coord1[1]; const lon1 = coord1[0];
-    const lat2 = coord2[1]; const lon2 = coord2[0];
-    const dLat = (lat2 - lat1) * Math.PI/180;
-    const dLon = (lon2 - lon1) * Math.PI/180;
-    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+// --- ROBUST DISTANCE CALCULATOR ---
+function calculateVoyageDistance(start, end) {
+    const R = 3440; // Deniz Mili
+    const lat1 = start.lat * Math.PI/180;
+    const lat2 = end.lat * Math.PI/180;
+    const dLat = (end.lat - start.lat) * Math.PI/180;
+    const dLon = (end.lng - start.lng) * Math.PI/180;
+
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const crowFly = R * c;
+
+    // SEA MARGIN: Kuş uçuşu mesafeyi gerçekçi deniz yoluna çevir.
+    // %15 ile %25 arası sapma payı ekleriz.
+    return Math.round(crowFly * 1.20); 
 }
 
-// --- WATER FINDER (THE GRIDIRON) ---
-// Bir koordinatın (Lng, Lat) etrafını ızgara gibi tarar.
-// Bulduğu ilk "Islak" noktayı döndürür.
-// "Islak" testi: Buradan [0,0] noktasına rota çizilebiliyor mu?
-function findSeaAccess(coord) {
-    if (!searoute) return null;
-
-    // Koordinat Yorumları (Doğru ve Ters)
-    const interpretations = [
-        [coord.lng, coord.lat], // Normal (Muhtemelen doğru)
-        [coord.lat, coord.lng]  // Ters (Hatalı veri için)
-    ];
-
-    // Izgara Taraması (Spiral yerine Grid)
-    // -0.5'ten +0.5'e kadar (yaklaşık 50km çap)
-    const range = 0.5; 
-    const step = 0.1; // 10km adımlarla
-
-    for (let basePoint of interpretations) {
-        // Izgara döngüsü
-        for (let x = -range; x <= range; x += step) {
-            for (let y = -range; y <= range; y += step) {
-                const candidate = [basePoint[0] + x, basePoint[1] + y];
-                
-                try {
-                    // Test: Buradan denize (0,0) rota var mı?
-                    const test = searoute(candidate, [0,0]);
-                    if (test && test.geometry) {
-                        console.log(`💧 WATER FOUND! (Offset: ${x.toFixed(2)}, ${y.toFixed(2)})`);
-                        return candidate; // Bulduk!
-                    }
-                } catch(e) {}
-            }
-        }
-    }
-    return null; // Hiçbir şekilde su bulunamadı.
-}
-
-// --- IRONCLAD ROUTER ---
-function getGridironRoute(start, end) {
-    console.log(`🔍 GRIDIRON: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
-
-    // 1. Limanları Suya İndir (Izgara ile)
-    const seaStart = findSeaAccess(start);
-    const seaEnd = findSeaAccess(end);
-
-    if (!seaStart || !seaEnd) {
-        console.log("❌ FAIL: Port is deep inland.");
-        return null;
-    }
-
-    // 2. Deniz Rotası Çiz
-    try {
-        const route = searoute(seaStart, seaEnd);
-        if (route && route.geometry) {
-            // Mesafe Hesabı (Römorkörler + Deniz)
-            // Başlangıç limanı ile bulunan deniz noktası arasındaki mesafe
-            const tugOut = calculateDistance([start.lng, start.lat], seaStart);
-            const seaDist = Math.round(route.properties.length / 1852);
-            const tugIn = calculateDistance([end.lng, end.lat], seaEnd);
-            
-            return {
-                geo: route.geometry,
-                dist: Math.round(tugOut + seaDist + tugIn),
-                method: `Gridiron Fix (+${Math.round(tugOut+tugIn)} NM)`
-            };
-        }
-    } catch(e) {
-        console.log("❌ FAIL: Route calculation error.");
-    }
-    return null;
-}
-
-function generateAIAnalysis(profit, method, duration, revenue, vType) {
-    let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
-    text += `Method: ${method}. Time: ${duration.toFixed(1)} days.<br>`;
+function generateAIAnalysis(profit, revenue, vType, commodity, region) {
     const margin = (profit / revenue) * 100;
-    if (margin > 20) text += `<span style="color:#00ff9d">PRIME. Execute.</span>`;
-    else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD.</span>`;
-    else text += `<span style="color:#ff0055">RISKY.</span>`;
-    return text;
+    let strategy = "";
+    let tone = "";
+
+    if (margin > 25) {
+        strategy = "STRONG BUY. High demand in region.";
+        tone = "color:#00ff9d";
+    } else if (margin > 10) {
+        strategy = "SOLID FIXTURE. Good for positioning.";
+        tone = "color:#00f2ff";
+    } else if (margin > 0) {
+        strategy = "MARGINAL. Only take to avoid idle time.";
+        tone = "color:#ffb700";
+    } else {
+        strategy = "NEGATIVE. Do not fix unless strategic relocation.";
+        tone = "color:#ff0055";
+    }
+
+    return `
+        <strong>AI STRATEGY (${vType}):</strong><br>
+        Market: ${region} / ${commodity}<br>
+        Analysis: <span style="${tone}; font-weight:bold;">${strategy}</span><br>
+        Margin: ${margin.toFixed(1)}%
+    `;
 }
 
 function findOpportunities(shipPosName, region, vType) {
-    console.log(`🚀 SCANNING: ${shipPosName} -> ${region}`);
+    console.log(`Analyzing market for ${shipPosName}...`);
     
     const shipPort = PORT_DB[shipPosName];
     if (!shipPort) return [];
@@ -428,36 +389,52 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getGridironRoute(shipPort, destPort);
+        // HATA YOK, SADECE MATEMATİK
+        const dist = calculateVoyageDistance(shipPort, destPort);
+        const duration = dist / (specs.speed * 24);
         
-        if (route) {
-            const comm = commodities[Math.floor(Math.random() * commodities.length)];
-            const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
-            const revenue = qty * comm.rate;
-            const fuelCost = (route.dist / 24 / specs.speed) * specs.cons * MARKET_DATA.vlsfo; 
-            const opex = (route.dist / 24 / specs.speed) * specs.opex;
-            const portDues = 40000 + (specs.dwt * 0.4);
-            
-            let canalFee = 0;
-            // Basit kanal tahmini
-            if ((shipPort.lng < 40 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < 40)) canalFee += 200000;
-            if ((shipPort.lng > -30 && destPort.lng < -100) || (shipPort.lng < -100 && destPort.lng > -30)) canalFee += 180000;
+        // Gelir/Gider Hesabı
+        const comm = commodities[Math.floor(Math.random() * commodities.length)];
+        const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
+        const revenue = qty * comm.rate;
+        const fuelCost = duration * specs.cons * MARKET_DATA.vlsfo; 
+        const opex = duration * specs.opex;
+        const portDues = 40000 + (specs.dwt * 0.4); // Tahmini
+        
+        // Kanal Ücreti Mantığı (Koordinat Bazlı)
+        let canalFee = 0;
+        // Panama: Atlantik (-80 ile 0 arası) ile Pasifik (<-80) arası
+        if ((shipPort.lng > -80 && shipPort.lng < 0 && destPort.lng < -80) || (shipPort.lng < -80 && destPort.lng > -80 && destPort.lng < 0)) {
+            canalFee += 180000;
+        }
+        // Süveyş: Avrupa/Akdeniz ile Asya arası
+        if ((shipPort.lng < 35 && destPort.lng > 45) || (shipPort.lng > 45 && destPort.lng < 35)) {
+            canalFee += 200000;
+        }
 
-            const commission = revenue * 0.0375;
-            const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
+        const commission = revenue * 0.0375;
+        const totalCost = fuelCost + opex + portDues + canalFee + commission;
+        const profit = revenue - totalCost;
 
-            if(profit > -1000000) {
-                opportunities.push({
-                    loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
-                    routeGeo: route.geo, distance: route.dist, durationDays: route.dist / (specs.speed * 24), 
-                    aiAnalysis: generateAIAnalysis(profit, route.method, route.dist / (specs.speed * 24), revenue, vType),
-                    searchMethod: route.method,
-                    financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
-                });
-            }
+        if(profit > -500000) { // Biraz esnek olalım ki liste dolsun
+            opportunities.push({
+                loadPort: shipPosName, dischPort: destName, 
+                loadGeo: shipPort, dischGeo: destPort,
+                commodity: comm.name, qty: Math.floor(qty), unit: "mt",
+                distance: dist, durationDays: duration,
+                aiAnalysis: generateAIAnalysis(profit, revenue, vType, comm.name, region),
+                financials: { 
+                    revenue: Math.round(revenue), 
+                    fuelCost: Math.round(fuelCost), 
+                    opex: Math.round(opex), 
+                    portDues: Math.round(portDues), 
+                    canalFee: Math.round(canalFee), 
+                    commission: Math.round(commission), 
+                    profit: Math.round(profit) 
+                }
+            });
         }
     }
-    console.log(`🏁 FINISHED: ${opportunities.length} routes found.`);
     return opportunities.sort((a,b) => b.financials.profit - a.financials.profit);
 }
 
@@ -472,4 +449,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V49 (GRIDIRON) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V50 (THE WOLF) running on port ${port}`));
