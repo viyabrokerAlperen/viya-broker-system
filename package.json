@@ -1,7 +1,7 @@
 {
   "name": "viya-broker-system",
-  "version": "41.0.0",
-  "description": "Viya Broker - Icebreaker",
+  "version": "42.0.0",
+  "description": "Viya Broker - Coordinate Crusher",
   "main": "server.js",
   "type": "module",
   "scripts": {
