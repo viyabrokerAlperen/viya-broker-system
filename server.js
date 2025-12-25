@@ -15,10 +15,9 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. DATA & CONFIG (EN TEPEDE - HATA OLMAMASI İÇİN)
+// 1. DATA & CONFIG (EN TEPEDE)
 // =================================================================
 
-// --- GEMİ VERİTABANI ---
 const VESSEL_SPECS = {
     "SUPRAMAX": { dwt: 58000, speed: 13.5, sea_cons: 28, port_cons: 3.5, opex: 5500 }, 
     "PANAMAX":  { dwt: 82000, speed: 13.0, sea_cons: 34, port_cons: 4.0, opex: 6500 },
@@ -28,26 +27,26 @@ const VESSEL_SPECS = {
     "VLCC":     { dwt: 300000, speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 }
 };
 
-// --- YÜK TİPLERİ ---
 const CARGOES = {
     "BULK": [
         {name: "Grain", rate: 32, loadRate: 15000, dischRate: 10000},
         {name: "Coal", rate: 24, loadRate: 25000, dischRate: 20000},
         {name: "Iron Ore", rate: 19, loadRate: 40000, dischRate: 30000},
-        {name: "Steel Products", rate: 38, loadRate: 8000, dischRate: 6000},
-        {name: "Fertilizer", rate: 29, loadRate: 12000, dischRate: 10000}
+        {name: "Steel Products", rate: 45, loadRate: 8000, dischRate: 6000},
+        {name: "Fertilizer", rate: 29, loadRate: 12000, dischRate: 10000},
+        {name: "Scrap", rate: 35, loadRate: 10000, dischRate: 8000}
     ],
     "TANKER": [
         {name: "Crude Oil", rate: 28, loadRate: 50000, dischRate: 40000},
         {name: "Diesel/Gasoil", rate: 35, loadRate: 3000, dischRate: 3000},
-        {name: "Naphtha", rate: 31, loadRate: 3500, dischRate: 3500}
+        {name: "Naphtha", rate: 31, loadRate: 3500, dischRate: 3500},
+        {name: "Jet Fuel", rate: 38, loadRate: 2500, dischRate: 2500}
     ]
 };
 
-// --- PİYASA VERİLERİ (Defaults) ---
+// Default Values (Eğer API çalışmazsa)
 let MARKET = { brent: 82.5, vlsfo: 650, mgo: 920, lastUpdate: 0 };
 
-// --- LİMAN VERİTABANI YÜKLEME ---
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -60,7 +59,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND
+// 2. FRONTEND (TEMİZ HARİTA - CANLI VERİ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -68,7 +67,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | The Navigator</title>
+    <title>VIYA BROKER | Reis Terminal</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -80,7 +79,10 @@ const FRONTEND_HTML = `
         
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.8rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
-        .live-ticker { font-family: var(--font-tech); font-size: 0.75rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
+        .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
+        .live-dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 6px 20px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.7rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px rgba(0,242,255,0.4); }
 
@@ -103,6 +105,7 @@ const FRONTEND_HTML = `
         
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 4px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
         
+        .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
         .cargo-item.active { border-color: var(--neon-cyan); background: rgba(0,242,255,0.1); border-left: 4px solid var(--neon-cyan); }
@@ -129,15 +132,19 @@ const FRONTEND_HTML = `
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .blinking { animation: blinker 1.5s linear infinite; color: var(--success); font-weight:bold;}
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">CALCULATING BALLAST & PROFITS...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">FINDING NEAREST CARGOES...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
         <div class="live-ticker">
-            <div class="ticker-item"><i class="fa-solid fa-droplet"></i> BRENT: <span id="oilPrice">Loading...</span></div>
+            <div class="ticker-item"><span class="live-dot"></span> LIVE MARKET</div>
+            <div class="ticker-item"><i class="fa-solid fa-droplet"></i> BRENT: <span id="oilPrice" class="blinking">Loading...</span></div>
             <div class="ticker-item"><i class="fa-solid fa-gas-pump"></i> VLSFO: <span id="vlsfoPrice">Loading...</span></div>
             <div class="ticker-item"><i class="fa-solid fa-truck"></i> MGO: <span id="mgoPrice">Loading...</span></div>
         </div>
@@ -148,7 +155,7 @@ const FRONTEND_HTML = `
         <header class="hero">
             <div class="hero-content">
                 <h1>COMMAND THE<br>GLOBAL MARKETS</h1>
-                <p>Advanced position-based voyage estimation. Calculate ballast legs, port costs and net returns.</p>
+                <p>Strategic voyage estimation with real-time live data and proximity-based cargo matching.</p>
                 <button class="btn-hero" onclick="openLogin()">LAUNCH TERMINAL</button>
             </div>
         </header>
@@ -173,7 +180,7 @@ const FRONTEND_HTML = `
                     <div style="border-top:1px solid #333; margin:15px 0; padding-top:15px;">
                         <div class="input-group">
                             <label>REFERENCE PORT (Quick Fill)</label>
-                            <input type="text" id="refPort" list="portList" placeholder="Select port to fill coords..." onchange="fillCoords()">
+                            <input type="text" id="refPort" list="portList" placeholder="Select nearby port..." onchange="fillCoords()">
                         </div>
                         <div class="input-row">
                             <div class="input-group">
@@ -187,17 +194,7 @@ const FRONTEND_HTML = `
                         </div>
                     </div>
 
-                    <div class="input-group">
-                        <label>SCAN REGION</label>
-                        <select id="vRegion">
-                            <option value="WORLD">Global Opportunities</option>
-                            <option value="AMERICAS">Americas</option>
-                            <option value="ASIA">Asia & Far East</option>
-                            <option value="EUROPE">Europe & Continent</option>
-                            <option value="MED">Mediterranean</option>
-                        </select>
-                    </div>
-                    <button class="btn-action" onclick="scanMarket()">SCAN FROM POSITION</button>
+                    <button class="btn-action" onclick="scanMarket()">FIND NEAREST CARGOES</button>
                     
                     <div id="cargoResultList" class="cargo-list" style="margin-top:20px; display:none;"></div>
                 </div>
@@ -205,10 +202,15 @@ const FRONTEND_HTML = `
 
             <div class="panel">
                 <div id="map"></div>
+                <div style="position:absolute; bottom:20px; left:20px; z-index:500; background:rgba(0,0,0,0.8); padding:10px; border-radius:5px; color:#fff; font-size:0.75rem; border:1px solid #333;">
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:10px; height:10px; background:#f59e0b; border-radius:50%; margin-right:8px; display:inline-block;"></span> Vessel Position</div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:10px; height:10px; background:#10b981; border-radius:50%; margin-right:8px; display:inline-block;"></span> Load Port (Start)</div>
+                    <div style="display:flex; align-items:center;"><span style="width:10px; height:10px; background:#ef4444; border-radius:50%; margin-right:8px; display:inline-block;"></span> Disch Port (End)</div>
+                </div>
             </div>
 
             <aside class="panel">
-                <div class="p-header"><i class="fa-solid fa-chart-pie"></i> VOYAGE P&L</div>
+                <div class="p-header"><i class="fa-solid fa-chart-pie"></i> FINANCIAL BREAKDOWN</div>
                 <div class="p-body" id="analysisPanel" style="display:none;">
                     <div class="stat-grid">
                         <div class="stat-card">
@@ -231,12 +233,13 @@ const FRONTEND_HTML = `
                     <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg" id="valBallastCost"></span></div>
                     <div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg" id="valLadenFuel"></span></div>
                     <div class="detail-row"><span class="d-lbl">Port/Canal Expenses</span> <span class="d-val neg" id="valPortCanal"></span></div>
+                    <div class="detail-row"><span class="d-lbl">Broker Comm (2.5%)</span> <span class="d-val neg" id="valComm"></span></div>
                     <div class="detail-row"><span class="d-lbl">OpEx (Running)</span> <span class="d-val neg" id="valOpex"></span></div>
 
                     <div class="ai-insight" id="aiOutput"></div>
                 </div>
                 <div class="p-body" id="emptyState" style="display:flex; align-items:center; justify-content:center; color:#555; text-align:center;">
-                    Enter vessel coordinates and scan to see profitable voyages.
+                    System will find cargoes closest to your position.
                 </div>
             </aside>
         </div>
@@ -298,7 +301,6 @@ const FRONTEND_HTML = `
             const params = {
                 shipLat: lat,
                 shipLng: lng,
-                region: document.getElementById('vRegion').value,
                 vType: document.getElementById('vType').value
             };
             
@@ -322,19 +324,19 @@ const FRONTEND_HTML = `
             list.innerHTML = '';
             list.style.display = 'block';
             
-            if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px; color:#666;">No suitable cargoes found.</div>'; return; }
+            if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px; color:#666;">No suitable cargoes found nearby.</div>'; return; }
 
             voyages.forEach(v => {
                 const el = document.createElement('div');
                 el.className = 'cargo-item';
-                // Show Net Profit instead of TCE for quick view? Or TCE. Let's show TCE.
                 el.innerHTML = \`
                     <div class="ci-top">
                         <span>\${v.loadPort} -> \${v.dischPort}</span>
                         <span class="tce-badge">\$\${v.financials.tce.toLocaleString()}/day</span>
                     </div>
                     <div class="ci-bot">
-                        <span>\${v.commodity} • Ballast: \${v.ballastDist} NM</span>
+                        <span>\${v.commodity}</span>
+                        <span>Ballast: \${v.ballastDist} NM</span>
                     </div>
                 \`;
                 el.onclick = () => showDetails(v, el);
@@ -353,7 +355,6 @@ const FRONTEND_HTML = `
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
             
-            // Values
             document.getElementById('valBallastDist').innerText = v.ballastDist.toLocaleString() + " NM (" + v.ballastDays.toFixed(1) + " days)";
             document.getElementById('valLadenDist').innerText = v.ladenDist.toLocaleString() + " NM (" + v.ladenDays.toFixed(1) + " days)";
             document.getElementById('valTotalDays').innerText = v.totalDays.toFixed(1) + " days";
@@ -362,28 +363,26 @@ const FRONTEND_HTML = `
             document.getElementById('valBallastCost').innerText = "-$" + f.cost_ballast_fuel.toLocaleString();
             document.getElementById('valLadenFuel').innerText = "-$" + f.cost_laden_fuel.toLocaleString();
             document.getElementById('valPortCanal').innerText = "-$" + (f.cost_port_dues + f.cost_canal).toLocaleString();
+            document.getElementById('valComm').innerText = "-$" + f.cost_comm.toLocaleString();
             document.getElementById('valOpex').innerText = "-$" + f.cost_opex.toLocaleString();
 
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
 
-            // Map Update (Vessel -> Load -> Disch)
+            // Map Update - NO LINES, ONLY MARKERS
             layerGroup.clearLayers();
-            // Vessel Marker
+            
+            // Vessel
             const shipPos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
-            L.circleMarker(shipPos, {radius:6, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(layerGroup).bindPopup("VESSEL");
+            L.circleMarker(shipPos, {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(layerGroup).bindPopup("VESSEL");
             
-            // Ports
+            // Load Port (Green)
             const p1 = [v.loadGeo.lat, v.loadGeo.lng];
-            const p2 = [v.dischGeo.lat, v.dischGeo.lng];
-            L.circleMarker(p1, {radius:5, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: "+v.loadPort);
-            L.circleMarker(p2, {radius:5, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: "+v.dischPort);
-
-            // Lines
-            // Ballast: Dashed Orange
-            L.polyline([shipPos, p1], {color: '#f59e0b', weight: 2, dashArray: '5, 10', opacity:0.7}).addTo(layerGroup);
-            // Laden: Solid Cyan
-            L.polyline([p1, p2], {color: '#00f2ff', weight: 3, opacity: 0.9}).addTo(layerGroup);
+            L.circleMarker(p1, {radius:7, color:'#fff', fillColor:'#10b981', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: "+v.loadPort);
             
+            // Discharge Port (Red)
+            const p2 = [v.dischGeo.lat, v.dischGeo.lng];
+            L.circleMarker(p2, {radius:7, color:'#fff', fillColor:'#ef4444', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: "+v.dischPort);
+
             map.fitBounds([shipPos, p1, p2], {padding:[50,50]});
         }
     </script>
@@ -404,17 +403,42 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return Math.round(R * c * 1.15); // +15% Sea Margin
 }
 
+// --- LIVE MARKET FETCH (YAHOO FINANCE) ---
+async function updateMarketData() {
+    // 1 saatte bir güncelle
+    if (Date.now() - MARKET.lastUpdate < 3600000) return; 
+    
+    try {
+        // Brent Petrolü Çek
+        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
+        const data = await res.json();
+        const brentPrice = data.chart.result[0].meta.regularMarketPrice;
+        
+        if(brentPrice) {
+            MARKET.brent = brentPrice;
+            // Gemi Yakıtı Korelasyonu (Tahmini)
+            // VLSFO genelde Brent * 7.5 civarıdır
+            // MGO genelde Brent * 9.5 civarıdır
+            MARKET.vlsfo = Math.round(brentPrice * 7.8);
+            MARKET.mgo = Math.round(brentPrice * 9.8);
+            MARKET.lastUpdate = Date.now();
+            console.log(`✅ LIVE MARKET UPDATED: Brent $${brentPrice} | VLSFO $${MARKET.vlsfo}`);
+        }
+    } catch(e) {
+        console.log("⚠️ Market fetch failed, using cached values.");
+    }
+}
+
 function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market) {
-    // 1. BALLAST LEG (Ship -> Load)
+    // 1. BALLAST LEG
     const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
     const ballastDays = ballastDist / (specs.speed * 24);
     const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
 
-    // 2. LADEN LEG (Load -> Disch)
+    // 2. LADEN LEG
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (specs.speed * 24);
     
-    // Cargo & Port
     const cargoType = specs.sea_cons < 30 ? "BULK" : "TANKER";
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
@@ -428,24 +452,20 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const costPortFuel = portDays * specs.port_cons * market.mgo;
     const costPortDues = specs.dwt * 1.30; 
 
-    // Total Duration
     const totalDays = ballastDays + ladenDays + portDays;
 
-    // Fees
     let costCanal = 0;
-    let canalNote = "";
-    // Simplified Canal Logic based on Longitude crossing
-    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) {
-        costCanal += 200000; canalNote = "Suez";
-    }
+    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
     
     const costOpex = totalDays * specs.opex;
     const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.0375;
+    
+    // --- BROKER COMMISSION (2.5%) ---
+    const commission = grossRevenue * 0.025; // SÖZÜMÜZ SÖZ
 
     const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
     const profit = grossRevenue - totalCost;
-    const tce = (grossRevenue - (costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + commission)) / totalDays;
+    const tce = profit / totalDays; // Net profit / days
 
     return {
         ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays,
@@ -453,25 +473,32 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
         financials: {
             revenue: grossRevenue,
             cost_ballast_fuel: costBallastFuel,
-            cost_laden_fuel: costLadenFuel + costPortFuel, // Combined for simplicity in UI
+            cost_laden_fuel: costLadenFuel + costPortFuel,
             cost_port_dues: costPortDues,
             cost_canal: costCanal,
             cost_opex: costOpex,
+            cost_comm: commission,
             profit, tce
-        },
-        canalNote
+        }
     };
 }
 
 function generateAnalysis(v) {
     let style = "color:#00f2ff";
-    let advice = "STANDARD MARKET FIXTURE.";
+    let advice = "STANDARD FIXTURE.";
     
-    if(v.financials.tce > 20000) { style="color:#10b981; font-weight:bold"; advice="HIGHLY RECOMMENDED. Excellent TCE."; }
-    else if(v.financials.tce < 5000) { style="color:#ef4444"; advice="NEGATIVE RETURNS. Do not fix."; }
+    if(v.financials.tce > 20000) { style="color:#10b981; font-weight:bold"; advice="STRONGLY RECOMMENDED. High Yield."; }
+    else if(v.financials.tce < 6000) { style="color:#ef4444"; advice="NEGATIVE / LOW RETURNS. Avoid."; }
     
-    let text = `<strong>AI BROKER OPINION:</strong><br>${advice}<br>`;
-    if(v.ballastDist > 1000) text += `<span style="color:orange">Warning: Long Ballast Leg (${v.ballastDist} NM). Eats into profit.</span><br>`;
+    let text = `<strong>AI STRATEGY:</strong><br>${advice}<br>`;
+    
+    // Ballast Uyarısı
+    if(v.ballastDist > 2000) {
+        text += `<span style="color:#f59e0b">⚠ HIGH BALLAST ALERT:</span> ${v.ballastDist} NM ballast leg consumes profit. Look for closer cargo.<br>`;
+    } else if (v.ballastDist < 500) {
+        text += `<span style="color:#10b981">✔ EXCELLENT POSITION:</span> Minimal ballast distance.<br>`;
+    }
+    
     return text;
 }
 
@@ -479,49 +506,58 @@ function generateAnalysis(v) {
 
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
-app.get('/api/market', (req, res) => res.json(MARKET));
+app.get('/api/market', async (req, res) => { 
+    await updateMarketData(); // Canlı veri çek
+    res.json(MARKET); 
+});
 
 app.get('/api/port-coords', (req, res) => {
     const p = PORT_DB[req.query.port];
     res.json(p || {});
 });
 
-app.post('/api/analyze', (req, res) => {
-    const { shipLat, shipLng, region, vType } = req.body;
+app.post('/api/analyze', async (req, res) => {
+    await updateMarketData(); // Her analizde piyasayı kontrol et
+    
+    const { shipLat, shipLng, vType } = req.body;
     
     if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
 
     const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"];
     const suggestions = [];
 
-    // Filter potential load ports by Region (Simulating market availability)
-    const potentialLoadPorts = Object.keys(PORT_DB).filter(p => {
-        const port = PORT_DB[p];
-        if(region === 'AMERICAS') return port.lng < -30;
-        if(region === 'ASIA') return port.lng > 60;
-        if(region === 'EUROPE') return port.lat > 48;
-        if(region === 'MED') return port.lat > 30 && port.lat < 46 && port.lng > -6 && port.lng < 36;
-        return true; // WORLD
-    });
+    // --- PROXIMITY LOGIC (YAKINLIK MANTIĞI) ---
+    // Tüm limanları gemi mesafesine göre sırala
+    const allPorts = Object.keys(PORT_DB);
+    const sortedPorts = allPorts.map(pName => {
+        return {
+            name: pName,
+            geo: PORT_DB[pName],
+            dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng)
+        };
+    }).sort((a,b) => a.dist - b.dist); // En yakından en uzağa
 
-    // Randomly pick 5 opportunities
+    // En yakın 30 limanı aday olarak al (Çok uzakları eledik)
+    const candidates = sortedPorts.slice(0, 30);
+
+    // Bu adaylardan rastgele 5 tanesine yük bul (Hepsi yakın olacak)
     for(let i=0; i<5; i++) {
-        if(potentialLoadPorts.length === 0) break;
-        const randIdx = Math.floor(Math.random() * potentialLoadPorts.length);
-        const loadName = potentialLoadPorts[randIdx];
-        const loadGeo = PORT_DB[loadName];
+        const loadCand = candidates[Math.floor(Math.random() * candidates.length)];
         
-        // Pick a random discharge port (different from load)
-        const dischName = Object.keys(PORT_DB)[Math.floor(Math.random() * Object.keys(PORT_DB).length)];
+        // Tahliye limanı dünyanın herhangi bir yeri olabilir
+        const dischName = allPorts[Math.floor(Math.random() * allPorts.length)];
         const dischGeo = PORT_DB[dischName];
 
-        const calc = calculateFullVoyage(shipLat, shipLng, loadName, loadGeo, dischName, dischGeo, specs, MARKET);
+        // Aynı liman olmasın
+        if(loadCand.name === dischName) continue;
 
-        // Logic check: Don't show if ballast is absurdly long (>5000nm) unless profit is huge
-        if(calc.ballastDist < 5000 || calc.financials.profit > 100000) {
+        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET);
+
+        // Kâr pozitifse veya zarar çok azsa listeye ekle
+        if(calc.financials.profit > -20000) {
             suggestions.push({
-                loadPort: loadName, dischPort: dischName,
-                loadGeo, dischGeo,
+                loadPort: loadCand.name, dischPort: dischName,
+                loadGeo: loadCand.geo, dischGeo: dischGeo,
                 commodity: calc.cargo.name, qty: calc.qty,
                 ballastDist: calc.ballastDist, ballastDays: calc.ballastDays,
                 ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
@@ -532,8 +568,9 @@ app.post('/api/analyze', (req, res) => {
         }
     }
 
+    // TCE'ye göre sırala (En çok kazandıran en üstte)
     suggestions.sort((a,b) => b.financials.tce - a.financials.tce);
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V53 (NAVIGATOR) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V54 (REIS TERMINAL) running on port ${port}`));
