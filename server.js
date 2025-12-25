@@ -12,13 +12,12 @@ let searoute = null;
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE CORE: ONLINE");
+    console.log("✅ SEAROUTE ENGINE: ONLINE");
 } catch (e) {
-    console.error("❌ CRITICAL ERROR: Searoute library failed to load.");
+    console.error("❌ CRITICAL ERROR: Searoute failed.");
     process.exit(1); 
 }
 
-// Node 18+ Native Fetch
 const fetch = globalThis.fetch;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Deep Sea</title>
+    <title>VIYA BROKER | Icebreaker</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -47,25 +46,21 @@ const FRONTEND_HTML = `
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e0e6ed; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #00ff9d; --danger: #ff0055; --warning: #ffb700; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
-        
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
-
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
-        
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -74,7 +69,6 @@ const FRONTEND_HTML = `
         .c-route { font-size: 0.95rem; font-weight: 700; color: #fff; }
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
-
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
@@ -92,7 +86,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">AI NAVIGATOR WORKING...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">SCANNING OCEAN...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -206,7 +200,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found. Check logs.</div>';
                 return;
             }
 
@@ -231,7 +225,7 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Search</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -250,7 +244,6 @@ const FRONTEND_HTML = `
             if(geoJSON && geoJSON.coordinates) {
                 L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
                 
-                // Koordinat Düzleştirme (Markerlar için)
                 const flatCoords = flattenCoordinates(geoJSON.coordinates);
                 const startPoint = flatCoords[0];
                 const endPoint = flatCoords[flatCoords.length - 1];
@@ -275,7 +268,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (PURE SEAROUTE)
+// 2. BACKEND & LOGIC (RADAR SCANNER)
 // =================================================================
 
 let PORT_DB = {};
@@ -326,76 +319,74 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- TUGBOAT LOGIC (RÖMORKÖR İLE DENİZE ÇIKIŞ) ---
-// SADECE VE SADECE Searoute kullanır. Asla manuel rota çizmez.
-// Eğer liman karadaysa, denize doğru iter ve bu itme mesafesini de ekler.
+// --- 360 DEGREE RADAR SCANNER ---
+// Liman etrafında daire çizerek denize ulaşılabilir noktayı arar.
 function getPureSearouteWithTugboat(start, end) {
     if (!searoute) {
         console.error("❌ CRITICAL: Searoute is missing.");
         return null; 
     }
 
-    console.log(`🔍 SEARCH: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
+    console.log(`🔍 SCANNING: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
 
-    // Arama Çapı (Derece). 1.0 derece yaklaşık 111km.
-    // Spiral şeklinde denize doğru açılacağız.
-    const OFFSETS = [
-        [0,0], // İlk deneme orijinal
-        [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05], // 5km
-        [0.1, 0], [-0.1, 0], [0, 0.1], [0, -0.1],     // 10km
-        [0.2, 0], [-0.2, 0], [0, 0.2], [0, -0.2],     // 20km
-        [0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5],     // 50km
-        [1.0, 0], [-1.0, 0], [0, 1.0], [0, -1.0]      // 100km (Son çare)
-    ];
+    // RADAR AYARLARI
+    // Radius (km cinsinden yaklaşık derece karşılığı): 0.05deg ~= 5km, 0.1deg ~= 11km
+    const radii = [0, 0.05, 0.1, 0.2, 0.5]; // 0km, 5km, 10km, 20km, 50km
+    const angles = [0, 45, 90, 135, 180, 225, 270, 315]; // 8 Yön
 
-    // Önce Start noktasını kurtarmaya çalış (Genelde sorun starttadır)
-    for (let sOff of OFFSETS) {
-        const adjustedStart = [start.lng + sOff[0], start.lat + sOff[1]];
-        
-        // Sonra End noktasını kurtarmaya çalış
-        for (let eOff of OFFSETS) {
-            const adjustedEnd = [end.lng + eOff[0], end.lat + eOff[1]];
+    // Önce Start noktasını (Limanı) kurtar
+    for (let r of radii) {
+        for (let angle of angles) {
+            // Radyan çevrimi
+            const rad = angle * (Math.PI / 180);
+            const latOff = r * Math.cos(rad);
+            const lngOff = r * Math.sin(rad);
             
-            try {
-                // Searoute'a sor: "Buradan buraya gidilir mi?"
-                const route = searoute(adjustedStart, adjustedEnd);
-                
-                if (route && route.geometry) {
-                    console.log(`✅ FOUND! Offsets: Start[${sOff}] End[${eOff}]`);
+            const adjustedStart = [start.lng + lngOff, start.lat + latOff];
+            
+            // Şimdi End noktasını (Varış) kurtarmaya çalış (Aynı mantık)
+            for (let r2 of radii) {
+                for (let angle2 of angles) {
+                    const rad2 = angle2 * (Math.PI / 180);
+                    const latOff2 = r2 * Math.cos(rad2);
+                    const lngOff2 = r2 * Math.sin(rad2);
                     
-                    // MESAFE HESABI (TUGBOAT DAHİL)
-                    // 1. Liman -> Deniz Başlangıcı (Römorkör Çıkış)
-                    const tugOut = calculateDistance([start.lng, start.lat], adjustedStart);
-                    // 2. Deniz Rotası (Asıl Yol)
-                    const seaDist = Math.round(route.properties.length / 1852);
-                    // 3. Deniz Bitişi -> Liman (Römorkör Giriş)
-                    const tugIn = calculateDistance(adjustedEnd, [end.lng, end.lat]);
-                    
-                    const totalDist = tugOut + seaDist + tugIn;
-                    
-                    return { 
-                        geo: route.geometry, 
-                        dist: Math.round(totalDist), 
-                        method: `Searoute (Tug: ${Math.round(tugOut+tugIn)} NM)` 
-                    };
+                    const adjustedEnd = [end.lng + lngOff2, end.lat + latOff2];
+
+                    try {
+                        // Searoute'a sor
+                        const route = searoute(adjustedStart, adjustedEnd);
+                        if (route && route.geometry) {
+                            console.log(`✅ FOUND! Tugboat Dist: Start(${Math.round(r*60)}NM) End(${Math.round(r2*60)}NM)`);
+                            
+                            // MESAFE HESABI
+                            const tugOut = calculateDistance([start.lng, start.lat], adjustedStart);
+                            const seaDist = Math.round(route.properties.length / 1852);
+                            const tugIn = calculateDistance(adjustedEnd, [end.lng, end.lat]);
+                            
+                            return { 
+                                geo: route.geometry, 
+                                dist: Math.round(tugOut + seaDist + tugIn), 
+                                method: `Searoute (Radar Fix)` 
+                            };
+                        }
+                    } catch(e) { /* Devam et */ }
                 }
-            } catch(e) {
-                // Bu ofset kombinasyonu başarısız, diğerine geç.
             }
         }
     }
 
     console.log("❌ FAILED: Coordinates are too far inland.");
-    return null; // Hiçbir şekilde bulunamazsa.
+    return null;
 }
 
 function generateAIAnalysis(profit, method, duration, revenue, vType) {
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
     text += `Method: ${method}. Time: ${duration.toFixed(1)} days.<br>`;
     const margin = (profit / revenue) * 100;
-    if (margin > 20) text += `<span style="color:#00ff9d">PRIME VOYAGE. High returns.</span>`;
-    else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD. Execute if tonnage open.</span>`;
-    else text += `<span style="color:#ff0055">MARGINAL. Check Bunker prices.</span>`;
+    if (margin > 20) text += `<span style="color:#00ff9d">PRIME VOYAGE.</span>`;
+    else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD.</span>`;
+    else text += `<span style="color:#ff0055">MARGINAL.</span>`;
     return text;
 }
 
@@ -426,7 +417,6 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        // --- SADECE RÖMORKÖRLÜ SEAROUTE ---
         const route = getPureSearouteWithTugboat(shipPort, destPort);
         
         if (route) {
@@ -437,19 +427,16 @@ function findOpportunities(shipPosName, region, vType) {
             const opex = (route.dist / 24 / specs.speed) * specs.opex;
             const portDues = 40000 + (specs.dwt * 0.4);
             
-            // Kanal maliyetleri (Basit koordinat kontrolü)
             let canalFee = 0;
-            const coords = route.geo.coordinates.flat(Infinity);
-            // Panama Kontrolü (-80 civarı)
-            // Süveyş Kontrolü (32 civarı)
-            // Detaylı geometri analizi yerine basit Longitude kontrolü (Hız için)
+            const flat = route.geo.coordinates.flat(Infinity);
+            // Kaba kanal kontrolü
             if ((shipPort.lng < 40 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < 40)) canalFee += 200000;
             if ((shipPort.lng > -30 && destPort.lng < -100) || (shipPort.lng < -100 && destPort.lng > -30)) canalFee += 180000;
 
             const commission = revenue * 0.0375;
             const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
 
-            if(profit > -1000000) { // Biraz zarara da izin verelim ki rota göstersin
+            if(profit > -1000000) {
                 opportunities.push({
                     loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
                     routeGeo: route.geo, distance: route.dist, durationDays: route.dist / (specs.speed * 24), 
@@ -475,4 +462,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V40 (DEEP SEA COMMANDER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V41 (ICEBREAKER) running on port ${port}`));
