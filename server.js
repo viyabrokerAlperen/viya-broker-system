@@ -5,15 +5,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
+// --- KÜTÜPHANE YÜKLEME ---
 const require = createRequire(import.meta.url);
 let searoute = null;
 
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE CORE: ONLINE");
+    console.log("✅ SEAROUTE SNIPER: READY");
 } catch (e) {
-    console.error("❌ CRITICAL: Searoute library failed.");
+    console.error("❌ SNIPER ERROR: Library missing.");
     process.exit(1); 
 }
 
@@ -36,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Reis Edition</title>
+    <title>VIYA BROKER | Sniper</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -84,7 +85,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">CALCULATING ROUTES...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">KRAKEN RELEASED...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -198,7 +199,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found. Check logs.</div>';
                 return;
             }
 
@@ -223,7 +224,7 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Details</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -265,7 +266,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (COORDINATE CRUSHER)
+// 2. BACKEND & LOGIC (SNIPER ENGINE)
 // =================================================================
 
 let PORT_DB = {};
@@ -315,96 +316,60 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- ULTIMATE SEA FINDER (KOORDİNAT KIRICI) ---
-function findNearestSeaPoint(originalPoint) {
+// --- THE SNIPER (DEEP PENETRATION LOGIC) ---
+function getSniperRoute(start, end) {
     if (!searoute) return null;
 
-    // 1. Grid Tarama Sistemi (Merkezden Dışa Doğru)
-    // 0.1 deg ~ 11km. 2.0 deg ~ 220km
-    // Her yöne doğru adım adım açılır.
-    const steps = [0, 0.1, 0.2, 0.5, 1.0, 1.5, 2.0];
-    
-    // Her adımda 8 yönü kontrol et (Kuzey, Güney, Doğu, Batı ve Çaprazlar)
-    const directions = [
-        [0, 1], [0, -1], [1, 0], [-1, 0], // Ana Yönler
-        [1, 1], [1, -1], [-1, 1], [-1, -1] // Çaprazlar
-    ];
+    console.log(`🔍 SNIPER TARGETING: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
 
-    // Referans noktası (Bilinen açık deniz - Akdeniz ortası) ile test et
-    // Eğer A -> Referans çalışıyorsa, A "deniz" demektir.
-    const referenceSea = [18.0, 36.0]; // Akdeniz ortası
+    // Hata Payları (Giderek artan menzil - 3 dereceye kadar = 330km)
+    // Sadece [LNG, LAT] formatını koruyoruz. Ters çevirme YOK.
+    const steps = [0, 0.1, 0.3, 0.5, 1.0, 2.0, 3.0]; 
+    const directions = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]];
 
-    for (let step of steps) {
-        for (let dir of directions) {
-            const lngOff = dir[0] * step;
-            const latOff = dir[1] * step;
+    // 1. Önce Start noktasını kurtar
+    for (let sStep of steps) {
+        for (let sDir of directions) {
             
-            const candidate = [originalPoint.lng + lngOff, originalPoint.lat + latOff];
-            
-            try {
-                // Bu nokta deniz mi? Bunu anlamak için referans noktaya rota çizdiririz.
-                const testRoute = searoute(candidate, referenceSea);
-                if (testRoute && testRoute.geometry) {
-                    // Bulduk! Bu nokta denize çıkış noktasıdır.
-                    return candidate;
+            const startCandidate = [
+                start.lng + (sDir[0] * sStep), 
+                start.lat + (sDir[1] * sStep)
+            ];
+
+            // 2. Start noktasını bulduysak, End noktasını kurtar
+            for (let eStep of steps) {
+                for (let eDir of directions) {
+                    
+                    const endCandidate = [
+                        end.lng + (eDir[0] * eStep),
+                        end.lat + (eDir[1] * eStep)
+                    ];
+
+                    try {
+                        // Ateşle!
+                        const route = searoute(startCandidate, endCandidate);
+                        if (route && route.geometry) {
+                            console.log(`✅ TARGET HIT! (Start Offset: ${sStep}, End Offset: ${eStep})`);
+                            
+                            const tugOut = calculateDistance([start.lng, start.lat], startCandidate);
+                            const seaDist = Math.round(route.properties.length / 1852);
+                            const tugIn = calculateDistance([end.lng, end.lat], endCandidate);
+                            
+                            return { 
+                                geo: route.geometry, 
+                                dist: Math.round(tugOut + seaDist + tugIn), 
+                                method: `Sniper (+${Math.round(tugOut+tugIn)} NM)` 
+                            };
+                        }
+                    } catch(e) {
+                        // Iskaladı, bir sonrakini dene
+                    }
                 }
-            } catch(e) {}
+            }
         }
     }
-    return null; // Denize ulaşılamadı (Çok içeride)
-}
 
-function getRobustRoute(start, end) {
-    if (!searoute) return null;
-
-    console.log(`🔍 SEARCHING: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
-
-    // 1. Önce direkt dene
-    try {
-        const route = searoute([start.lng, start.lat], [end.lng, end.lat]);
-        if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), method: "Direct" };
-    } catch(e) {}
-
-    // 2. Olmadıysa "Tugboat" Operasyonu Başlat
-    // Başlangıç ve Bitiş için en yakın denizi bul
-    const seaStart = findNearestSeaPoint(start);
-    const seaEnd = findNearestSeaPoint(end);
-
-    if (seaStart && seaEnd) {
-        try {
-            // Denizden denize rota çiz
-            const route = searoute(seaStart, seaEnd);
-            if (route && route.geometry) {
-                console.log(`✅ FOUND via Tugboat Logic`);
-                
-                // Mesafeleri topla
-                const tugOut = calculateDistance([start.lng, start.lat], seaStart);
-                const seaDist = Math.round(route.properties.length / 1852);
-                const tugIn = calculateDistance(seaEnd, [end.lng, end.lat]);
-                
-                return { 
-                    geo: route.geometry, 
-                    dist: Math.round(tugOut + seaDist + tugIn), 
-                    method: `Tugboat (+${Math.round(tugOut+tugIn)} NM)` 
-                };
-            }
-        } catch(e) {}
-    }
-    
-    // 3. Ters Rota Dene (Bazen kütüphane A->B hata verir ama B->A çalışır)
-    if (seaStart && seaEnd) {
-        try {
-            const route = searoute(seaEnd, seaStart);
-            if(route && route.geometry) {
-                 const tugOut = calculateDistance([start.lng, start.lat], seaStart);
-                 const seaDist = Math.round(route.properties.length / 1852);
-                 const tugIn = calculateDistance(seaEnd, [end.lng, end.lat]);
-                 return { geo: route.geometry, dist: Math.round(tugOut + seaDist + tugIn), method: "Reverse Logic" };
-            }
-        } catch(e){}
-    }
-
-    console.log("❌ FAILED: Port is completely landlocked.");
+    console.log("❌ MISSION FAILED: Target unreachable.");
     return null;
 }
 
@@ -412,9 +377,9 @@ function generateAIAnalysis(profit, method, duration, revenue, vType) {
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
     text += `Method: ${method}. Time: ${duration.toFixed(1)} days.<br>`;
     const margin = (profit / revenue) * 100;
-    if (margin > 20) text += `<span style="color:#00ff9d">PRIME VOYAGE.</span>`;
+    if (margin > 20) text += `<span style="color:#00ff9d">PRIME. Execute.</span>`;
     else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD.</span>`;
-    else text += `<span style="color:#ff0055">MARGINAL.</span>`;
+    else text += `<span style="color:#ff0055">RISKY.</span>`;
     return text;
 }
 
@@ -445,7 +410,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getRobustRoute(shipPort, destPort);
+        const route = getSniperRoute(shipPort, destPort);
         
         if (route) {
             const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -488,4 +453,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V42 (COORDINATE CRUSHER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V44 (THE SNIPER) running on port ${port}`));
