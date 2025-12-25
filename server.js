@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND (GÖRSEL ŞÖLEN & FİNANSAL TABLO)
+// 1. FRONTEND (SADE VE NET)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -24,7 +24,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Financial Engine</title>
+    <title>VIYA BROKER | Professional</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -64,7 +64,6 @@ const FRONTEND_HTML = `
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         
-        /* Gelişmiş Sonuç Kutusu */
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 450px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
         .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
@@ -72,10 +71,7 @@ const FRONTEND_HTML = `
         .d-val { color: #fff; font-weight: 500; }
         .d-val.pos { color: var(--success); }
         .d-val.neg { color: var(--danger); }
-        
-        /* Yapay Zeka Broker Mesajı */
         .ai-box { margin-top: 20px; padding: 15px; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--neon-cyan); font-size: 0.9rem; color: #e2e8f0; line-height: 1.6; border-radius: 0 5px 5px 0; }
-        
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 60px; height: 60px; border: 4px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -214,37 +210,15 @@ const FRONTEND_HTML = `
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active'));
             el.classList.add('active');
             
-            // MATH EĞRİSİ ÇİZ (Sadece Görsel)
-            const curve = getGreatCircle(c.loadGeo, c.dischGeo);
-            drawRoute(curve, c.loadPort, c.dischPort);
+            drawRoute(c.loadGeo, c.dischGeo, c.loadPort, c.dischPort);
             updateDetails(c);
-        }
-
-        // --- MATEMATİKSEL EĞRİ (GÖRSEL SÜS) ---
-        function getGreatCircle(start, end) {
-            const points = [];
-            const numPoints = 100;
-            const startLat = start.lat;
-            const startLng = start.lng;
-            const endLat = end.lat;
-            const endLng = end.lng;
-
-            for (let i = 0; i <= numPoints; i++) {
-                const f = i / numPoints;
-                const lat = startLat + (endLat - startLat) * f;
-                const lng = startLng + (endLng - startLng) * f;
-                // Basit bir kavis ekle (Kuzey yarımküre için yukarı doğru)
-                const curveFactor = Math.sin(f * Math.PI) * 15;
-                points.push([lat + curveFactor, lng]);
-            }
-            return points;
         }
 
         function updateDetails(c) {
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Est. Distance</span> <span class="d-val">\${c.distance} NM (Calculated)</span></div>
+                <div class="d-row"><span class="d-lbl">Est. Distance</span> <span class="d-val">\${c.distance} NM</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -260,18 +234,19 @@ const FRONTEND_HTML = `
             document.getElementById('resBox').style.display = 'block';
         }
 
-        function drawRoute(coords, load, disch) {
+        // --- SADECE NOKTA KOYMA (ÇİZGİ YOK) ---
+        function drawRoute(loadGeo, dischGeo, loadName, dischName) {
             layerGroup.clearLayers();
-            // Kesik çizgili profesyonel rota
-            L.polyline(coords, { color: '#00f2ff', weight: 3, opacity: 0.8, dashArray: '10, 10', lineCap: 'round' }).addTo(layerGroup);
             
-            // Başlangıç/Bitiş Noktaları
-            const start = coords[0];
-            const end = coords[coords.length-1];
-            L.circleMarker(start, {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
-            L.circleMarker(end, {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+            const start = [loadGeo.lat, loadGeo.lng];
+            const end = [dischGeo.lat, dischGeo.lng];
+
+            L.circleMarker(start, {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + loadName);
+            L.circleMarker(end, {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + dischName);
             
-            map.fitBounds(L.polyline(coords).getBounds(), {padding: [50, 50]});
+            // Haritayı iki noktaya odakla
+            const bounds = L.latLngBounds([start, end]);
+            map.fitBounds(bounds, {padding: [50, 50]});
         }
     </script>
 </body>
@@ -279,7 +254,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & FINANCIAL LOGIC (THE WOLF)
+// 2. BACKEND & FINANCIAL LOGIC (MATEMATİKSEL)
 // =================================================================
 
 let PORT_DB = {};
@@ -318,7 +293,7 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}]
 };
 
-// --- ROBUST DISTANCE CALCULATOR ---
+// --- MESAFE HESAPLAYICI (SADECE MATEMATİK) ---
 function calculateVoyageDistance(start, end) {
     const R = 3440; // Deniz Mili
     const lat1 = start.lat * Math.PI/180;
@@ -330,9 +305,8 @@ function calculateVoyageDistance(start, end) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const crowFly = R * c;
 
-    // SEA MARGIN: Kuş uçuşu mesafeyi gerçekçi deniz yoluna çevir.
-    // %15 ile %25 arası sapma payı ekleriz.
-    return Math.round(crowFly * 1.20); 
+    // SEA MARGIN: Kuş uçuşu mesafeyi %15 artırarak deniz yolu tahmini yapıyoruz.
+    return Math.round(crowFly * 1.15); 
 }
 
 function generateAIAnalysis(profit, revenue, vType, commodity, region) {
@@ -389,7 +363,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        // HATA YOK, SADECE MATEMATİK
+        // --- SADECE MATEMATİKSEL HESAP (Kırılmaz, Hata Vermez) ---
         const dist = calculateVoyageDistance(shipPort, destPort);
         const duration = dist / (specs.speed * 24);
         
@@ -403,11 +377,11 @@ function findOpportunities(shipPosName, region, vType) {
         
         // Kanal Ücreti Mantığı (Koordinat Bazlı)
         let canalFee = 0;
-        // Panama: Atlantik (-80 ile 0 arası) ile Pasifik (<-80) arası
+        // Panama
         if ((shipPort.lng > -80 && shipPort.lng < 0 && destPort.lng < -80) || (shipPort.lng < -80 && destPort.lng > -80 && destPort.lng < 0)) {
             canalFee += 180000;
         }
-        // Süveyş: Avrupa/Akdeniz ile Asya arası
+        // Süveyş
         if ((shipPort.lng < 35 && destPort.lng > 45) || (shipPort.lng > 45 && destPort.lng < 35)) {
             canalFee += 200000;
         }
@@ -416,7 +390,7 @@ function findOpportunities(shipPosName, region, vType) {
         const totalCost = fuelCost + opex + portDues + canalFee + commission;
         const profit = revenue - totalCost;
 
-        if(profit > -500000) { // Biraz esnek olalım ki liste dolsun
+        if(profit > -500000) { 
             opportunities.push({
                 loadPort: shipPosName, dischPort: destName, 
                 loadGeo: shipPort, dischGeo: destPort,
@@ -449,4 +423,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V50 (THE WOLF) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V51 (POINT TO POINT) running on port ${port}`));
