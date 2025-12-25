@@ -5,16 +5,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANE YÜKLEME ---
 const require = createRequire(import.meta.url);
 let searoute = null;
 
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE ENGINE: ONLINE");
+    console.log("✅ SEAROUTE CORE: ONLINE");
 } catch (e) {
-    console.error("❌ CRITICAL ERROR: Searoute failed.");
+    console.error("❌ CRITICAL: Searoute library failed.");
     process.exit(1); 
 }
 
@@ -37,7 +36,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Icebreaker</title>
+    <title>VIYA BROKER | Reis Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -73,7 +72,6 @@ const FRONTEND_HTML = `
         #map { width: 100%; height: 100%; }
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
         .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .res-title { font-family: var(--font-tech); color: var(--neon-cyan); font-size: 1rem; letter-spacing: 1px; }
         .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
         .d-lbl { color: #94a3b8; }
         .d-val { color: #fff; font-weight: 500; }
@@ -86,7 +84,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">SCANNING OCEAN...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">CALCULATING ROUTES...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -200,7 +198,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found. Check logs.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found.</div>';
                 return;
             }
 
@@ -225,7 +223,7 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Details</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -245,10 +243,9 @@ const FRONTEND_HTML = `
                 L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
                 
                 const flatCoords = flattenCoordinates(geoJSON.coordinates);
-                const startPoint = flatCoords[0];
-                const endPoint = flatCoords[flatCoords.length - 1];
-
-                if(startPoint && endPoint) {
+                if(flatCoords.length > 0) {
+                    const startPoint = flatCoords[0];
+                    const endPoint = flatCoords[flatCoords.length - 1];
                     L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
                     L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
                     map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
@@ -268,7 +265,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (RADAR SCANNER)
+// 2. BACKEND & LOGIC (COORDINATE CRUSHER)
 // =================================================================
 
 let PORT_DB = {};
@@ -308,7 +305,6 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}]
 };
 
-// Basit Mesafe Hesabı (Römorkör Mesafesi için)
 function calculateDistance(coord1, coord2) {
     const R = 3440;
     const lat1 = coord1[1]; const lon1 = coord1[0];
@@ -319,64 +315,96 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- 360 DEGREE RADAR SCANNER ---
-// Liman etrafında daire çizerek denize ulaşılabilir noktayı arar.
-function getPureSearouteWithTugboat(start, end) {
-    if (!searoute) {
-        console.error("❌ CRITICAL: Searoute is missing.");
-        return null; 
-    }
+// --- ULTIMATE SEA FINDER (KOORDİNAT KIRICI) ---
+function findNearestSeaPoint(originalPoint) {
+    if (!searoute) return null;
 
-    console.log(`🔍 SCANNING: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
+    // 1. Grid Tarama Sistemi (Merkezden Dışa Doğru)
+    // 0.1 deg ~ 11km. 2.0 deg ~ 220km
+    // Her yöne doğru adım adım açılır.
+    const steps = [0, 0.1, 0.2, 0.5, 1.0, 1.5, 2.0];
+    
+    // Her adımda 8 yönü kontrol et (Kuzey, Güney, Doğu, Batı ve Çaprazlar)
+    const directions = [
+        [0, 1], [0, -1], [1, 0], [-1, 0], // Ana Yönler
+        [1, 1], [1, -1], [-1, 1], [-1, -1] // Çaprazlar
+    ];
 
-    // RADAR AYARLARI
-    // Radius (km cinsinden yaklaşık derece karşılığı): 0.05deg ~= 5km, 0.1deg ~= 11km
-    const radii = [0, 0.05, 0.1, 0.2, 0.5]; // 0km, 5km, 10km, 20km, 50km
-    const angles = [0, 45, 90, 135, 180, 225, 270, 315]; // 8 Yön
+    // Referans noktası (Bilinen açık deniz - Akdeniz ortası) ile test et
+    // Eğer A -> Referans çalışıyorsa, A "deniz" demektir.
+    const referenceSea = [18.0, 36.0]; // Akdeniz ortası
 
-    // Önce Start noktasını (Limanı) kurtar
-    for (let r of radii) {
-        for (let angle of angles) {
-            // Radyan çevrimi
-            const rad = angle * (Math.PI / 180);
-            const latOff = r * Math.cos(rad);
-            const lngOff = r * Math.sin(rad);
+    for (let step of steps) {
+        for (let dir of directions) {
+            const lngOff = dir[0] * step;
+            const latOff = dir[1] * step;
             
-            const adjustedStart = [start.lng + lngOff, start.lat + latOff];
+            const candidate = [originalPoint.lng + lngOff, originalPoint.lat + latOff];
             
-            // Şimdi End noktasını (Varış) kurtarmaya çalış (Aynı mantık)
-            for (let r2 of radii) {
-                for (let angle2 of angles) {
-                    const rad2 = angle2 * (Math.PI / 180);
-                    const latOff2 = r2 * Math.cos(rad2);
-                    const lngOff2 = r2 * Math.sin(rad2);
-                    
-                    const adjustedEnd = [end.lng + lngOff2, end.lat + latOff2];
-
-                    try {
-                        // Searoute'a sor
-                        const route = searoute(adjustedStart, adjustedEnd);
-                        if (route && route.geometry) {
-                            console.log(`✅ FOUND! Tugboat Dist: Start(${Math.round(r*60)}NM) End(${Math.round(r2*60)}NM)`);
-                            
-                            // MESAFE HESABI
-                            const tugOut = calculateDistance([start.lng, start.lat], adjustedStart);
-                            const seaDist = Math.round(route.properties.length / 1852);
-                            const tugIn = calculateDistance(adjustedEnd, [end.lng, end.lat]);
-                            
-                            return { 
-                                geo: route.geometry, 
-                                dist: Math.round(tugOut + seaDist + tugIn), 
-                                method: `Searoute (Radar Fix)` 
-                            };
-                        }
-                    } catch(e) { /* Devam et */ }
+            try {
+                // Bu nokta deniz mi? Bunu anlamak için referans noktaya rota çizdiririz.
+                const testRoute = searoute(candidate, referenceSea);
+                if (testRoute && testRoute.geometry) {
+                    // Bulduk! Bu nokta denize çıkış noktasıdır.
+                    return candidate;
                 }
-            }
+            } catch(e) {}
         }
     }
+    return null; // Denize ulaşılamadı (Çok içeride)
+}
 
-    console.log("❌ FAILED: Coordinates are too far inland.");
+function getRobustRoute(start, end) {
+    if (!searoute) return null;
+
+    console.log(`🔍 SEARCHING: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
+
+    // 1. Önce direkt dene
+    try {
+        const route = searoute([start.lng, start.lat], [end.lng, end.lat]);
+        if (route && route.geometry) return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), method: "Direct" };
+    } catch(e) {}
+
+    // 2. Olmadıysa "Tugboat" Operasyonu Başlat
+    // Başlangıç ve Bitiş için en yakın denizi bul
+    const seaStart = findNearestSeaPoint(start);
+    const seaEnd = findNearestSeaPoint(end);
+
+    if (seaStart && seaEnd) {
+        try {
+            // Denizden denize rota çiz
+            const route = searoute(seaStart, seaEnd);
+            if (route && route.geometry) {
+                console.log(`✅ FOUND via Tugboat Logic`);
+                
+                // Mesafeleri topla
+                const tugOut = calculateDistance([start.lng, start.lat], seaStart);
+                const seaDist = Math.round(route.properties.length / 1852);
+                const tugIn = calculateDistance(seaEnd, [end.lng, end.lat]);
+                
+                return { 
+                    geo: route.geometry, 
+                    dist: Math.round(tugOut + seaDist + tugIn), 
+                    method: `Tugboat (+${Math.round(tugOut+tugIn)} NM)` 
+                };
+            }
+        } catch(e) {}
+    }
+    
+    // 3. Ters Rota Dene (Bazen kütüphane A->B hata verir ama B->A çalışır)
+    if (seaStart && seaEnd) {
+        try {
+            const route = searoute(seaEnd, seaStart);
+            if(route && route.geometry) {
+                 const tugOut = calculateDistance([start.lng, start.lat], seaStart);
+                 const seaDist = Math.round(route.properties.length / 1852);
+                 const tugIn = calculateDistance(seaEnd, [end.lng, end.lat]);
+                 return { geo: route.geometry, dist: Math.round(tugOut + seaDist + tugIn), method: "Reverse Logic" };
+            }
+        } catch(e){}
+    }
+
+    console.log("❌ FAILED: Port is completely landlocked.");
     return null;
 }
 
@@ -417,7 +445,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getPureSearouteWithTugboat(shipPort, destPort);
+        const route = getRobustRoute(shipPort, destPort);
         
         if (route) {
             const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -428,8 +456,6 @@ function findOpportunities(shipPosName, region, vType) {
             const portDues = 40000 + (specs.dwt * 0.4);
             
             let canalFee = 0;
-            const flat = route.geo.coordinates.flat(Infinity);
-            // Kaba kanal kontrolü
             if ((shipPort.lng < 40 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < 40)) canalFee += 200000;
             if ((shipPort.lng > -30 && destPort.lng < -100) || (shipPort.lng < -100 && destPort.lng > -30)) canalFee += 180000;
 
@@ -462,4 +488,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V41 (ICEBREAKER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V42 (COORDINATE CRUSHER) running on port ${port}`));
