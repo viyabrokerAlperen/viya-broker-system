@@ -4,7 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Native Fetch
 const fetch = globalThis.fetch;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND (Gelişmiş Rota Zekası ile)
+// FRONTEND (AKILLI ROTA MANTIĞI BURADA)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -23,7 +25,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Navigator</title>
+    <title>VIYA BROKER | Smart Navigator</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -32,21 +34,15 @@ const FRONTEND_HTML = `
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e0e6ed; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #00ff9d; --danger: #ff0055; --warning: #ffb700; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:14px; }
-        
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
-        .brand i { color: var(--neon-cyan); }
         .live-ticker { font-family: var(--font-tech); font-size: 0.8rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .btn-nav { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 8px 25px; border-radius: 50px; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
         .btn-nav:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.4); }
-
         #landing-view { display: block; }
         .hero { height: 100vh; background: linear-gradient(rgba(3,5,8,0.7), rgba(3,5,8,1)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; }
         .hero h1 { font-family: var(--font-tech); font-size: 4rem; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(0,242,255,0.2); }
-        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px auto; }
         .btn-hero { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 20px 50px; font-size: 1.1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 5px; box-shadow: 0 0 30px rgba(0,242,255,0.3); transition: 0.3s; letter-spacing: 1px; }
-        .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 0 60px rgba(0,242,255,0.6); }
-
         #dashboard-view { display: none; padding-top: 80px; height: 100vh; }
         .dash-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; padding: 20px; height: calc(100vh - 80px); }
         .sidebar { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
@@ -54,8 +50,6 @@ const FRONTEND_HTML = `
         .input-group label { display: block; font-size: 0.75rem; color: #8892b0; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #233554; color: #fff; padding: 14px; border-radius: 6px; font-family: var(--font-ui); font-size: 0.95rem; transition: all 0.3s ease; }
         .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 16px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 6px; width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,242,255,0.5); }
-
         .cargo-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .cargo-item { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
         .cargo-item:hover { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
@@ -64,7 +58,6 @@ const FRONTEND_HTML = `
         .c-route { font-size: 0.95rem; font-weight: 700; color: #fff; }
         .c-profit { font-family: var(--font-tech); font-weight: 900; color: var(--success); font-size: 1.1rem; }
         .c-sub { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
-
         .map-container { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         #map { width: 100%; height: 100%; }
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
@@ -155,39 +148,24 @@ const FRONTEND_HTML = `
     </div>
 
     <script>
-        // --- 1. SEYİR HARİTASI (WAYPOINT NETWORK) ---
-        // PANAMA, MACELLAN VE DOĞRU KÖŞELER EKLENDİ
-        const SEA_WAYPOINTS = {
-            // Boğazlar ve Çıkışlar
+        // --- 1. AKILLI DUBALAR (SMART WAYPOINTS) ---
+        // Sadece gerektiğinde çağrılacak stratejik noktalar
+        const WP = {
+            SINOP: [42.5, 35.0], // Karadeniz Derinlik Dubası
             BOSPHORUS: [[29.1, 41.25], [29.05, 41.1], [28.98, 41.0], [28.95, 40.95]],
             MARMARA: [[28.5, 40.8], [27.5, 40.7]],
             DARDANELLES: [[26.7, 40.4], [26.4, 40.15], [26.2, 40.0]],
-            AEGEAN_EXIT: [[25.5, 39.0], [24.5, 37.5], [23.2, 36.0]], // Girit ve Mora açığı (Karadan uzak)
-            MED_TRUNK: [[20.0, 35.5], [12.0, 37.2], [5.0, 37.5], [-4.0, 36.5], [-5.6, 35.95]], // Gibraltar Hattı
+            AEGEAN_EXIT: [[25.5, 39.0], [24.5, 37.5], [23.2, 36.0]], 
             
-            // Okyanus Geçişleri
-            ATLANTIC_NORTH_CROSSING: [[-20.0, 38.0], [-40.0, 35.0], [-60.0, 30.0]], 
-            ATLANTIC_SOUTH_CROSSING: [[-20.0, 20.0], [-35.0, 10.0], [-45.0, 0.0]],
-
-            // Amerika Kıtası Engelleri (Kıta etrafından dolaşmak için)
-            FLORIDA_POINT: [[-79.5, 25.0]], // Florida açığı
-            CARIBBEAN_HUB: [[-75.0, 15.0]], // Karayipler merkezi
-            BRAZIL_POINT: [[-34.0, -7.0]], // Brezilya burnu
-
-            // Panama Kanalı (Kritik Nokta)
-            PANAMA_CANAL: [[-79.9, 9.3], [-79.6, 8.9]], // Giriş - Çıkış
-
-            // Güney Amerika (Macellan)
-            MAGELLAN: [[-68.0, -52.0], [-73.0, -53.0], [-75.0, -50.0]], // Macellan boğazı dönüşü
-
-            // Pasifik
-            US_WEST_POINT: [[-125.0, 35.0]], // California açığı
-            PACIFIC_CROSSING: [[-140.0, 30.0], [-160.0, 25.0], [160.0, 20.0]], // Pasifik geçişi
-
-            // Süveyş ve Asya
-            SUEZ_PATH: [[32.55, 31.3], [32.56, 29.9], [34.0, 27.0], [43.4, 12.6]],
-            INDIAN_OCEAN: [[55.0, 12.0], [75.0, 8.0], [95.0, 6.0]],
-            MALACCA: [[100.0, 3.0], [103.8, 1.3]]
+            GIBRALTAR: [[-5.6, 35.95]],
+            SUEZ_ENTRANCE: [[32.55, 31.3]],
+            SUEZ_EXIT: [[32.56, 29.9], [34.0, 27.0], [43.4, 12.6]],
+            
+            PANAMA_ATL: [[-79.9, 9.35]],
+            PANAMA_PAC: [[-79.5, 8.9]],
+            
+            GOOD_HOPE: [[20.0, -35.0]], // Ümit Burnu (Süveyş'i pas geçerse)
+            MAGELLAN: [[-68.0, -52.5]]  // Macellan Boğazı
         };
 
         const map = L.map('map', {zoomControl: false}).setView([35, 10], 3);
@@ -246,68 +224,67 @@ const FRONTEND_HTML = `
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active'));
             el.classList.add('active');
             
-            const routePath = calculateClientRoute(c.loadGeo, c.dischGeo);
+            // HESAPLA VE ÇİZ
+            const routePath = calculateSmartRoute(c.loadGeo, c.dischGeo);
             drawRoute(routePath, c.loadPort, c.dischPort);
             updateDetails(c);
         }
 
-        // --- 2. ROTA HESAPLAMA MOTORU (NAVIGATOR LOGIC) ---
-        function calculateClientRoute(start, end) {
+        // --- 2. AKILLI ROTA MOTORU (V32 MANTIĞI) ---
+        function calculateSmartRoute(start, end) {
             let path = [[start.lat, start.lng]];
             
-            // Coğrafi Konum Analizi
-            const fromBlackSea = start.lng > 26 && start.lat > 40 && start.lng < 42;
-            const toAmericas = end.lng < -30;
-            const toAsia = end.lng > 60;
-            const toUSWest = end.lng < -110;
-            const toUSEast = end.lng < -70 && end.lng > -90 && end.lat > 24;
-            const toSouthAmericaWest = end.lng < -65 && end.lat < 0;
+            // COĞRAFİ ANALİZ
+            const isDeepBlackSea = (p) => p.lat > 41.5 && p.lng > 30.0; // Sinop ve doğusu
+            const isMarmaraOrIstanbul = (p) => p.lat > 40.0 && p.lat <= 41.5 && p.lng < 30.0;
+            const isAmericas = (p) => p.lng < -30;
+            const isAsia = (p) => p.lng > 60;
+            const isEurope = (p) => p.lat > 45 && p.lng > -15 && p.lng < 30;
+
+            // 1. KARADENİZ ÇIKIŞI
+            if (isDeepBlackSea(start)) {
+                // Eğer derin Karadeniz'deysek (Novorossiysk vb.) Sinop'a uğra
+                path.push(WP.SINOP);
+            }
             
-            // 1. Karadeniz Çıkışı (Standart Prosedür)
-            if (fromBlackSea) {
-                path = path.concat(SEA_WAYPOINTS.BOSPHORUS, SEA_WAYPOINTS.MARMARA, SEA_WAYPOINTS.DARDANELLES, SEA_WAYPOINTS.AEGEAN_EXIT);
-                // Akdeniz çıkışı ekle
-                if (toAmericas || (toAsia && start.lng > 0)) { // Batıya gidiyorsa Cebelitarık
-                     path = path.concat(SEA_WAYPOINTS.MED_TRUNK);
+            // Eğer Karadeniz veya Marmara'daysak Boğazlardan çık
+            if (isDeepBlackSea(start) || isMarmaraOrIstanbul(start)) {
+                if (start.lat > 41.0) path = path.concat(WP.BOSPHORUS); // İstanbul'un kuzeyiyse Boğaz'dan geç
+                path = path.concat(WP.MARMARA, WP.DARDANELLES, WP.AEGEAN_EXIT);
+                
+                // Buradan nereye?
+                if (isAmericas(end) || (isAsia(end) && end.lng < 0)) { // Batıya (Amerika)
+                    path = path.concat([[-4.0, 36.5]], WP.GIBRALTAR);
+                } else if (isAsia(end)) { // Doğuya (Asya - Süveyş)
+                    path = path.concat([[20.0, 35.5]], WP.SUEZ_ENTRANCE);
                 }
             }
 
-            // 2. Panama Kanalı Mantığı (Atlantik -> Pasifik)
-            if (toUSWest || (toSouthAmericaWest && end.lat > -30)) {
-                // Panama'ya yönlendir
-                if(path[path.length-1][1] > -20) path = path.concat(SEA_WAYPOINTS.ATLANTIC_NORTH_CROSSING); // Önce Atlantiği geç
-                path = path.concat(SEA_WAYPOINTS.CARIBBEAN_HUB); // Karayiplere in
-                path = path.concat(SEA_WAYPOINTS.PANAMA_CANAL); // Kanaldan geç
-                path = path.concat([[15.0, -95.0]]); // Meksika açığına çık
-            }
-            
-            // 3. Macellan Boğazı Mantığı (Çok Güney'e gidiyorsa)
-            else if (toSouthAmericaWest && end.lat <= -30) {
-                path = path.concat(SEA_WAYPOINTS.BRAZIL_POINT); // Brezilya burnuna in
-                path = path.concat(SEA_WAYPOINTS.MAGELLAN); // Macellan'dan dön
-            }
-
-            // 4. US East Coast (Kuzey Amerika Kalkanı)
-            else if (toUSEast) {
-                if(path.length < 2) path = path.concat(SEA_WAYPOINTS.MED_TRUNK); // Akdenizden geliyorsa
-                path = path.concat(SEA_WAYPOINTS.ATLANTIC_NORTH_CROSSING);
-                // Direkt Florida'ya inip karaya bindirmesin diye açıkta bırakıyoruz
-            }
-
-            // 5. Asya (Süveyş)
-            else if (toAsia) {
-                // Eğer Akdeniz içindeysek ve Doğuya gidiyorsak
-                if (!fromBlackSea) { // Zaten Karadenizden çıktıysa oradadır
-                     // Basitçe Süveyş'e bağla
+            // 2. PANAMA KANALI MANTIĞI
+            // Eğer Batıya gidiyorsak ve hedef Pasifik tarafındaysa
+            if (end.lng < -85 && (start.lng > -80 || start.lng > 0)) {
+                // Panama'ya girmeli mi?
+                if (Math.abs(start.lat - end.lat) < 50) { // Çok kuzey/güney değilse
+                    path.push([-60.0, 20.0]); // Atlantik yaklaşma
+                    path.push([-75.0, 15.0]); // Karayip
+                    path.push(WP.PANAMA_ATL[0]); 
+                    path.push(WP.PANAMA_PAC[0]);
                 }
-                path = path.concat(SEA_WAYPOINTS.SUEZ_PATH, SEA_WAYPOINTS.INDIAN_OCEAN, SEA_WAYPOINTS.MALACCA);
+            }
+
+            // 3. SÜVEYŞ KANALI MANTIĞI
+            if (isAsia(end) && start.lng < 40 && !isDeepBlackSea(start) && !isMarmaraOrIstanbul(start)) {
+                 // Akdeniz içindeysek ve Asya'ya gidiyorsak (örn: İtalya -> Çin)
+                 path.push(WP.SUEZ_ENTRANCE[0]);
+                 path = path.concat(WP.SUEZ_EXIT);
+                 path.push([100.0, 3.0]); // Malacca girişi
             }
 
             path.push([end.lat, end.lng]);
             return getCurvePoints(path);
         }
 
-        // Kavis Yumuşatma
+        // Kavis (Curve) Fonksiyonu
         function getCurvePoints(coords) {
             let curved = [];
             for(let i=0; i<coords.length-1; i++) {
@@ -315,7 +292,9 @@ const FRONTEND_HTML = `
                 const p1 = coords[i];
                 const p2 = coords[i+1];
                 const dist = Math.sqrt(Math.pow(p2[0]-p1[0],2) + Math.pow(p2[1]-p1[1],2));
-                if(dist > 15) { // Uzun mesafelerde ara nokta
+                
+                // Eğer mesafe çok uzunsa (Okyanus geçişi) araya nokta at
+                if(dist > 20) { 
                     const midLat = (p1[0]+p2[0])/2 + (dist/15); 
                     const midLng = (p1[1]+p2[1])/2;
                     curved.push([midLat, midLng]);
@@ -332,11 +311,11 @@ const FRONTEND_HTML = `
                 <div class="d-row"><span class="d-lbl">Cargo</span> <span class="d-val">\${c.commodity} (\${c.qty.toLocaleString()} mt)</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Fuel</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Fees (Port/Canal)</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Port/Canal Fees</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
-                <div class="d-row" style="font-size:1.2rem; margin-top:5px;"><span class="d-lbl" style="color:#fff">PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
+                <div class="d-row" style="font-size:1.2rem; margin-top:5px;"><span class="d-lbl" style="color:#fff">NET PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
             \`;
             document.getElementById('financialDetails').innerHTML = html;
             document.getElementById('resBox').style.display = 'block';
@@ -344,11 +323,10 @@ const FRONTEND_HTML = `
 
         function drawRoute(coords, load, disch) {
             layerGroup.clearLayers();
-            L.polyline(coords, { color: '#00f2ff', weight: 8, opacity: 0.3 }).addTo(layerGroup);
-            const line = L.polyline(coords, { color: '#00f2ff', weight: 3, opacity: 1, dashArray: '10, 15', lineCap: 'round' }).addTo(layerGroup);
-            L.circleMarker(coords[0], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD");
-            L.circleMarker(coords[coords.length-1], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH");
-            map.fitBounds(line.getBounds(), {padding: [50, 50]});
+            L.polyline(coords, { color: '#00f2ff', weight: 4, opacity: 0.8, dashArray: '10, 5' }).addTo(layerGroup);
+            L.circleMarker(coords[0], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
+            L.circleMarker(coords[coords.length-1], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+            map.fitBounds(L.polyline(coords).getBounds(), {padding: [50, 50]});
         }
     </script>
 </body>
@@ -356,7 +334,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND (SADECE HESAPLAMA)
+// BACKEND
 // =================================================================
 
 let PORT_DB = {};
@@ -394,14 +372,13 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude",rate:25}, {name:"Diesel",rate:30}, {name:"Naptha",rate:28}]
 };
 
-// Basit Mesafe Hesabı (Fiyat Tahmini İçin)
 function calcDist(p1, p2) {
     const R = 3440;
     const dLat = (p2.lat - p1.lat) * Math.PI/180;
     const dLon = (p2.lng - p1.lng) * Math.PI/180;
     const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(p1.lat*Math.PI/180)*Math.cos(p2.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c * 1.25); // Sapma payı
+    return Math.round(R * c * 1.25); 
 }
 
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
@@ -443,10 +420,8 @@ app.get('/api/broker', async (req, res) => {
         const opex = duration * specs.opex;
         const portDues = 40000 + (specs.dwt * 0.4);
         
-        // Kanal Ücreti (Basit Kontrol)
         let canalFee = 0;
-        if (shipPort.lng > -30 && destPort.lng < -100) canalFee += 180000; // Panama
-        if (shipPort.lng < 40 && destPort.lng > 60) canalFee += 200000; // Süveyş
+        if ((shipPort.lng > -30 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < -30)) canalFee += 200000;
         
         const commission = revenue * 0.0375;
         const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
@@ -457,7 +432,7 @@ app.get('/api/broker', async (req, res) => {
                 loadGeo: shipPort, dischGeo: destPort, 
                 commodity: comm.name, qty: Math.floor(qty), unit: "mt",
                 distance: dist, durationDays: duration,
-                aiAnalysis: `AI Strategy: ${profit > 0 ? 'HIGH DEMAND' : 'LOW MARGIN'}.`,
+                aiAnalysis: `AI Strategy: ${profit > 0 ? 'PROFITABLE' : 'RISKY'}.`,
                 financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
             });
         }
@@ -465,4 +440,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: opportunities.sort((a,b)=>b.financials.profit - a.financials.profit) });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V30 (NAVIGATOR) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V32 (SMART LOGIC) running on port ${port}`));
