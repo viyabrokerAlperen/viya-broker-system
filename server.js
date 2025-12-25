@@ -12,13 +12,12 @@ let searoute = null;
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SYSTEM CHECK: Searoute library loaded successfully.");
+    console.log("✅ SEAROUTE ENGINE: ONLINE");
 } catch (e) {
-    console.error("❌ SYSTEM ERROR: Searoute library NOT found!");
-    process.exit(1); 
+    console.error("⚠️ SEAROUTE FAILED. Using Math Only.");
+    searoute = null;
 }
 
-// Node 18+ Native Fetch
 const fetch = globalThis.fetch;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Debugger</title>
+    <title>VIYA BROKER | Unsinkable</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -79,7 +78,6 @@ const FRONTEND_HTML = `
         #map { width: 100%; height: 100%; }
         .results-box { position: absolute; bottom: 25px; right: 25px; z-index: 500; background: var(--panel-bg); border: 1px solid #333; border-radius: 10px; padding: 25px; width: 400px; max-height: 600px; overflow-y: auto; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0,0,0,0.8); display: none; }
         .res-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .res-title { font-family: var(--font-tech); color: var(--neon-cyan); font-size: 1rem; letter-spacing: 1px; }
         .d-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
         .d-lbl { color: #94a3b8; }
         .d-val { color: #fff; font-weight: 500; }
@@ -92,7 +90,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">DIAGNOSING ROUTE...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">AI NAVIGATOR CALCULATING...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -193,20 +191,11 @@ const FRONTEND_HTML = `
             layerGroup.clearLayers();
 
             try {
-                console.log("SENDING REQUEST:", {shipPos, region, vType}); // Debug Frontend
                 const res = await fetch(\`/api/broker?shipPos=\${shipPos}&region=\${region}&vType=\${vType}\`);
                 const data = await res.json();
-                console.log("RESPONSE RECEIVED:", data); // Debug Frontend
-                
-                if(data.success) { 
-                    displayCargoes(data.cargoes); 
-                } else { 
-                    alert("SERVER ERROR: " + data.error); 
-                }
-            } catch (err) { 
-                console.error(err);
-                alert("NETWORK/FRONTEND ERROR: Check Console"); 
-            } finally { loader.style.display = 'none'; }
+                if(data.success) { displayCargoes(data.cargoes); } 
+                else { alert(data.error); }
+            } catch (err) { alert("Market Scan Error"); } finally { loader.style.display = 'none'; }
         }
 
         function displayCargoes(cargoes) {
@@ -215,7 +204,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:red; padding:10px;">No routes found. Check logs.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No routes found. Check logs.</div>';
                 return;
             }
 
@@ -240,11 +229,11 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Search</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
-                <div class="d-row"><span class="d-lbl">Port/Canal Fees</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
+                <div class="d-row"><span class="d-lbl">Fees</span> <span class="d-val neg">-\$\${(f.portDues+f.canalFee).toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.opex.toLocaleString()}</span></div>
                 <div style="height:1px; background:#444; margin:10px 0;"></div>
                 <div class="d-row" style="font-size:1.2rem; margin-top:5px;"><span class="d-lbl" style="color:#fff">PROFIT</span> <span class="d-val" style="color:\${f.profit > 0 ? '#00f2ff' : '#ff0055'}">\$\${f.profit.toLocaleString()}</span></div>
@@ -256,34 +245,44 @@ const FRONTEND_HTML = `
 
         function drawRoute(geoJSON, load, disch) {
             layerGroup.clearLayers();
-            if(geoJSON && geoJSON.coordinates) {
-                L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
-                
-                // Koordinat bulma mantığı (Flattening for markers)
-                // GeoJSON yapısı karışık olabilir (MultiLineString vs), o yüzden düzleştiriyoruz.
-                // En basit yol: İlk ve son koordinatı bulmak.
-                const flatCoords = flattenCoordinates(geoJSON.coordinates);
-                const startPoint = flatCoords[0];
-                const endPoint = flatCoords[flatCoords.length - 1];
-
-                if(startPoint && endPoint) {
-                    L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
-                    L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
-                    map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
+            if(geoJSON) {
+                // Main route
+                // V39 Güncellemesi: Array ise direkt çiz, GeoJSON objesi ise .coordinates al
+                let coords = geoJSON;
+                if(!Array.isArray(geoJSON)) {
+                    L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
+                    // Markerlar için koordinat çıkarma
+                    coords = flattenCoordinates(geoJSON.coordinates);
+                } else {
+                    // Fallback (Math) rotası ise direkt polyline çiz
+                    L.polyline(geoJSON, { color: '#bc13fe', weight: 3, opacity: 0.8, dashArray: '10, 5' }).addTo(layerGroup);
                 }
-            } else {
-                console.error("INVALID GEOJSON:", geoJSON);
+
+                if(coords.length > 0) {
+                    const start = coords[0];
+                    const end = coords[coords.length-1];
+                    // Leaflet [lat, lng] ister, GeoJSON [lng, lat] verir. 
+                    // Flatten fonksiyonumuz [lng, lat] veriyor. Çevirmemiz lazım.
+                    // Math rotası zaten [lat, lng] geliyor.
+                    // Bu karmaşayı çözmek için basit kontrol:
+                    const isGeoJSON = !Array.isArray(geoJSON);
+                    
+                    const p1 = isGeoJSON ? [start[1], start[0]] : start;
+                    const p2 = isGeoJSON ? [end[1], end[0]] : end;
+
+                    L.circleMarker(p1, {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
+                    L.circleMarker(p2, {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+                    
+                    if(isGeoJSON) map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
+                    else map.fitBounds(L.polyline(geoJSON).getBounds(), {padding: [50, 50]});
+                }
             }
         }
 
-        // Helper: MultiLineString veya LineString içinden düz koordinat listesi çıkarır
         function flattenCoordinates(coords) {
             if (!Array.isArray(coords)) return [];
-            // Eğer [x, y] formatındaysa (sayıysa)
             if (typeof coords[0] === 'number') return [coords];
-            // Eğer [[x,y], [x,y]] formatındaysa
             if (typeof coords[0][0] === 'number') return coords;
-            // Eğer [[[x,y]], [[x,y]]] formatındaysa (MultiLineString)
             return coords.flat(1);
         }
     </script>
@@ -292,7 +291,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (PATHFINDER)
+// 2. BACKEND & LOGIC (UNSINKABLE)
 // =================================================================
 
 let PORT_DB = {};
@@ -323,8 +322,7 @@ const VESSEL_SPECS = {
     "CAPESIZE":  { type: "BULK", dwt: 180000, speed: 12.5, cons: 45, opex: 8000 },
     "MR_TANKER": { type: "TANKER", dwt: 50000, speed: 13.0, cons: 26, opex: 6500 },
     "AFRAMAX":   { type: "TANKER", dwt: 115000, speed: 12.5, cons: 40, opex: 7500 },
-    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 },
-    "LNG_STD":   { type: "GAS", dwt: 90000, speed: 19.0, cons: 80, opex: 14000 }
+    "VLCC":      { type: "TANKER", dwt: 300000, speed: 12.0, cons: 65, opex: 10000 }
 };
 
 const COMMODITY_DB = {
@@ -332,55 +330,72 @@ const COMMODITY_DB = {
     "TANKER": [{name:"Crude Oil",rate:25}, {name:"Diesel/Gasoil",rate:30}, {name:"Naphtha",rate:28}]
 };
 
-// --- THE PATHFINDER (LOGLU) ---
+// --- SON ÇARE: MATEMATİKSEL EĞRİ (V36'dan alındı) ---
+function getGreatCircle(start, end) {
+    const points = [];
+    const numPoints = 60;
+    for (let i = 0; i <= numPoints; i++) {
+        const f = i / numPoints;
+        const lat = start.lat + (end.lat - start.lat) * f;
+        const lng = start.lng + (end.lng - start.lng) * f;
+        // Basit kavis
+        const curve = Math.sin(f * Math.PI) * 15; // 15 derece kavis
+        points.push([lat + curve, lng]);
+    }
+    return points;
+}
+
+// --- THE UNSINKABLE NAVIGATOR ---
 function getFlexibleRoute(start, end) {
-    if (!searoute) {
-        console.log("⚠️ ROUTE ERROR: Searoute is null.");
-        return null;
-    }
+    // 1. ADIM: SEAROUTE (Genişletilmiş Arama)
+    if (searoute) {
+        console.log(`🔍 SEARCHING: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
+        
+        // Genişletilmiş ve daha agresif ofsetler (100km'ye kadar)
+        const OFFSETS = [
+            [0,0], 
+            [0.1, 0], [-0.1, 0], [0, 0.1], [0, -0.1], // 10km
+            [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3], // 30km
+            [0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5], // 50km
+            [1.0, 0], [-1.0, 0], [0, 1.0], [0, -1.0]  // 100km (Derin okyanus)
+        ];
 
-    console.log(`🔍 ROUTE SEARCH START: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
-
-    const OFFSETS = [
-        [0,0], 
-        [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05],
-        [0.1, 0], [-0.1, 0], [0, 0.1], [0, -0.1],
-        [0.2, 0.2], [-0.2, -0.2]
-    ];
-
-    for (let sOff of OFFSETS) {
-        const tempStart = [start.lng + sOff[0], start.lat + sOff[1]];
-        try {
-            const route = searoute(tempStart, [end.lng, end.lat]);
-            if (route && route.geometry) {
-                console.log(`✅ ROUTE FOUND! Method: Jiggle Start [${sOff}]`);
-                return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), method: "Adjusted Start" };
+        for (let sOff of OFFSETS) {
+            for (let eOff of OFFSETS) { // İkisini de aynı anda dene
+                const tempStart = [start.lng + sOff[0], start.lat + sOff[1]];
+                const tempEnd = [end.lng + eOff[0], end.lat + eOff[1]];
+                try {
+                    const route = searoute(tempStart, tempEnd);
+                    if (route && route.geometry) {
+                        console.log(`✅ FOUND via Searoute (Offset: ${sOff})`);
+                        return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), method: "Searoute (Deep Scan)" };
+                    }
+                } catch(e) {}
             }
-        } catch(e) {}
+        }
     }
 
-    for (let eOff of OFFSETS) {
-        const tempEnd = [end.lng + eOff[0], end.lat + eOff[1]];
-        try {
-            const route = searoute([start.lng, start.lat], tempEnd);
-            if (route && route.geometry) {
-                console.log(`✅ ROUTE FOUND! Method: Jiggle End [${eOff}]`);
-                return { geo: route.geometry, dist: Math.round(route.properties.length / 1852), method: "Adjusted End" };
-            }
-        } catch(e) {}
-    }
+    // 2. ADIM: FAIL-SAFE MATH (Asla boş dönme)
+    console.warn("⚠️ SEAROUTE GAVE UP. Using Math Fallback.");
+    const mathRoute = getGreatCircle(start, end);
+    // Mesafe hesabı (Basit Haversine)
+    const R = 3440;
+    const dLat = (end.lat - start.lat) * Math.PI/180;
+    const dLon = (end.lng - start.lng) * Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(start.lat*Math.PI/180)*Math.cos(end.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dist = Math.round(R * c * 1.2); // %20 sapma payı
 
-    console.log("❌ ROUTE FAILED: No path found after all attempts.");
-    return null;
+    return { geo: mathRoute, dist: dist, method: "Math Estimate (Est.)" };
 }
 
 function generateAIAnalysis(profit, method, duration, revenue, vType) {
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
-    text += `Engine: Searoute (${method}). Time: ${duration.toFixed(1)} days.<br>`;
+    text += `Engine: ${method}. Time: ${duration.toFixed(1)} days.<br>`;
     const margin = (profit / revenue) * 100;
-    if (margin > 20) text += `<span style="color:#00ff9d">EXCELLENT OPPORTUNITY.</span>`;
-    else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD MARKET.</span>`;
-    else text += `<span style="color:#ff0055">MARGINAL.</span>`;
+    if (margin > 20) text += `<span style="color:#00ff9d">HIGH DEMAND. Priority.</span>`;
+    else if (margin > 5) text += `<span style="color:#00f2ff">STABLE. Good fix.</span>`;
+    else text += `<span style="color:#ff0055">RISKY. Spot market only.</span>`;
     return text;
 }
 
@@ -388,10 +403,7 @@ function findOpportunities(shipPosName, region, vType) {
     console.log(`🚀 BROKER START: Port=${shipPosName}, Region=${region}, Type=${vType}`);
     
     const shipPort = PORT_DB[shipPosName];
-    if (!shipPort) {
-        console.error("❌ ERROR: Invalid Ship Port");
-        return [];
-    }
+    if (!shipPort) return [];
 
     const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"];
     const commodities = COMMODITY_DB[specs.type] || COMMODITY_DB["BULK"];
@@ -419,37 +431,36 @@ function findOpportunities(shipPosName, region, vType) {
         console.log(`⚡ CALCULATING: ${shipPosName} -> ${destName}`);
         const route = getFlexibleRoute(shipPort, destPort);
         
-        if (route) {
-            const comm = commodities[Math.floor(Math.random() * commodities.length)];
-            const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
-            const revenue = qty * comm.rate;
-            const fuelCost = (route.dist / 24 / specs.speed) * specs.cons * MARKET_DATA.vlsfo; 
-            const opex = (route.dist / 24 / specs.speed) * specs.opex;
-            const portDues = 40000 + (specs.dwt * 0.4);
-            
-            let canalFee = 0;
-            if ((shipPort.lng < 40 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < 40)) canalFee += 200000;
-            if ((shipPort.lng > -30 && destPort.lng < -100) || (shipPort.lng < -100 && destPort.lng > -30)) canalFee += 180000;
+        // Route artık ASLA null dönmez. Ya searoute ya math döner.
+        const comm = commodities[Math.floor(Math.random() * commodities.length)];
+        const qty = Math.min(specs.dwt * 0.95, 25000 + Math.random()*40000); 
+        const revenue = qty * comm.rate;
+        const fuelCost = (route.dist / 24 / specs.speed) * specs.cons * MARKET_DATA.vlsfo; 
+        const opex = (route.dist / 24 / specs.speed) * specs.opex;
+        const portDues = 40000 + (specs.dwt * 0.4);
+        
+        let canalFee = 0;
+        // Basit kanal tahmini (Koordinat bazlı)
+        if ((shipPort.lng < 40 && destPort.lng > 60) || (shipPort.lng > 60 && destPort.lng < 40)) canalFee += 200000;
+        if ((shipPort.lng > -30 && destPort.lng < -100) || (shipPort.lng < -100 && destPort.lng > -30)) canalFee += 180000;
 
-            const commission = revenue * 0.0375;
-            const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
+        const commission = revenue * 0.0375;
+        const profit = revenue - (fuelCost + opex + portDues + canalFee + commission);
 
-            if(profit > -500000) {
-                opportunities.push({
-                    loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
-                    routeGeo: route.geo, distance: route.dist, durationDays: route.dist / (specs.speed * 24), 
-                    aiAnalysis: generateAIAnalysis(profit, route.method, route.dist / (specs.speed * 24), revenue, vType),
-                    searchMethod: route.method,
-                    financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
-                });
-            }
+        if(profit > -500000) {
+            opportunities.push({
+                loadPort: shipPosName, dischPort: destName, commodity: comm.name, qty: Math.floor(qty), unit: "mt",
+                routeGeo: route.geo, distance: route.dist, durationDays: route.dist / (specs.speed * 24), 
+                aiAnalysis: generateAIAnalysis(profit, route.method, route.dist / (specs.speed * 24), revenue, vType),
+                searchMethod: route.method,
+                financials: { revenue: Math.round(revenue), fuelCost: Math.round(fuelCost), opex: Math.round(opex), portDues: Math.round(portDues), canalFee: Math.round(canalFee), commission: Math.round(commission), profit: Math.round(profit) }
+            });
         }
     }
     console.log(`🏁 BROKER FINISHED: ${opportunities.length} routes generated.`);
     return opportunities.sort((a,b) => b.financials.profit - a.financials.profit);
 }
 
-// --- API ROUTES ---
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
 app.get('/api/market-data', async (req, res) => { await updateMarketData(); res.json(MARKET_DATA); });
@@ -461,4 +472,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V38 (BLACK BOX DEBUGGER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V39 (UNSINKABLE) running on port ${port}`));
