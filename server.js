@@ -12,9 +12,9 @@ let searoute = null;
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE SNIPER: READY");
+    console.log("✅ SEAROUTE DEEP SCAN: ONLINE");
 } catch (e) {
-    console.error("❌ SNIPER ERROR: Library missing.");
+    console.error("❌ ERROR: Searoute library missing.");
     process.exit(1); 
 }
 
@@ -37,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Sniper</title>
+    <title>VIYA BROKER | Deep Scan</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -85,7 +85,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">KRAKEN RELEASED...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">DEEP SCAN ACTIVE...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -241,14 +241,20 @@ const FRONTEND_HTML = `
         function drawRoute(geoJSON, load, disch) {
             layerGroup.clearLayers();
             if(geoJSON && geoJSON.coordinates) {
+                // GeoJSON çiz (Deniz Rotası)
                 L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
                 
                 const flatCoords = flattenCoordinates(geoJSON.coordinates);
                 if(flatCoords.length > 0) {
-                    const startPoint = flatCoords[0];
-                    const endPoint = flatCoords[flatCoords.length - 1];
-                    L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD: " + load);
-                    L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH: " + disch);
+                    const seaStart = flatCoords[0];
+                    const seaEnd = flatCoords[flatCoords.length - 1];
+                    
+                    // Römorkör Çizgileri (Liman -> Deniz Başlangıcı) - Görsel Şov
+                    // Ancak elimizde orijinal koordinatlar yok (Frontend'de). Sadece marker koyuyoruz.
+                    // Markerlar:
+                    L.circleMarker([seaStart[1], seaStart[0]], {radius:5, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA START");
+                    L.circleMarker([seaEnd[1], seaEnd[0]], {radius:5, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA END");
+                    
                     map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
                 }
             }
@@ -266,7 +272,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (SNIPER ENGINE)
+// 2. BACKEND & LOGIC (DEEP SCAN ENGINE)
 // =================================================================
 
 let PORT_DB = {};
@@ -316,60 +322,86 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- THE SNIPER (DEEP PENETRATION LOGIC) ---
-function getSniperRoute(start, end) {
+// --- GLOBAL REFERENCE POINTS (ÇAPA NOKTALARI) ---
+// Bunlar kesinlikle sudur. Test için kullanılır.
+const GUARANTEED_WATER = [
+    [18.0, 36.0],   // Akdeniz Ortası (Mediterranean)
+    [-30.0, 0.0],   // Atlantik Ortası (Atlantic)
+    [135.0, 20.0],  // Pasifik (Pacific)
+    [80.0, 0.0]     // Hint Okyanusu (Indian)
+];
+
+// --- WATER FINDER (SU ARAYICISI) ---
+// Bir noktanın deniz erişimi olup olmadığını test eder.
+// Varsa o "Islak" noktayı döner.
+function findWaterAccess(point) {
     if (!searoute) return null;
 
-    console.log(`🔍 SNIPER TARGETING: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
+    // Arama Çemberi: 0.01 (1km) -> 2.0 (200km)
+    const steps = [0, 0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0];
+    const directions = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]]; // 8 Yön
 
-    // Hata Payları (Giderek artan menzil - 3 dereceye kadar = 330km)
-    // Sadece [LNG, LAT] formatını koruyoruz. Ters çevirme YOK.
-    const steps = [0, 0.1, 0.3, 0.5, 1.0, 2.0, 3.0]; 
-    const directions = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]];
-
-    // 1. Önce Start noktasını kurtar
-    for (let sStep of steps) {
-        for (let sDir of directions) {
-            
-            const startCandidate = [
-                start.lng + (sDir[0] * sStep), 
-                start.lat + (sDir[1] * sStep)
+    for (let step of steps) {
+        for (let dir of directions) {
+            const candidate = [
+                point.lng + (dir[0] * step),
+                point.lat + (dir[1] * step)
             ];
 
-            // 2. Start noktasını bulduysak, End noktasını kurtar
-            for (let eStep of steps) {
-                for (let eDir of directions) {
-                    
-                    const endCandidate = [
-                        end.lng + (eDir[0] * eStep),
-                        end.lat + (eDir[1] * eStep)
-                    ];
-
-                    try {
-                        // Ateşle!
-                        const route = searoute(startCandidate, endCandidate);
-                        if (route && route.geometry) {
-                            console.log(`✅ TARGET HIT! (Start Offset: ${sStep}, End Offset: ${eStep})`);
-                            
-                            const tugOut = calculateDistance([start.lng, start.lat], startCandidate);
-                            const seaDist = Math.round(route.properties.length / 1852);
-                            const tugIn = calculateDistance([end.lng, end.lat], endCandidate);
-                            
-                            return { 
-                                geo: route.geometry, 
-                                dist: Math.round(tugOut + seaDist + tugIn), 
-                                method: `Sniper (+${Math.round(tugOut+tugIn)} NM)` 
-                            };
-                        }
-                    } catch(e) {
-                        // Iskaladı, bir sonrakini dene
+            // Bu aday nokta denize çıkabiliyor mu?
+            // Herhangi bir Çapa Noktasına rota çizebilirse, denizdedir.
+            for (let refPoint of GUARANTEED_WATER) {
+                try {
+                    // Hız için basit kontrol, geometriye bakmıyoruz sadece null değilse yeter
+                    const route = searoute(candidate, refPoint);
+                    if (route && route.geometry) {
+                        return candidate; // BULDUM! Bu nokta denize bağlı.
                     }
-                }
+                } catch(e) {}
             }
         }
     }
+    return null; // Umutsuz vaka (Çok içeride)
+}
 
-    console.log("❌ MISSION FAILED: Target unreachable.");
+// --- DEEP SCAN ROUTER ---
+function getDeepScanRoute(start, end) {
+    console.log(`🔍 DEEP SCAN: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
+
+    // 1. ADIM: Limanları Kurtar
+    const safeStart = findWaterAccess(start);
+    if (!safeStart) {
+        console.log("❌ FAIL: Start port is landlocked.");
+        return null;
+    }
+
+    const safeEnd = findWaterAccess(end);
+    if (!safeEnd) {
+        console.log("❌ FAIL: End port is landlocked.");
+        return null;
+    }
+
+    console.log(`✅ PORTS SECURED: Start[Delta:${calculateDistance([start.lng,start.lat], safeStart).toFixed(0)}NM] End[Delta:${calculateDistance([end.lng,end.lat], safeEnd).toFixed(0)}NM]`);
+
+    // 2. ADIM: İki Islak Nokta Arasında Rota Çiz
+    try {
+        const route = searoute(safeStart, safeEnd);
+        if (route && route.geometry) {
+            // Mesafe Hesabı: Römorkör (Liman->Su) + Deniz + Römorkör (Su->Liman)
+            const tugOut = calculateDistance([start.lng, start.lat], safeStart);
+            const seaDist = Math.round(route.properties.length / 1852);
+            const tugIn = calculateDistance(safeEnd, [end.lng, end.lat]);
+            
+            return {
+                geo: route.geometry,
+                dist: Math.round(tugOut + seaDist + tugIn),
+                method: `DeepScan (Tug: ${Math.round(tugOut+tugIn)} NM)`
+            };
+        }
+    } catch(e) {
+        console.log("❌ FAIL: No sea path between secured points.");
+    }
+
     return null;
 }
 
@@ -410,7 +442,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getSniperRoute(shipPort, destPort);
+        const route = getDeepScanRoute(shipPort, destPort);
         
         if (route) {
             const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -453,4 +485,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V44 (THE SNIPER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V45 (DEEP SCAN) running on port ${port}`));
