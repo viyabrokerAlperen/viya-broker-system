@@ -5,18 +5,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANELER ---
+// --- KÜTÜPHANE YÜKLEME ---
 const require = createRequire(import.meta.url);
 let searoute = null;
-let turf = null;
 
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    turf = require('@turf/turf');
-    console.log("✅ SYSTEM ONLINE: Searoute & Turf.js Ready");
+    console.log("✅ SYSTEM ONLINE: Searoute Ready");
 } catch (e) {
-    console.error("❌ CRITICAL: Dependencies missing. Run 'npm install'");
+    console.error("❌ CRITICAL: searoute missing. Run 'npm install'");
     process.exit(1); 
 }
 
@@ -39,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Blue Point</title>
+    <title>VIYA BROKER | Ghost Protocol</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -87,7 +85,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">BLUE POINT PROTOCOL ACTIVE...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">GHOST PROTOCOL: SEARCHING...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -226,7 +224,7 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Search</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -272,7 +270,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (BLUE POINT ENGINE)
+// 2. BACKEND & LOGIC (GHOST PROTOCOL ENGINE)
 // =================================================================
 
 let PORT_DB = {};
@@ -322,24 +320,21 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- THE BLUE POINT FINDER ---
-// Limanı alıp en yakın denize "zorla" yapıştırır.
+// --- GLOBAL REFERENCE POINTS (ÇAPA NOKTALARI) ---
+const GUARANTEED_WATER = [
+    [18.0, 36.0],   // Akdeniz Ortası
+    [-30.0, 0.0],   // Atlantik Ortası
+    [135.0, 20.0],  // Pasifik
+    [80.0, 0.0]     // Hint Okyanusu
+];
+
+// --- WATER FINDER (SU ARAYICISI) ---
 function findNearestWater(portCoord) {
-    if (!searoute || !turf) return null;
+    if (!searoute) return null;
 
-    // 1. Önce basit bir deneme yap (Belki zaten denizdedir)
-    try {
-        const testRoute = searoute(portCoord, [0,0]); // Test route to null island
-        if(testRoute) return portCoord;
-    } catch(e) {}
-
-    // 2. Etrafı Tara (Spiral Search)
-    // 0.5km'den başlayıp 100km'ye kadar açılır
-    const steps = [0.005, 0.01, 0.05, 0.1, 0.5, 1.0];
-    const directions = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]];
-
-    // Referans: Akdeniz Ortası (Garanti Su)
-    const safeWater = [18.0, 36.0]; 
+    // Arama Çemberi: 0.01 (1km) -> 2.0 (200km)
+    const steps = [0, 0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0];
+    const directions = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]]; // 8 Yön
 
     for (let step of steps) {
         for (let dir of directions) {
@@ -348,22 +343,23 @@ function findNearestWater(portCoord) {
                 portCoord[1] + (dir[1] * step)  // Lat
             ];
 
-            try {
-                // Bu aday nokta denize bağlı mı?
-                const route = searoute(candidate, safeWater);
-                if (route && route.geometry) {
-                    console.log(`💧 FOUND WATER! Offset: ${step} deg`);
-                    return candidate;
-                }
-            } catch(e) {}
+            // Bu nokta denize bağlı mı? Kontrol et.
+            for (let refPoint of GUARANTEED_WATER) {
+                try {
+                    const route = searoute(candidate, refPoint);
+                    if (route && route.geometry) {
+                        return candidate; // BULDUM!
+                    }
+                } catch(e) {}
+            }
         }
     }
-    return null;
+    return null; // Denize ulaşılamadı.
 }
 
-// --- ROTA MOTORU ---
-function getBluePointRoute(start, end) {
-    console.log(`🔍 BLUE POINT SCAN: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
+// --- GHOST ROUTER ---
+function getGhostRoute(start, end) {
+    console.log(`🔍 GHOST SCAN: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
 
     const startCoord = [start.lng, start.lat];
     const endCoord = [end.lng, end.lat];
@@ -381,15 +377,14 @@ function getBluePointRoute(start, end) {
     try {
         const route = searoute(blueStart, blueEnd);
         if (route && route.geometry) {
-            // Mesafe Hesabı (Römorkör Dahil)
-            const tugOut = calculateDistance([start.lng, start.lat], [blueStart[0], blueStart[1]]); // x=lng, y=lat
+            const tugOut = calculateDistance([start.lng, start.lat], [blueStart[0], blueStart[1]]); 
             const seaDist = Math.round(route.properties.length / 1852);
             const tugIn = calculateDistance([end.lng, end.lat], [blueEnd[0], blueEnd[1]]);
             
             return {
                 geo: route.geometry,
                 dist: Math.round(tugOut + seaDist + tugIn),
-                method: `BluePoint (Tug: ${Math.round(tugOut+tugIn)} NM)`
+                method: `Ghost (Tug: ${Math.round(tugOut+tugIn)} NM)`
             };
         }
     } catch(e) {
@@ -435,7 +430,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getBluePointRoute(shipPort, destPort);
+        const route = getGhostRoute(shipPort, destPort);
         
         if (route) {
             const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -478,4 +473,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V46 (BLUE POINT PROTOCOL) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V47 (GHOST PROTOCOL) running on port ${port}`));
