@@ -5,14 +5,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-// --- KÜTÜPHANE YÜKLEME ---
+// --- KÜTÜPHANE ---
 const require = createRequire(import.meta.url);
 let searoute = null;
 
 try {
     const pkg = require('searoute');
     searoute = (typeof pkg === 'function') ? pkg : (pkg.default || pkg);
-    console.log("✅ SEAROUTE: ONLINE & READY TO SWAP");
+    console.log("✅ SEAROUTE GRIDIRON: READY TO ENGAGE");
 } catch (e) {
     console.error("❌ CRITICAL: searoute missing.");
     process.exit(1); 
@@ -29,7 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. FRONTEND
+// FRONTEND
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -37,7 +37,7 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Swap Master</title>
+    <title>VIYA BROKER | Gridiron</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -85,7 +85,7 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">CORRECTING COORDINATES...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 20px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1.2rem;">GRID SCANNING OCEAN...</div></div></div>
 
     <nav>
         <div class="brand"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
@@ -199,7 +199,7 @@ const FRONTEND_HTML = `
             list.style.display = 'block';
             
             if(cargoes.length === 0) {
-                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No routes. Check logs.</div>';
+                list.innerHTML = '<div style="color:var(--danger); padding:10px;">No reachable routes found.</div>';
                 return;
             }
 
@@ -224,7 +224,7 @@ const FRONTEND_HTML = `
             const f = c.financials;
             const html = \`
                 <div class="d-row"><span class="d-lbl">Route</span> <span class="d-val">\${c.loadPort} to \${c.dischPort}</span></div>
-                <div class="d-row"><span class="d-lbl">Method</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
+                <div class="d-row"><span class="d-lbl">Details</span> <span class="d-val" style="color:var(--neon-cyan)">\${c.searchMethod}</span></div>
                 <div style="height:1px; background:#333; margin:10px 0;"></div>
                 <div class="d-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">+\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="d-row"><span class="d-lbl">Fuel Cost</span> <span class="d-val neg">-\$\${f.fuelCost.toLocaleString()}</span></div>
@@ -241,14 +241,15 @@ const FRONTEND_HTML = `
         function drawRoute(geoJSON, load, disch) {
             layerGroup.clearLayers();
             if(geoJSON && geoJSON.coordinates) {
+                // Rota Çizimi
                 L.geoJSON(geoJSON, { style: { color: '#00f2ff', weight: 4, opacity: 0.8 } }).addTo(layerGroup);
                 
                 const flatCoords = flattenCoordinates(geoJSON.coordinates);
                 if(flatCoords.length > 0) {
                     const startPoint = flatCoords[0];
                     const endPoint = flatCoords[flatCoords.length - 1];
-                    L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("START");
-                    L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("END");
+                    L.circleMarker([startPoint[1], startPoint[0]], {radius:6, color:'#00f2ff', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA START");
+                    L.circleMarker([endPoint[1], endPoint[0]], {radius:6, color:'#bc13fe', fillColor:'#000', fillOpacity:1}).addTo(layerGroup).bindPopup("SEA END");
                     map.fitBounds(L.geoJSON(geoJSON).getBounds(), {padding: [50, 50]});
                 }
             }
@@ -266,7 +267,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 2. BACKEND & LOGIC (SWAP MASTER ENGINE)
+// 2. BACKEND & LOGIC (GRIDIRON ENGINE)
 // =================================================================
 
 let PORT_DB = {};
@@ -307,6 +308,7 @@ const COMMODITY_DB = {
 };
 
 function calculateDistance(coord1, coord2) {
+    // coord = [lng, lat]
     const R = 3440;
     const lat1 = coord1[1]; const lon1 = coord1[0];
     const lat2 = coord2[1]; const lon2 = coord2[0];
@@ -316,61 +318,76 @@ function calculateDistance(coord1, coord2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// --- INTELLIGENT ROUTER (SWAP & SPIRAL) ---
-function getIntelligentRoute(start, end) {
+// --- WATER FINDER (THE GRIDIRON) ---
+// Bir koordinatın (Lng, Lat) etrafını ızgara gibi tarar.
+// Bulduğu ilk "Islak" noktayı döndürür.
+// "Islak" testi: Buradan [0,0] noktasına rota çizilebiliyor mu?
+function findSeaAccess(coord) {
     if (!searoute) return null;
 
-    console.log(`🔍 INTEL: [${start.lat},${start.lng}] -> [${end.lat},${end.lng}]`);
-
-    // PERMUTASYONLAR (Kombinasyon Denemesi)
-    // C1: Normal [lng, lat]
-    // C2: Start Swapped [lat, lng]
-    // C3: End Swapped [lat, lng]
-    // C4: Both Swapped [lat, lng]
-    
-    const candidates = [
-        { s: [start.lng, start.lat], e: [end.lng, end.lat], id: "Normal" },
-        { s: [start.lat, start.lng], e: [end.lng, end.lat], id: "Swap Start" },
-        { s: [start.lng, start.lat], e: [end.lat, end.lng], id: "Swap End" },
-        { s: [start.lat, start.lng], e: [end.lat, end.lng], id: "Swap Both" }
+    // Koordinat Yorumları (Doğru ve Ters)
+    const interpretations = [
+        [coord.lng, coord.lat], // Normal (Muhtemelen doğru)
+        [coord.lat, coord.lng]  // Ters (Hatalı veri için)
     ];
 
-    // Önce direkt kombinasyonları dene
-    for(let cand of candidates) {
-        try {
-            const route = searoute(cand.s, cand.e);
-            if(route && route.geometry) {
-                console.log(`✅ FOUND: ${cand.id}`);
-                const dist = Math.round(route.properties.length / 1852);
-                return { geo: route.geometry, dist: dist, method: cand.id };
-            }
-        } catch(e) {}
-    }
+    // Izgara Taraması (Spiral yerine Grid)
+    // -0.5'ten +0.5'e kadar (yaklaşık 50km çap)
+    const range = 0.5; 
+    const step = 0.1; // 10km adımlarla
 
-    // Olmadı mı? O zaman Swaplanmış koordinatları "Spiral" ile denize it.
-    // Çünkü belki doğru koordinat "Swap Start"tır ama yine de limanda rıhtımda kalıyordur.
-    const steps = [0.05, 0.1, 0.5, 1.0];
-    const directions = [[0,1], [0,-1], [1,0], [-1,0]];
-
-    for(let cand of candidates) {
-        // Start'ı oynat
-        for(let step of steps) {
-            for(let dir of directions) {
-                const adjStart = [cand.s[0] + (dir[0]*step), cand.s[1] + (dir[1]*step)];
+    for (let basePoint of interpretations) {
+        // Izgara döngüsü
+        for (let x = -range; x <= range; x += step) {
+            for (let y = -range; y <= range; y += step) {
+                const candidate = [basePoint[0] + x, basePoint[1] + y];
+                
                 try {
-                    const route = searoute(adjStart, cand.e);
-                    if(route && route.geometry) {
-                        const dist = Math.round(route.properties.length / 1852);
-                        // Tugboat hesabı
-                        const tug = calculateDistance([cand.s[0], cand.s[1]], adjStart); // Basit hesap (x=lon olarak kabul)
-                        return { geo: route.geometry, dist: dist + Math.round(tug), method: `${cand.id} + Offset` };
+                    // Test: Buradan denize (0,0) rota var mı?
+                    const test = searoute(candidate, [0,0]);
+                    if (test && test.geometry) {
+                        console.log(`💧 WATER FOUND! (Offset: ${x.toFixed(2)}, ${y.toFixed(2)})`);
+                        return candidate; // Bulduk!
                     }
                 } catch(e) {}
             }
         }
     }
+    return null; // Hiçbir şekilde su bulunamadı.
+}
 
-    console.log("❌ FAILED: All combinations dead.");
+// --- IRONCLAD ROUTER ---
+function getGridironRoute(start, end) {
+    console.log(`🔍 GRIDIRON: ${start.lat},${start.lng} -> ${end.lat},${end.lng}`);
+
+    // 1. Limanları Suya İndir (Izgara ile)
+    const seaStart = findSeaAccess(start);
+    const seaEnd = findSeaAccess(end);
+
+    if (!seaStart || !seaEnd) {
+        console.log("❌ FAIL: Port is deep inland.");
+        return null;
+    }
+
+    // 2. Deniz Rotası Çiz
+    try {
+        const route = searoute(seaStart, seaEnd);
+        if (route && route.geometry) {
+            // Mesafe Hesabı (Römorkörler + Deniz)
+            // Başlangıç limanı ile bulunan deniz noktası arasındaki mesafe
+            const tugOut = calculateDistance([start.lng, start.lat], seaStart);
+            const seaDist = Math.round(route.properties.length / 1852);
+            const tugIn = calculateDistance([end.lng, end.lat], seaEnd);
+            
+            return {
+                geo: route.geometry,
+                dist: Math.round(tugOut + seaDist + tugIn),
+                method: `Gridiron Fix (+${Math.round(tugOut+tugIn)} NM)`
+            };
+        }
+    } catch(e) {
+        console.log("❌ FAIL: Route calculation error.");
+    }
     return null;
 }
 
@@ -378,9 +395,9 @@ function generateAIAnalysis(profit, method, duration, revenue, vType) {
     let text = `<strong>AI STRATEGY (${vType}):</strong><br>`;
     text += `Method: ${method}. Time: ${duration.toFixed(1)} days.<br>`;
     const margin = (profit / revenue) * 100;
-    if (margin > 20) text += `<span style="color:#00ff9d">PRIME VOYAGE.</span>`;
+    if (margin > 20) text += `<span style="color:#00ff9d">PRIME. Execute.</span>`;
     else if (margin > 5) text += `<span style="color:#00f2ff">STANDARD.</span>`;
-    else text += `<span style="color:#ff0055">MARGINAL.</span>`;
+    else text += `<span style="color:#ff0055">RISKY.</span>`;
     return text;
 }
 
@@ -411,7 +428,7 @@ function findOpportunities(shipPosName, region, vType) {
         targets.splice(randIndex, 1);
         const destPort = PORT_DB[destName];
         
-        const route = getIntelligentRoute(shipPort, destPort);
+        const route = getGridironRoute(shipPort, destPort);
         
         if (route) {
             const comm = commodities[Math.floor(Math.random() * commodities.length)];
@@ -455,4 +472,4 @@ app.get('/api/broker', async (req, res) => {
     res.json({ success: true, cargoes: results });
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V48 (SWAP MASTER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V49 (GRIDIRON) running on port ${port}`));
