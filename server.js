@@ -65,7 +65,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (YENİLENMİŞ ARAYÜZ)
+// 2. FRONTEND (YENİLENMİŞ ARAYÜZ & ENTREGRE LOGO)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -84,9 +84,9 @@ const FRONTEND_HTML = `
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:13px; }
         
         /* Navigation (Initially Hidden) */
-        nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.8rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
-        .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 15px; cursor:pointer; }
-        .logo-box { width: 35px; height: 35px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.2rem; }
+        nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.5rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
+        .brand { display: flex; align-items: center; cursor:pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
+        .brand img { height: 40px; } 
         
         .nav-links { display: flex; gap: 30px; }
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
@@ -105,8 +105,8 @@ const FRONTEND_HTML = `
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
             transition: opacity 0.8s ease-in-out;
         }
-        .landing-logo { font-family: var(--font-tech); font-size: 5rem; font-weight: 900; letter-spacing: 5px; color: #fff; text-shadow: 0 0 50px rgba(0,242,255,0.3); margin-bottom: 10px; }
-        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; }
+        .landing-logo-img { max-width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
+        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
             padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
@@ -192,14 +192,14 @@ const FRONTEND_HTML = `
     <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">COMPUTING...</div></div></div>
 
     <div id="landing-view">
-        <div class="landing-logo"><i class="fa-solid fa-anchor"></i> VIYA</div>
+        <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA BROKER LOGO" class="landing-logo-img">
         <div class="landing-sub">Global Maritime Brokerage System</div>
         <button class="btn-enter" onclick="enterSystem()">ENTER TERMINAL</button>
     </div>
 
     <nav id="mainNav">
         <div class="brand" onclick="switchView('dashboard')">
-            <div class="logo-box"><i class="fa-solid fa-anchor"></i></div>
+            <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA BROKER">
             VIYA BROKER
         </div>
         <div class="nav-links">
@@ -377,7 +377,6 @@ const FRONTEND_HTML = `
         ];
 
         function loadLibrary() {
-            // Academy
             const aGrid = document.getElementById('academyGrid');
             ACADEMY_DATA.forEach(item => {
                 aGrid.innerHTML += \`
@@ -389,7 +388,6 @@ const FRONTEND_HTML = `
                     </div>\`;
             });
 
-            // Docs (Categorized)
             const dContainer = document.getElementById('docsContainer');
             DOCS_DB.forEach(cat => {
                 let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
@@ -408,7 +406,7 @@ const FRONTEND_HTML = `
         }
         loadLibrary();
 
-        // --- CORE BROKER LOGIC (V56) ---
+        // --- CORE BROKER LOGIC ---
         const SPECS = { "SUPRAMAX": 13.5, "PANAMAX": 13.0, "CAPESIZE": 12.5, "MR_TANKER": 13.0, "AFRAMAX": 12.5, "VLCC": 12.0 };
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
