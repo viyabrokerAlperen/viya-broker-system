@@ -13,9 +13,11 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+// Statik dosya servisi (Yedek olarak kalsın)
+app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (V56 CORE - AYNEN KORUNDU)
+// 1. DATA & CONFIG (AYNEN KORUNDU)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -65,7 +67,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (YENİLENMİŞ ARAYÜZ & ENTREGRE LOGO)
+// 2. FRONTEND (GÜNCELLENMİŞ LOGO VE FAVICON)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -74,6 +76,9 @@ const FRONTEND_HTML = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIYA BROKER | Global Maritime Intelligence</title>
+    
+    <link rel="icon" href="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" type="image/png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -105,8 +110,8 @@ const FRONTEND_HTML = `
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
             transition: opacity 0.8s ease-in-out;
         }
-        .landing-logo-img { max-width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
-        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
+        .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
+        .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
             padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
@@ -144,21 +149,17 @@ const FRONTEND_HTML = `
         .stat-card { background: rgba(0,0,0,0.4); padding: 12px; border: 1px solid var(--border-color); text-align: center; }
         .stat-val { font-family: var(--font-tech); font-size: 1.2rem; color: #fff; font-weight: 700; }
         .stat-lbl { font-size: 0.65rem; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
         .d-val { font-weight: 500; font-family: 'Courier New', monospace; }
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
-
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
 
         /* ACADEMY & DOCS GRID */
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
         .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
-        
         .category-header { font-family: var(--font-tech); color: var(--neon-cyan); margin: 40px 0 20px 0; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        
         .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .doc-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; transition: 0.3s; position: relative; }
         .doc-card:hover { border-color: var(--neon-cyan); transform: translateY(-3px); }
@@ -168,7 +169,6 @@ const FRONTEND_HTML = `
         .btn-download { background: transparent; border: 1px solid #334155; color: #94a3b8; width: 100%; padding: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-weight: 600; }
         .btn-download:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
 
-        /* PRICING */
         .pricing-container { display: flex; justify-content: center; gap: 30px; padding-top: 50px; flex-wrap: wrap; }
         .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); width: 300px; padding: 40px; text-align: center; position: relative; transition: 0.3s; }
         .price-card:hover { transform: scale(1.03); border-color: var(--neon-cyan); }
