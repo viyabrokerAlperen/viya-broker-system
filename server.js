@@ -13,11 +13,11 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-// Statik dosya servisi (Yedek olarak kalsın)
+// Statik dosya servisi (Logo için şart)
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (AYNEN KORUNDU)
+// 1. DATA & CONFIG
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -67,7 +67,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (GÜNCELLENMİŞ LOGO VE FAVICON)
+// 2. FRONTEND (V58 ARAYÜZÜ + LOGO DÜZELTMESİ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -76,9 +76,8 @@ const FRONTEND_HTML = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIYA BROKER | Global Maritime Intelligence</title>
-    
     <link rel="icon" href="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" type="image/png">
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -101,7 +100,7 @@ const FRONTEND_HTML = `
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
 
-        /* LANDING PAGE (PROFESSIONAL ENTRANCE) */
+        /* LANDING PAGE */
         #landing-view { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
             background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
@@ -110,7 +109,7 @@ const FRONTEND_HTML = `
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
             transition: opacity 0.8s ease-in-out;
         }
-        .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
+        .landing-logo-img { max-width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
         .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
@@ -124,7 +123,7 @@ const FRONTEND_HTML = `
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* DASHBOARD (V56 Preserved) */
+        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 380px 1fr 450px; gap: 15px; padding: 15px; height: calc(100vh - 80px); }
         .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); }
         .p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
@@ -133,7 +132,6 @@ const FRONTEND_HTML = `
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 2px; font-family: var(--font-ui); font-size: 0.9rem; transition: 0.3s; }
-        .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; background: rgba(0,242,255,0.05); }
         .btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 2px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
         
         .cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
@@ -155,7 +153,7 @@ const FRONTEND_HTML = `
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
 
-        /* ACADEMY & DOCS GRID */
+        /* LIBRARY GRID */
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
         .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
@@ -377,6 +375,7 @@ const FRONTEND_HTML = `
         ];
 
         function loadLibrary() {
+            // Academy
             const aGrid = document.getElementById('academyGrid');
             ACADEMY_DATA.forEach(item => {
                 aGrid.innerHTML += \`
@@ -388,6 +387,7 @@ const FRONTEND_HTML = `
                     </div>\`;
             });
 
+            // Docs (Categorized)
             const dContainer = document.getElementById('docsContainer');
             DOCS_DB.forEach(cat => {
                 let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
