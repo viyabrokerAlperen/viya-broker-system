@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // =================================================================
-// 1. DATA & CONFIG (V56'dan Aynen Korundu)
+// 1. DATA & CONFIG (V56 CORE - AYNEN KORUNDU)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -47,7 +47,7 @@ const CARGOES = {
 // GLOBAL MARKET STATE
 let MARKET = { 
     brent: 0, 
-    heatingOil: 0, // NYMEX Heating Oil (Proxy for MGO)
+    heatingOil: 0, 
     vlsfo: 0, 
     mgo: 0, 
     lastUpdate: 0 
@@ -65,7 +65,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (MULTI-VIEW INTERFACE)
+// 2. FRONTEND (YENİLENMİŞ ARAYÜZ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -73,132 +73,172 @@ const FRONTEND_HTML = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIYA BROKER | Maritime Hub</title>
+    <title>VIYA BROKER | Global Maritime Intelligence</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #030508; --panel-bg: rgba(15, 23, 42, 0.96); --card-bg: rgba(255, 255, 255, 0.05); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e2e8f0; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #050a14; --panel-bg: rgba(10, 15, 25, 0.90); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.08); --text-main: #e2e8f0; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:13px; }
         
-        /* Navigation */
-        nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(3, 5, 8, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.8rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; cursor:pointer; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .nav-item:hover, .nav-item.active { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,242,255,0.5); }
+        /* Navigation (Initially Hidden) */
+        nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.8rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
+        .brand { font-family: var(--font-tech); font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 15px; cursor:pointer; }
+        .logo-box { width: 35px; height: 35px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.2rem; }
         
-        .live-ticker { font-family: var(--font-tech); font-size: 0.75rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
-        .live-dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
+        .nav-item:hover, .nav-item.active { color: var(--neon-cyan); border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); }
+        
+        .live-ticker { font-family: var(--font-tech); font-size: 0.7rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
+        .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
+        @keyframes blinker { 50% { opacity: 0.5; } }
+
+        /* LANDING PAGE (PROFESSIONAL ENTRANCE) */
+        #landing-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
+            background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
+            background-size: cover; background-position: center; 
+            z-index: 9999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: opacity 0.8s ease-in-out;
+        }
+        .landing-logo { font-family: var(--font-tech); font-size: 5rem; font-weight: 900; letter-spacing: 5px; color: #fff; text-shadow: 0 0 50px rgba(0,242,255,0.3); margin-bottom: 10px; }
+        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; }
+        .btn-enter { 
+            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
+            padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden;
+        }
+        .btn-enter:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
 
         /* Views */
-        .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.5s; }
+        .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.6s ease-out; }
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Dashboard Grid (Existing) */
+        /* DASHBOARD (V56 Preserved) */
         .dash-grid { display: grid; grid-template-columns: 380px 1fr 450px; gap: 15px; padding: 15px; height: calc(100vh - 80px); }
-        .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
-        .p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
+        .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); }
+        .p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
         .p-body { padding: 15px; overflow-y: auto; flex: 1; }
 
-        /* Form Elements */
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.7rem; color: #94a3b8; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }
-        .input-group input, .input-group select { width: 100%; background: #0b1221; border: 1px solid #334155; color: #fff; padding: 12px; border-radius: 4px; font-family: var(--font-ui); font-size: 0.9rem; transition: all 0.3s ease; }
-        .btn-action { background: linear-gradient(135deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 4px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
+        .input-group label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.5px; }
+        .input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 2px; font-family: var(--font-ui); font-size: 0.9rem; transition: 0.3s; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; background: rgba(0,242,255,0.05); }
+        .btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 2px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
         
-        /* Cards */
-        .cargo-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .cargo-item:hover, .cargo-item.active { border-color: var(--neon-cyan); background: rgba(0,242,255,0.05); }
-        .tce-badge { background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px; font-family: var(--font-tech); font-size: 0.75rem; }
+        .cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+        .cargo-item:hover { background: rgba(0,242,255,0.05); border-left-color: var(--neon-cyan); }
+        .cargo-item.active { background: rgba(0,242,255,0.1); border-left-color: var(--neon-cyan); border-top: 1px solid var(--neon-cyan); border-bottom: 1px solid var(--neon-cyan); border-right: 1px solid var(--neon-cyan); }
+        .ci-top { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; color: #fff; font-size: 0.9rem; }
+        .ci-bot { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; }
+        .tce-badge { background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 6px; border-radius: 2px; font-family: var(--font-tech); font-size: 0.7rem; }
 
-        #map { width: 100%; height: 100%; background: #000; }
+        #map { width: 100%; height: 100%; background: #0b1221; }
 
-        /* ACADEMY & DOCS STYLES */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .info-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; transition: 0.3s; position: relative; overflow: hidden; }
-        .info-card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-        .ic-icon { font-size: 2rem; color: var(--neon-purple); margin-bottom: 15px; }
-        .ic-title { font-family: var(--font-tech); font-size: 1.1rem; color: #fff; margin-bottom: 10px; }
-        .ic-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
-        .btn-small { background: transparent; border: 1px solid var(--border-color); color: #fff; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
-        .btn-small:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
-        /* PRICING STYLES */
-        .pricing-grid { display: flex; justify-content: center; gap: 30px; padding: 50px 20px; align-items: center; }
-        .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; width: 320px; text-align: center; position: relative; transition:0.3s; }
-        .price-card.featured { border-color: var(--neon-cyan); transform: scale(1.05); box-shadow: 0 0 30px rgba(0,242,255,0.15); }
-        .pc-title { font-family: var(--font-tech); font-size: 1.5rem; margin-bottom: 10px; color: #fff; }
-        .pc-price { font-size: 2.5rem; font-weight: 700; color: #fff; margin-bottom: 20px; }
-        .pc-price span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
-        .pc-features { list-style: none; padding: 0; text-align: left; margin-bottom: 30px; }
-        .pc-features li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
-        .pc-features li i { color: var(--success); margin-right: 10px; }
-        .btn-price { width: 100%; padding: 12px; background: #fff; color: #000; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font-tech); }
-        .featured .btn-price { background: var(--neon-cyan); }
-
-        /* Stats & Details */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid #333; text-align: center; }
-        .stat-val { font-family: var(--font-tech); font-size: 1.1rem; color: #fff; font-weight: 700; }
-        .stat-lbl { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; text-transform: uppercase; }
-        .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+        .stat-card { background: rgba(0,0,0,0.4); padding: 12px; border: 1px solid var(--border-color); text-align: center; }
+        .stat-val { font-family: var(--font-tech); font-size: 1.2rem; color: #fff; font-weight: 700; }
+        .stat-lbl { font-size: 0.65rem; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+        .d-val { font-weight: 500; font-family: 'Courier New', monospace; }
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
+
+        .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
+
+        /* ACADEMY & DOCS GRID */
+        .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
+        .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
+        
+        .category-header { font-family: var(--font-tech); color: var(--neon-cyan); margin: 40px 0 20px 0; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        
+        .docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .doc-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; transition: 0.3s; position: relative; }
+        .doc-card:hover { border-color: var(--neon-cyan); transform: translateY(-3px); }
+        .doc-icon { font-size: 1.8rem; color: #fff; margin-bottom: 15px; opacity: 0.7; }
+        .doc-title { font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .doc-desc { font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px; min-height: 40px; }
+        .btn-download { background: transparent; border: 1px solid #334155; color: #94a3b8; width: 100%; padding: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-weight: 600; }
+        .btn-download:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+        /* PRICING */
+        .pricing-container { display: flex; justify-content: center; gap: 30px; padding-top: 50px; flex-wrap: wrap; }
+        .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); width: 300px; padding: 40px; text-align: center; position: relative; transition: 0.3s; }
+        .price-card:hover { transform: scale(1.03); border-color: var(--neon-cyan); }
+        .price-card.pro { border: 1px solid var(--neon-cyan); box-shadow: 0 0 30px rgba(0,242,255,0.1); }
+        .plan-name { font-family: var(--font-tech); font-size: 1.2rem; color: #94a3b8; margin-bottom: 10px; }
+        .plan-price { font-size: 3rem; color: #fff; font-weight: 700; margin-bottom: 30px; }
+        .plan-price span { font-size: 1rem; color: #555; font-weight: 400; }
+        .plan-features { list-style: none; padding: 0; text-align: left; margin-bottom: 30px; color: #cbd5e1; font-size: 0.9rem; }
+        .plan-features li { margin-bottom: 12px; display: flex; gap: 10px; }
+        .plan-features i { color: var(--success); }
+        .btn-plan { width: 100%; padding: 15px; font-weight: 700; border: none; cursor: pointer; font-family: var(--font-tech); }
+        .btn-plan.pro { background: var(--neon-cyan); color: #000; }
+        .btn-plan.basic { background: #334155; color: #fff; }
 
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
-        @keyframes blinker { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">PROCESSING...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">COMPUTING...</div></div></div>
 
-    <nav>
-        <div class="brand" onclick="switchView('dashboard')"><i class="fa-solid fa-anchor"></i> VIYA BROKER</div>
+    <div id="landing-view">
+        <div class="landing-logo"><i class="fa-solid fa-anchor"></i> VIYA</div>
+        <div class="landing-sub">Global Maritime Brokerage System</div>
+        <button class="btn-enter" onclick="enterSystem()">ENTER TERMINAL</button>
+    </div>
+
+    <nav id="mainNav">
+        <div class="brand" onclick="switchView('dashboard')">
+            <div class="logo-box"><i class="fa-solid fa-anchor"></i></div>
+            VIYA BROKER
+        </div>
         <div class="nav-links">
             <div class="nav-item active" onclick="switchView('dashboard')">Terminal</div>
-            <div class="nav-item" onclick="switchView('academy')">Academy</div>
-            <div class="nav-item" onclick="switchView('docs')">Documents</div>
-            <div class="nav-item" onclick="switchView('pricing')">Plans</div>
+            <div class="nav-item" onclick="switchView('academy')">Knowledge Base</div>
+            <div class="nav-item" onclick="switchView('docs')">Document Center</div>
+            <div class="nav-item" onclick="switchView('pricing')">Membership</div>
         </div>
         <div class="live-ticker">
-            <div class="ticker-item"><span class="live-dot"></span> LIVE</div>
-            <div class="ticker-item"><i class="fa-solid fa-droplet"></i> BRENT: <span id="oilPrice" class="blinking">...</span></div>
-            <div class="ticker-item"><i class="fa-solid fa-fire"></i> MGO: <span id="hoPrice">...</span></div>
-            <div class="ticker-item"><i class="fa-solid fa-gas-pump"></i> VLSFO: <span id="vlsfoPrice">...</span></div>
+            <div class="ticker-item"><span class="live-dot"></span> MARKET LIVE</div>
+            <div class="ticker-item">BRENT: <span id="oilPrice" class="blinking">...</span></div>
+            <div class="ticker-item">MGO: <span id="hoPrice">...</span></div>
+            <div class="ticker-item">VLSFO: <span id="vlsfoPrice">...</span></div>
         </div>
     </nav>
 
-    <div id="dashboard" class="view-section active">
+    <div id="dashboard" class="view-section">
         <div class="dash-grid">
             <aside class="panel">
-                <div class="p-header"><i class="fa-solid fa-ship"></i> VESSEL CONFIG</div>
+                <div class="p-header"><i class="fa-solid fa-ship"></i> VESSEL PARAMETERS</div>
                 <div class="p-body">
-                    <div class="input-group"><label>VESSEL CLASS</label><select id="vType" onchange="updateSpeed()"><option value="SUPRAMAX">Supramax</option><option value="PANAMAX">Panamax</option><option value="CAPESIZE">Capesize</option><option value="MR_TANKER">MR Tanker</option><option value="AFRAMAX">Aframax</option></select></div>
-                    <div class="input-group"><label>LAT/LNG (AUTO FILL)</label><input type="text" id="refPort" list="portList" placeholder="Select Reference Port..." onchange="fillCoords()"></div>
+                    <div class="input-group"><label>VESSEL CLASS</label><select id="vType" onchange="updateSpeed()"><option value="SUPRAMAX">Supramax (58k)</option><option value="PANAMAX">Panamax (82k)</option><option value="CAPESIZE">Capesize (180k)</option><option value="MR_TANKER">MR Tanker (50k)</option><option value="AFRAMAX">Aframax (115k)</option><option value="VLCC">VLCC (300k)</option></select></div>
+                    <div class="input-group"><label>QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
                     <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
-                    <div class="input-group"><label>SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
-                    <button class="btn-action" onclick="scanMarket()">FIND CARGOES</button>
+                    <div class="input-group"><label>OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
+                    <button class="btn-action" onclick="scanMarket()">SCAN MARKET OPPORTUNITIES</button>
                     <div id="cargoResultList" class="cargo-list" style="margin-top:20px; display:none;"></div>
                 </div>
             </aside>
             <div class="panel">
                 <div id="map"></div>
-                <div style="position:absolute; bottom:20px; left:20px; z-index:500; background:rgba(0,0,0,0.8); padding:10px; border-radius:5px; color:#fff; font-size:0.75rem; border:1px solid #333;">
-                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:10px; height:10px; background:#f59e0b; border-radius:50%; margin-right:8px; display:inline-block;"></span> Vessel</div>
-                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:10px; height:10px; background:#10b981; border-radius:50%; margin-right:8px; display:inline-block;"></span> Load</div>
-                    <div style="display:flex; align-items:center;"><span style="width:10px; height:10px; background:#ef4444; border-radius:50%; margin-right:8px; display:inline-block;"></span> Disch</div>
+                <div style="position:absolute; bottom:20px; left:20px; z-index:500; background:rgba(0,0,0,0.8); padding:10px; border-radius:4px; color:#fff; font-size:0.7rem; border:1px solid #333;">
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#f59e0b; border-radius:50%; margin-right:8px;"></span> Vessel</div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#10b981; border-radius:50%; margin-right:8px;"></span> Load Port</div>
+                    <div style="display:flex; align-items:center;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; margin-right:8px;"></span> Discharge</div>
                 </div>
             </div>
             <aside class="panel">
-                <div class="p-header"><i class="fa-solid fa-chart-pie"></i> ANALYSIS</div>
+                <div class="p-header"><i class="fa-solid fa-file-invoice-dollar"></i> VOYAGE ESTIMATION</div>
                 <div class="p-body" id="analysisPanel" style="display:none;">
                     <div class="stat-grid">
                         <div class="stat-card"><div class="stat-val" id="dispTCE" style="color:var(--neon-cyan)">$0</div><div class="stat-lbl">TCE / Day</div></div>
@@ -207,61 +247,60 @@ const FRONTEND_HTML = `
                     <div id="financialDetails"></div>
                     <div class="ai-insight" id="aiOutput"></div>
                 </div>
-                <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;">Scan to view data.</div>
+                <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;">Waiting for vessel position data...</div>
             </aside>
         </div>
     </div>
 
     <div id="academy" class="view-section">
-        <div style="text-align:center; margin-bottom:30px;">
-            <h1 style="font-family:var(--font-tech); font-size:2.5rem; color:#fff;">VIYA ACADEMY</h1>
-            <p style="color:var(--text-muted);">Critical knowledge for the modern shipbroker.</p>
+        <div class="library-section">
+            <div class="section-title">KNOWLEDGE BASE</div>
+            <div class="section-desc">Essential maritime commercial and legal concepts for modern brokers.</div>
+            <div class="docs-grid" id="academyGrid"></div>
         </div>
-        <div class="grid-container" id="academyGrid"></div>
     </div>
 
     <div id="docs" class="view-section">
-        <div style="text-align:center; margin-bottom:30px;">
-            <h1 style="font-family:var(--font-tech); font-size:2.5rem; color:#fff;">DOCUMENT CENTER</h1>
-            <p style="color:var(--text-muted);">Standard Charter Parties & Clauses templates.</p>
+        <div class="library-section">
+            <div class="section-title">DOCUMENT CENTER</div>
+            <div class="section-desc">Industry standard Charter Parties, Riders and Operational Forms.</div>
+            <div id="docsContainer"></div>
         </div>
-        <div class="grid-container" id="docsGrid"></div>
     </div>
 
     <div id="pricing" class="view-section">
-        <div class="pricing-grid">
+        <div class="pricing-container">
             <div class="price-card">
-                <div class="pc-title">CADET</div>
-                <div class="pc-price">$0 <span>/mo</span></div>
-                <ul class="pc-features">
-                    <li><i class="fa-solid fa-check"></i> Basic Distance Calc</li>
-                    <li><i class="fa-solid fa-check"></i> 5 Scans per Day</li>
+                <div class="plan-name">CADET</div>
+                <div class="plan-price">$0 <span>/mo</span></div>
+                <ul class="plan-features">
+                    <li><i class="fa-solid fa-check"></i> Distance Calculator</li>
+                    <li><i class="fa-solid fa-check"></i> 3 Daily Scans</li>
                     <li><i class="fa-solid fa-xmark" style="color:#555"></i> Financial Analysis</li>
                 </ul>
-                <button class="btn-price">CURRENT PLAN</button>
+                <button class="btn-plan basic">CURRENT PLAN</button>
             </div>
-            <div class="price-card featured">
-                <div style="position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--neon-cyan); color:#000; padding:2px 10px; font-weight:bold; font-size:0.7rem; border-radius:4px;">MOST POPULAR</div>
-                <div class="pc-title">BROKER PRO</div>
-                <div class="pc-price">$49 <span>/mo</span></div>
-                <ul class="pc-features">
+            <div class="price-card pro">
+                <div class="plan-name" style="color:var(--neon-cyan)">BROKER PRO</div>
+                <div class="plan-price">$49 <span>/mo</span></div>
+                <ul class="plan-features">
                     <li><i class="fa-solid fa-check"></i> Unlimited Scans</li>
-                    <li><i class="fa-solid fa-check"></i> TCE & Profit Analysis</li>
-                    <li><i class="fa-solid fa-check"></i> Real-time Market Data</li>
-                    <li><i class="fa-solid fa-check"></i> Document Library</li>
+                    <li><i class="fa-solid fa-check"></i> Real-Time TCE & Profit</li>
+                    <li><i class="fa-solid fa-check"></i> Live Market Data</li>
+                    <li><i class="fa-solid fa-check"></i> Document Access</li>
                 </ul>
-                <button class="btn-price">UPGRADE NOW</button>
+                <button class="btn-plan pro">UPGRADE NOW</button>
             </div>
             <div class="price-card">
-                <div class="pc-title">OWNER</div>
-                <div class="pc-price">$199 <span>/mo</span></div>
-                <ul class="pc-features">
-                    <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+                <div class="plan-name">OWNER</div>
+                <div class="plan-price">$199 <span>/mo</span></div>
+                <ul class="plan-features">
+                    <li><i class="fa-solid fa-check"></i> All Pro Features</li>
                     <li><i class="fa-solid fa-check"></i> API Access</li>
                     <li><i class="fa-solid fa-check"></i> Custom Reports</li>
-                    <li><i class="fa-solid fa-check"></i> 24/7 AI Consultant</li>
+                    <li><i class="fa-solid fa-check"></i> Dedicated Consultant</li>
                 </ul>
-                <button class="btn-price">CONTACT SALES</button>
+                <button class="btn-plan basic">CONTACT SALES</button>
             </div>
         </div>
     </div>
@@ -269,7 +308,17 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- NAVIGATION LOGIC ---
+        // --- UI LOGIC ---
+        function enterSystem() {
+            document.getElementById('landing-view').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('landing-view').style.display = 'none';
+                document.getElementById('mainNav').style.display = 'flex';
+                document.getElementById('dashboard').classList.add('active');
+                map.invalidateSize();
+            }, 800);
+        }
+
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -281,67 +330,96 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION ---
+        // --- CONTENT DATA ---
         const ACADEMY_DATA = [
-            {icon: "fa-scale-balanced", title: "Laytime Calculation", desc: "Understanding Laytime, Demurrage and Despatch. How to calculate time saved or lost."},
-            {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Difference between FOB, CIF, and CFR. Who pays for freight and insurance?"},
-            {icon: "fa-file-contract", title: "Charter Parties", desc: "Key differences between Time Charter (NYPE) and Voyage Charter (Gencon)."},
-            {icon: "fa-ship", title: "ECA Zones", desc: "Emission Control Areas regulations. Sulphur limits in SECA (0.1%) vs Global (0.5%)."}
+            {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
+            {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
+            {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
+            {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
+            {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
+            {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
         ];
 
-        const DOCS_DATA = [
-            {icon: "fa-file-pdf", title: "GENCON 94", desc: "Standard Voyage Charter Party template. The most widely used form."},
-            {icon: "fa-file-lines", title: "NYPE 2015", desc: "New York Produce Exchange form for Time Charters."},
-            {icon: "fa-envelope-open-text", title: "Notice of Readiness", desc: "Standard NOR template to trigger laytime."},
-            {icon: "fa-clipboard-check", title: "Statement of Facts", desc: "SOF template for port agents."}
+        const DOCS_DB = [
+            {
+                category: "DRY BULK CHARTER PARTIES",
+                items: [
+                    {title: "GENCON 94", desc: "Standard Voyage Charter (Universal)."},
+                    {title: "NYPE 2015", desc: "New York Produce Exchange Time Charter."},
+                    {title: "AMWELSH 93", desc: "Americanized Welsh Coal Charter."},
+                    {title: "GRAINCON", desc: "Grain Voyage Charter Party."}
+                ]
+            },
+            {
+                category: "TANKER (OIL/CHEM) CHARTER PARTIES",
+                items: [
+                    {title: "ASBATANKVOY", desc: "Association of Ship Brokers Tanker Voyage."},
+                    {title: "SHELLTIME 4", desc: "Standard Time Charter for Tankers."},
+                    {title: "BPVOY 4", desc: "BP Voyage Charter Party."}
+                ]
+            },
+            {
+                category: "GAS (LNG/LPG) CHARTER PARTIES",
+                items: [
+                    {title: "GASVOY 2005", desc: "Standard Gas Voyage Charter."},
+                    {title: "LNGVOY", desc: "Liquefied Natural Gas Charter."},
+                    {title: "SHELLLNGTIME", desc: "Time Charter for LNG Carriers."}
+                ]
+            },
+            {
+                category: "OPERATIONAL DOCUMENTS",
+                items: [
+                    {title: "Notice of Readiness (NOR)", desc: "Standard NOR template."},
+                    {title: "Statement of Facts (SOF)", desc: "Port agent time log."},
+                    {title: "Letter of Indemnity (LOI)", desc: "Clean B/L indemnity."}
+                ]
+            }
         ];
 
-        function loadContent() {
+        function loadLibrary() {
+            // Academy
             const aGrid = document.getElementById('academyGrid');
             ACADEMY_DATA.forEach(item => {
                 aGrid.innerHTML += \`
-                    <div class="info-card">
-                        <i class="fa-solid \${item.icon} ic-icon"></i>
-                        <div class="ic-title">\${item.title}</div>
-                        <div class="ic-desc">\${item.desc}</div>
-                        <button class="btn-small">READ ARTICLE</button>
+                    <div class="doc-card">
+                        <i class="fa-solid \${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
+                        <div class="doc-title">\${item.title}</div>
+                        <div class="doc-desc">\${item.desc}</div>
+                        <button class="btn-download">READ</button>
                     </div>\`;
             });
 
-            const dGrid = document.getElementById('docsGrid');
-            DOCS_DATA.forEach(item => {
-                dGrid.innerHTML += \`
-                    <div class="info-card">
-                        <i class="fa-solid \${item.icon} ic-icon" style="color:var(--neon-cyan)"></i>
-                        <div class="ic-title">\${item.title}</div>
-                        <div class="ic-desc">\${item.desc}</div>
-                        <button class="btn-small" onclick="downloadMock('\${item.title}')">DOWNLOAD TEMPLATE</button>
-                    </div>\`;
+            // Docs (Categorized)
+            const dContainer = document.getElementById('docsContainer');
+            DOCS_DB.forEach(cat => {
+                let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
+                cat.items.forEach(item => {
+                    html += \`
+                        <div class="doc-card">
+                            <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
+                            <div class="doc-title">\${item.title}</div>
+                            <div class="doc-desc">\${item.desc}</div>
+                            <button class="btn-download" onclick="alert('Downloading template...')">DOWNLOAD</button>
+                        </div>\`;
+                });
+                html += \`</div>\`;
+                dContainer.innerHTML += html;
             });
         }
-        loadContent();
+        loadLibrary();
 
-        function downloadMock(title) {
-            alert("Downloading " + title + " template... (Mock)");
-        }
-
-        // --- DASHBOARD LOGIC (V56 Logic Preserved) ---
+        // --- CORE BROKER LOGIC (V56) ---
         const SPECS = { "SUPRAMAX": 13.5, "PANAMAX": 13.0, "CAPESIZE": 12.5, "MR_TANKER": 13.0, "AFRAMAX": 12.5, "VLCC": 12.0 };
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
         let shipMarker = null;
 
-        function openLogin() { document.getElementById('landing-view').style.display = 'none'; document.getElementById('dashboard-view').style.display = 'block'; setTimeout(() => map.invalidateSize(), 100); }
-        
         async function init() {
             try {
-                const pRes = await fetch('/api/ports');
-                const ports = await pRes.json();
-                const dl = document.getElementById('portList');
-                ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
-                const mRes = await fetch('/api/market');
-                const m = await mRes.json();
+                const pRes = await fetch('/api/ports'); const ports = await pRes.json();
+                const dl = document.getElementById('portList'); ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
+                const mRes = await fetch('/api/market'); const m = await mRes.json();
                 document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2);
                 document.getElementById('hoPrice').innerText = "$" + m.mgo.toFixed(0);
                 document.getElementById('vlsfoPrice').innerText = "$" + m.vlsfo.toFixed(0);
@@ -349,22 +427,9 @@ const FRONTEND_HTML = `
         }
         init();
 
-        function updateSpeed() {
-            const type = document.getElementById('vType').value;
-            if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type];
-        }
-
-        async function fillCoords() {
-            const portName = document.getElementById('refPort').value.toUpperCase();
-            if(!portName) return;
-            try { const res = await fetch('/api/port-coords?port=' + portName); const data = await res.json(); if(data.lat) { document.getElementById('vLat').value = data.lat; document.getElementById('vLng').value = data.lng; updateShipMarker(data.lat, data.lng); } } catch(e){}
-        }
-
-        function updateShipMarker(lat, lng) {
-            if(shipMarker) map.removeLayer(shipMarker);
-            shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL");
-            map.setView([lat, lng], 4);
-        }
+        function updateSpeed() { const type = document.getElementById('vType').value; if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type]; }
+        async function fillCoords() { const pName = document.getElementById('refPort').value.toUpperCase(); if(!pName) return; try{ const res = await fetch('/api/port-coords?port='+pName); const d = await res.json(); if(d.lat){ document.getElementById('vLat').value=d.lat; document.getElementById('vLng').value=d.lng; updateShipMarker(d.lat, d.lng); }}catch(e){} }
+        function updateShipMarker(lat, lng) { if(shipMarker) map.removeLayer(shipMarker); shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL"); map.setView([lat, lng], 4); }
 
         async function scanMarket() {
             const lat = parseFloat(document.getElementById('vLat').value);
@@ -372,25 +437,22 @@ const FRONTEND_HTML = `
             const speed = parseFloat(document.getElementById('vSpeed').value);
             if(isNaN(lat) || isNaN(lng)) { alert("Enter valid Coords"); return; }
             updateShipMarker(lat, lng);
-
             document.getElementById('loader').style.display = 'grid';
             try {
                 const res = await fetch('/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({shipLat:lat, shipLng:lng, shipSpeed:speed, vType:document.getElementById('vType').value}) });
                 const data = await res.json();
                 if(data.success) renderList(data.voyages);
-            } catch(e) { alert("Error"); }
+            } catch(e) { alert("Analysis Failed"); }
             finally { document.getElementById('loader').style.display = 'none'; }
         }
 
         function renderList(voyages) {
-            const list = document.getElementById('cargoResultList');
-            list.innerHTML = ''; list.style.display = 'block';
+            const list = document.getElementById('cargoResultList'); list.innerHTML = ''; list.style.display = 'block';
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
                 el.innerHTML = \`<div class="ci-top"><span>\${v.loadPort} -> \${v.dischPort}</span><span class="tce-badge">\$\${v.financials.tce.toLocaleString()}/day</span></div><div class="ci-bot"><span>\${v.commodity}</span><span>Bal: \${v.ballastDist} NM</span></div>\`;
-                el.onclick = () => showDetails(v, el);
-                list.appendChild(el);
+                el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
             showDetails(voyages[0], list.children[0]);
         }
@@ -398,14 +460,13 @@ const FRONTEND_HTML = `
         function showDetails(v, el) {
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active')); el.classList.add('active');
             document.getElementById('emptyState').style.display = 'none'; document.getElementById('analysisPanel').style.display = 'block';
-            
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
             document.getElementById('financialDetails').innerHTML = \`
-                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val">\${v.ballastDist} NM</span></div>
+                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">\${v.ballastDist} NM</span></div>
                 <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">\${v.ladenDist} NM</span></div>
-                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val" style="color:var(--neon-cyan)">\${v.usedSpeed} kts</span></div>
+                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">\${v.usedSpeed} kts</span></div>
                 <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">\${v.totalDays.toFixed(1)}</span></div>
                 <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">\$\${f.revenue.toLocaleString()}</span></div>
                 <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-\$\${f.cost_ballast_fuel.toLocaleString()}</span></div>
@@ -415,15 +476,13 @@ const FRONTEND_HTML = `
                 <div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.cost_opex.toLocaleString()}</span></div>
             \`;
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
-
             layerGroup.clearLayers();
             const pos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
             const p1 = [v.loadGeo.lat, v.loadGeo.lng];
             const p2 = [v.dischGeo.lat, v.dischGeo.lng];
-            
-            L.circleMarker(pos, {radius:6, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(layerGroup);
-            L.circleMarker(p1, {radius:6, color:'#fff', fillColor:'#10b981', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD");
-            L.circleMarker(p2, {radius:6, color:'#fff', fillColor:'#ef4444', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH");
+            L.circleMarker(pos, {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(layerGroup);
+            L.circleMarker(p1, {radius:7, color:'#fff', fillColor:'#10b981', fillOpacity:1}).addTo(layerGroup).bindPopup("LOAD");
+            L.circleMarker(p2, {radius:7, color:'#fff', fillColor:'#ef4444', fillOpacity:1}).addTo(layerGroup).bindPopup("DISCH");
             map.fitBounds([pos, p1, p2], {padding:[50,50]});
         }
     </script>
@@ -535,4 +594,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V57 (THE MARITIME HUB) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V58 (THE GRAND MARITIME) running on port ${port}`));
