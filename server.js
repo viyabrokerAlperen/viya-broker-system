@@ -13,6 +13,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+// Statik dosya servisi
 app.use(express.static(__dirname));
 
 // =================================================================
@@ -84,7 +85,7 @@ const FRONTEND_HTML = `
         /* Navigation (Initially Hidden) */
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.5rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
         .brand { display: flex; align-items: center; cursor:pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
-        .brand img { height: 45px; } 
+        .brand img { height: 40px; } 
         
         .nav-links { display: flex; gap: 30px; }
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
@@ -103,7 +104,7 @@ const FRONTEND_HTML = `
             display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
             transition: opacity 0.8s ease-in-out;
         }
-        .landing-logo-img { max-width: 350px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
+        .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
         .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
@@ -147,7 +148,7 @@ const FRONTEND_HTML = `
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
 
-        /* LIBRARY & DOCS */
+        /* LIBRARY & DOCS (SENIN İSTEDİĞİN DETAYLI LİSTE) */
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
         .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
