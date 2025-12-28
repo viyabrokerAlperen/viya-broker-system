@@ -13,7 +13,6 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-// Statik dosya servisi
 app.use(express.static(__dirname));
 
 // =================================================================
@@ -29,6 +28,7 @@ const VESSEL_SPECS = {
     "VLCC":     { dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 }
 };
 
+// Varsayılan kargo verileri (Kullanıcı girmezse bunlar kullanılır)
 const CARGOES = {
     "BULK": [
         {name: "Grain", rate: 32, loadRate: 15000, dischRate: 10000},
@@ -46,7 +46,6 @@ const CARGOES = {
     ]
 };
 
-// GLOBAL MARKET STATE
 let MARKET = { brent: 0, heatingOil: 0, vlsfo: 0, mgo: 0, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -61,7 +60,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND
+// 2. FRONTEND (YENİ INPUTLAR EKLENDİ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -70,9 +69,7 @@ const FRONTEND_HTML = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIYA BROKER | Global Maritime Intelligence</title>
-    
     <link rel="icon" href="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" type="image/png">
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -82,7 +79,6 @@ const FRONTEND_HTML = `
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:13px; }
         
-        /* Navigation (Initially Hidden) */
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.5rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
         .brand { display: flex; align-items: center; cursor:pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
         .brand img { height: 40px; } 
@@ -95,7 +91,6 @@ const FRONTEND_HTML = `
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
 
-        /* LANDING PAGE */
         #landing-view { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
             background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
@@ -105,7 +100,7 @@ const FRONTEND_HTML = `
             transition: opacity 0.8s ease-in-out;
         }
         .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
-        .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
+        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
             padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
@@ -113,20 +108,18 @@ const FRONTEND_HTML = `
         }
         .btn-enter:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
 
-        /* Views */
         .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.6s ease-out; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* DASHBOARD */
         .dash-grid { display: grid; grid-template-columns: 380px 1fr 450px; gap: 15px; padding: 15px; height: calc(100vh - 80px); }
         .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); }
         .p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
         .p-body { padding: 15px; overflow-y: auto; flex: 1; }
 
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.5px; }
-        .input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 2px; font-family: var(--font-ui); font-size: 0.9rem; transition: 0.3s; }
+        .input-group label { display: block; font-size: 0.65rem; color: #64748b; margin-bottom: 4px; font-weight: 700; letter-spacing: 0.5px; }
+        .input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 2px; font-family: var(--font-ui); font-size: 0.85rem; transition: 0.3s; }
         .btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 2px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
         
         .cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
@@ -148,7 +141,6 @@ const FRONTEND_HTML = `
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
 
-        /* LIBRARY & DOCS (SENIN İSTEDİĞİN DETAYLI LİSTE) */
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
         .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
@@ -218,6 +210,15 @@ const FRONTEND_HTML = `
                     <div class="input-group"><label>QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
                     <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
                     <div class="input-group"><label>OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
+                    
+                    <div class="input-group"><label>CARGO QTY (TONS)</label><input type="number" id="vQty" placeholder="e.g. 50000" value="50000"></div>
+                    <div class="input-group">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div><label>LOAD RATE (MT/DAY)</label><input type="number" id="vLoadRate" value="15000"></div>
+                            <div><label>DISCH RATE (MT/DAY)</label><input type="number" id="vDischRate" value="10000"></div>
+                        </div>
+                    </div>
+
                     <button class="btn-action" onclick="scanMarket()">SCAN MARKET OPPORTUNITIES</button>
                     <div id="cargoResultList" class="cargo-list" style="margin-top:20px; display:none;"></div>
                 </div>
@@ -312,7 +313,6 @@ const FRONTEND_HTML = `
             }, 800);
         }
 
-        // ENTER TUSU ILE GIRIS
         document.addEventListener('keydown', function(event) {
             if (event.key === "Enter" && document.getElementById('landing-view').style.display !== 'none') {
                 enterSystem();
@@ -330,7 +330,7 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT DATA ---
+        // --- CONTENT GENERATION ---
         const ACADEMY_DATA = [
             {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
             {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
@@ -340,7 +340,6 @@ const FRONTEND_HTML = `
             {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
         ];
 
-        // DETAYLI EVRAK LISTESI (SENIN ISTEDIGIN GIBI)
         const DOCS_DB = [
             {
                 category: "DRY BULK CHARTER PARTIES",
@@ -378,7 +377,6 @@ const FRONTEND_HTML = `
         ];
 
         function loadLibrary() {
-            // Academy
             const aGrid = document.getElementById('academyGrid');
             ACADEMY_DATA.forEach(item => {
                 aGrid.innerHTML += \`
@@ -390,7 +388,6 @@ const FRONTEND_HTML = `
                     </div>\`;
             });
 
-            // Docs (Categorized)
             const dContainer = document.getElementById('docsContainer');
             DOCS_DB.forEach(cat => {
                 let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
@@ -436,11 +433,22 @@ const FRONTEND_HTML = `
             const lat = parseFloat(document.getElementById('vLat').value);
             const lng = parseFloat(document.getElementById('vLng').value);
             const speed = parseFloat(document.getElementById('vSpeed').value);
+            const qty = parseFloat(document.getElementById('vQty').value);
+            const lRate = parseFloat(document.getElementById('vLoadRate').value);
+            const dRate = parseFloat(document.getElementById('vDischRate').value);
+
             if(isNaN(lat) || isNaN(lng)) { alert("Enter valid Coords"); return; }
             updateShipMarker(lat, lng);
             document.getElementById('loader').style.display = 'grid';
             try {
-                const res = await fetch('/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({shipLat:lat, shipLng:lng, shipSpeed:speed, vType:document.getElementById('vType').value}) });
+                const res = await fetch('/api/analyze', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({
+                        shipLat:lat, shipLng:lng, shipSpeed:speed, vType:document.getElementById('vType').value,
+                        cargoQty: qty, loadRate: lRate, dischRate: dRate 
+                    }) 
+                });
                 const data = await res.json();
                 if(data.success) renderList(data.voyages);
             } catch(e) { alert("Analysis Failed"); }
@@ -492,7 +500,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC (REAL-TIME ENGINE - V56 PRESERVED)
+// 3. BACKEND LOGIC (HASSAS HESAPLAMA EKLENDİ)
 // =================================================================
 
 async function updateMarketData() {
@@ -523,32 +531,47 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return Math.round(R * c * 1.15); 
 }
 
-function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed) {
+function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
     const speed = shipSpeed || specs.default_speed;
     const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
     const ballastDays = ballastDist / (speed * 24);
-    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
+    
+    // HASSAS HESAPLAMA BÖLÜMÜ
     const cargoType = specs.sea_cons < 30 ? "BULK" : "TANKER";
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
-    const qty = Math.floor(specs.dwt * 0.95);
-    const loadDays = qty / cargo.loadRate;
-    const dischDays = qty / cargo.dischRate;
-    const portDays = Math.ceil(loadDays + dischDays + 2);
+    
+    // 1. Miktar Hesabı: Kullanıcı girdiyse onu al, yoksa geminin %95'i
+    let qty = userQty;
+    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
+
+    // 2. Rate Hesabı: Kullanıcı girdiyse onu al, yoksa yükün varsayılanı
+    const lRate = userLoadRate || cargo.loadRate;
+    const dRate = userDischRate || cargo.dischRate;
+
+    // 3. Süre Hesabı: (Miktar / Rate) + 1 Gün (Manevra payı)
+    const loadDays = (qty / lRate) + 1;
+    const dischDays = (qty / dRate) + 1;
+    const portDays = Math.ceil(loadDays + dischDays);
+
+    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
     const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
     const costPortFuel = portDays * specs.port_cons * market.mgo;
     const costPortDues = specs.dwt * 1.30; 
     const totalDays = ballastDays + ladenDays + portDays;
+    
     let costCanal = 0;
     if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
+    
     const costOpex = totalDays * specs.opex;
     const grossRevenue = qty * cargo.rate;
     const commission = grossRevenue * 0.025; 
     const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
     const profit = grossRevenue - totalCost;
     const tce = profit / totalDays;
+    
     return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
 }
 
@@ -567,7 +590,9 @@ app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; r
 
 app.post('/api/analyze', async (req, res) => {
     await updateMarketData();
-    const { shipLat, shipLng, shipSpeed, vType } = req.body;
+    // YENİ INPUTLARI ALIYORUZ
+    const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
+    
     if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
     const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"];
     const suggestions = [];
@@ -579,7 +604,10 @@ app.post('/api/analyze', async (req, res) => {
         const dischName = allPorts[Math.floor(Math.random() * allPorts.length)];
         const dischGeo = PORT_DB[dischName];
         if(loadCand.name === dischName) continue;
-        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed);
+        
+        // HESAPLAMAYA YENİ PARAMETRELERİ GÖNDERİYORUZ
+        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
+        
         if(calc.financials.profit > -20000) {
             suggestions.push({
                 loadPort: loadCand.name, dischPort: dischName, loadGeo: loadCand.geo, dischGeo: dischGeo,
@@ -595,4 +623,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V60 (THE ULTIMATE BROKER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V61 (THE PRECISION BROKER) running on port ${port}`));
