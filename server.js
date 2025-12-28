@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG
+// 1. DATA & CONFIG (BACKEND DATA)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -83,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (MULTI-LANGUAGE UI & FIXED DOCUMENTS)
+// 2. FRONTEND (STRING CONCATENATION FIX)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -368,6 +368,28 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
+        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
+        const CLIENT_VESSEL_SPECS = {
+            "HANDYSIZE":    { default_speed: 13.0 },
+            "HANDYMAX":     { default_speed: 13.0 },
+            "SUPRAMAX":     { default_speed: 13.5 },
+            "ULTRAMAX":     { default_speed: 13.5 },
+            "PANAMAX":      { default_speed: 13.0 },
+            "KAMSARMAX":    { default_speed: 13.0 },
+            "CAPESIZE":     { default_speed: 12.5 },
+            "NEWCASTLEMAX": { default_speed: 12.5 },
+            "SMALL_CHEM":   { default_speed: 13.0 },
+            "MR_TANKER":    { default_speed: 13.0 },
+            "LR1":          { default_speed: 13.0 },
+            "AFRAMAX":      { default_speed: 12.5 },
+            "SUEZMAX":      { default_speed: 12.5 },
+            "VLCC":         { default_speed: 12.0 },
+            "LPG_MGC":      { default_speed: 16.0 },
+            "LPG_VLGC":     { default_speed: 16.5 },
+            "LNG_CONV":     { default_speed: 19.0 },
+            "LNG_Q_FLEX":   { default_speed: 19.5 }
+        };
+
         // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
@@ -558,23 +580,11 @@ const FRONTEND_HTML = `
         }
 
         // --- CORE BROKER LOGIC ---
-        // VESSEL_SPECS is defined at top of script, we need to access it here
-        // We will just use the global constant VESSEL_SPECS
-        
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
-            if(type && VESSEL_SPECS[type]) {
-                document.getElementById('vSpeed').value = VESSEL_SPECS[type].default_speed;
+            if(type && CLIENT_VESSEL_SPECS[type]) {
+                document.getElementById('vSpeed').value = CLIENT_VESSEL_SPECS[type].default_speed;
             }
-        }
-
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 3440;
-            const dLat = (lat2 - lat1) * Math.PI/180;
-            const dLon = (lon2 - lon1) * Math.PI/180;
-            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return Math.round(R * c * 1.15); 
         }
 
         async function init() {
