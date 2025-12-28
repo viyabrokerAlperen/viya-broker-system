@@ -16,36 +16,60 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG
+// 1. DATA & CONFIG (GENİŞLETİLMİŞ FİLO)
 // =================================================================
 
 const VESSEL_SPECS = {
-    "SUPRAMAX": { dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, opex: 5500 }, 
-    "PANAMAX":  { dwt: 82000, default_speed: 13.0, sea_cons: 34, port_cons: 4.0, opex: 6500 },
-    "CAPESIZE": { dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, opex: 8000 },
-    "MR_TANKER": { dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, opex: 6800 },
-    "AFRAMAX":  { dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, opex: 7800 },
-    "VLCC":     { dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 }
+    // --- DRY BULK ---
+    "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex: 4500 },
+    "HANDYMAX":     { type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, opex: 5000 },
+    "SUPRAMAX":     { type: "BULK", dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, opex: 5500 },
+    "ULTRAMAX":     { type: "BULK", dwt: 64000, default_speed: 13.5, sea_cons: 29, port_cons: 3.5, opex: 5800 },
+    "PANAMAX":      { type: "BULK", dwt: 82000, default_speed: 13.0, sea_cons: 32, port_cons: 4.0, opex: 6500 },
+    "KAMSARMAX":    { type: "BULK", dwt: 85000, default_speed: 13.0, sea_cons: 33, port_cons: 4.0, opex: 6700 },
+    "CAPESIZE":     { type: "BULK", dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, opex: 8000 },
+    "NEWCASTLEMAX": { type: "BULK", dwt: 205000, default_speed: 12.5, sea_cons: 50, port_cons: 5.5, opex: 8500 },
+
+    // --- TANKER ---
+    "SMALL_CHEM":   { type: "TANKER", dwt: 19000, default_speed: 13.0, sea_cons: 18, port_cons: 3.0, opex: 6000 },
+    "MR_TANKER":    { type: "TANKER", dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, opex: 7000 },
+    "LR1":          { type: "TANKER", dwt: 75000, default_speed: 13.0, sea_cons: 32, port_cons: 5.0, opex: 7500 },
+    "AFRAMAX":      { type: "TANKER", dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, opex: 8000 },
+    "SUEZMAX":      { type: "TANKER", dwt: 160000, default_speed: 12.5, sea_cons: 48, port_cons: 7.0, opex: 9000 },
+    "VLCC":         { type: "TANKER", dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 },
+
+    // --- GAS (LNG/LPG) ---
+    "LPG_MGC":      { type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, opex: 9000 },
+    "LPG_VLGC":     { type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, opex: 11000 },
+    "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex: 14000 }, // ~145k cbm
+    "LNG_Q_FLEX":   { type: "GAS", dwt: 110000, default_speed: 19.5, sea_cons: 90, port_cons: 10.0, opex: 16000 }
 };
 
-// Varsayılan kargo verileri (Kullanıcı girmezse bunlar kullanılır)
 const CARGOES = {
     "BULK": [
         {name: "Grain", rate: 32, loadRate: 15000, dischRate: 10000},
         {name: "Coal", rate: 24, loadRate: 25000, dischRate: 20000},
-        {name: "Iron Ore", rate: 19, loadRate: 40000, dischRate: 30000},
-        {name: "Steel Products", rate: 45, loadRate: 8000, dischRate: 6000},
+        {name: "Iron Ore", rate: 19, loadRate: 40000, dischRate: 35000},
+        {name: "Steel Coils", rate: 45, loadRate: 8000, dischRate: 6000},
         {name: "Fertilizer", rate: 29, loadRate: 12000, dischRate: 10000},
-        {name: "Scrap", rate: 35, loadRate: 10000, dischRate: 8000}
+        {name: "Scrap", rate: 35, loadRate: 10000, dischRate: 8000},
+        {name: "Bauxite", rate: 21, loadRate: 30000, dischRate: 25000}
     ],
     "TANKER": [
         {name: "Crude Oil", rate: 28, loadRate: 50000, dischRate: 40000},
         {name: "Diesel/Gasoil", rate: 35, loadRate: 3000, dischRate: 3000},
         {name: "Naphtha", rate: 31, loadRate: 3500, dischRate: 3500},
-        {name: "Jet Fuel", rate: 38, loadRate: 2500, dischRate: 2500}
+        {name: "Jet Fuel", rate: 38, loadRate: 2500, dischRate: 2500},
+        {name: "Vegoil", rate: 42, loadRate: 2000, dischRate: 2000}
+    ],
+    "GAS": [
+        {name: "LNG", rate: 65, loadRate: 20000, dischRate: 20000},
+        {name: "LPG (Propane)", rate: 55, loadRate: 15000, dischRate: 15000},
+        {name: "Ammonia", rate: 58, loadRate: 12000, dischRate: 12000}
     ]
 };
 
+// GLOBAL MARKET STATE
 let MARKET = { brent: 0, heatingOil: 0, vlsfo: 0, mgo: 0, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -60,7 +84,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (YENİ INPUTLAR EKLENDİ)
+// 2. FRONTEND (GÜNCELLENMİŞ GEMİ SEÇİM MENÜSÜ)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -100,7 +124,7 @@ const FRONTEND_HTML = `
             transition: opacity 0.8s ease-in-out;
         }
         .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
-        .landing-sub { font-size: 1.1rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
+        .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { 
             background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
             padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
@@ -206,7 +230,34 @@ const FRONTEND_HTML = `
             <aside class="panel">
                 <div class="p-header"><i class="fa-solid fa-ship"></i> VESSEL PARAMETERS</div>
                 <div class="p-body">
-                    <div class="input-group"><label>VESSEL CLASS</label><select id="vType" onchange="updateSpeed()"><option value="SUPRAMAX">Supramax (58k)</option><option value="PANAMAX">Panamax (82k)</option><option value="CAPESIZE">Capesize (180k)</option><option value="MR_TANKER">MR Tanker (50k)</option><option value="AFRAMAX">Aframax (115k)</option><option value="VLCC">VLCC (300k)</option></select></div>
+                    <div class="input-group"><label>VESSEL CLASS & TYPE</label>
+                        <select id="vType" onchange="updateSpeed()">
+                            <optgroup label="DRY BULK FLEET">
+                                <option value="HANDYSIZE">Handysize (35k)</option>
+                                <option value="HANDYMAX">Handymax (45k)</option>
+                                <option value="SUPRAMAX">Supramax (58k)</option>
+                                <option value="ULTRAMAX">Ultramax (64k)</option>
+                                <option value="PANAMAX">Panamax (82k)</option>
+                                <option value="KAMSARMAX">Kamsarmax (85k)</option>
+                                <option value="CAPESIZE">Capesize (180k)</option>
+                                <option value="NEWCASTLEMAX">Newcastlemax (205k)</option>
+                            </optgroup>
+                            <optgroup label="TANKER FLEET (OIL/CHEM)">
+                                <option value="SMALL_CHEM">Small Chemical (19k)</option>
+                                <option value="MR_TANKER">MR Tanker (50k)</option>
+                                <option value="LR1">LR1 Tanker (75k)</option>
+                                <option value="AFRAMAX">Aframax (115k)</option>
+                                <option value="SUEZMAX">Suezmax (160k)</option>
+                                <option value="VLCC">VLCC (300k)</option>
+                            </optgroup>
+                            <optgroup label="GAS FLEET (LNG/LPG)">
+                                <option value="LPG_MGC">LPG MGC (38k)</option>
+                                <option value="LPG_VLGC">LPG VLGC (55k)</option>
+                                <option value="LNG_CONV">LNG Conventional (75k)</option>
+                                <option value="LNG_Q_FLEX">LNG Q-Flex (110k)</option>
+                            </optgroup>
+                        </select>
+                    </div>
                     <div class="input-group"><label>QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
                     <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
                     <div class="input-group"><label>OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
@@ -407,7 +458,27 @@ const FRONTEND_HTML = `
         loadLibrary();
 
         // --- CORE BROKER LOGIC ---
-        const SPECS = { "SUPRAMAX": 13.5, "PANAMAX": 13.0, "CAPESIZE": 12.5, "MR_TANKER": 13.0, "AFRAMAX": 12.5, "VLCC": 12.0 };
+        const SPECS = { 
+            "HANDYSIZE":    { dwt: 35000, default_speed: 13.0 },
+            "HANDYMAX":     { dwt: 45000, default_speed: 13.0 },
+            "SUPRAMAX":     { dwt: 58000, default_speed: 13.5 },
+            "ULTRAMAX":     { dwt: 64000, default_speed: 13.5 },
+            "PANAMAX":      { dwt: 82000, default_speed: 13.0 },
+            "KAMSARMAX":    { dwt: 85000, default_speed: 13.0 },
+            "CAPESIZE":     { dwt: 180000, default_speed: 12.5 },
+            "NEWCASTLEMAX": { dwt: 205000, default_speed: 12.5 },
+            "SMALL_CHEM":   { dwt: 19000, default_speed: 13.0 },
+            "MR_TANKER":    { dwt: 50000, default_speed: 13.0 },
+            "LR1":          { dwt: 75000, default_speed: 13.0 },
+            "AFRAMAX":      { dwt: 115000, default_speed: 12.5 },
+            "SUEZMAX":      { dwt: 160000, default_speed: 12.5 },
+            "VLCC":         { dwt: 300000, default_speed: 12.0 },
+            "LPG_MGC":      { dwt: 38000, default_speed: 16.0 },
+            "LPG_VLGC":     { dwt: 55000, default_speed: 16.5 },
+            "LNG_CONV":     { dwt: 75000, default_speed: 19.0 },
+            "LNG_Q_FLEX":   { dwt: 110000, default_speed: 19.5 }
+        };
+
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
@@ -425,7 +496,7 @@ const FRONTEND_HTML = `
         }
         init();
 
-        function updateSpeed() { const type = document.getElementById('vType').value; if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type]; }
+        function updateSpeed() { const type = document.getElementById('vType').value; if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type].default_speed; }
         async function fillCoords() { const pName = document.getElementById('refPort').value.toUpperCase(); if(!pName) return; try{ const res = await fetch('/api/port-coords?port='+pName); const d = await res.json(); if(d.lat){ document.getElementById('vLat').value=d.lat; document.getElementById('vLng').value=d.lng; updateShipMarker(d.lat, d.lng); }}catch(e){} }
         function updateShipMarker(lat, lng) { if(shipMarker) map.removeLayer(shipMarker); shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL"); map.setView([lat, lng], 4); }
 
@@ -500,7 +571,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC (HASSAS HESAPLAMA EKLENDİ)
+// 3. BACKEND LOGIC
 // =================================================================
 
 async function updateMarketData() {
@@ -538,20 +609,17 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
     
-    // HASSAS HESAPLAMA BÖLÜMÜ
-    const cargoType = specs.sea_cons < 30 ? "BULK" : "TANKER";
+    // AKILLI KARGO SEÇİMİ
+    const cargoType = specs.type; // "BULK", "TANKER", or "GAS"
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
     
-    // 1. Miktar Hesabı: Kullanıcı girdiyse onu al, yoksa geminin %95'i
     let qty = userQty;
     if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
 
-    // 2. Rate Hesabı: Kullanıcı girdiyse onu al, yoksa yükün varsayılanı
     const lRate = userLoadRate || cargo.loadRate;
     const dRate = userDischRate || cargo.dischRate;
 
-    // 3. Süre Hesabı: (Miktar / Rate) + 1 Gün (Manevra payı)
     const loadDays = (qty / lRate) + 1;
     const dischDays = (qty / dRate) + 1;
     const portDays = Math.ceil(loadDays + dischDays);
@@ -590,7 +658,6 @@ app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; r
 
 app.post('/api/analyze', async (req, res) => {
     await updateMarketData();
-    // YENİ INPUTLARI ALIYORUZ
     const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
     
     if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
@@ -605,7 +672,6 @@ app.post('/api/analyze', async (req, res) => {
         const dischGeo = PORT_DB[dischName];
         if(loadCand.name === dischName) continue;
         
-        // HESAPLAMAYA YENİ PARAMETRELERİ GÖNDERİYORUZ
         const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
         
         if(calc.financials.profit > -20000) {
@@ -623,4 +689,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V61 (THE PRECISION BROKER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V62 (THE GLOBAL FLEET) running on port ${port}`));
