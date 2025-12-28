@@ -83,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (MULTI-LANGUAGE UI)
+// 2. FRONTEND
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -110,7 +110,6 @@ const FRONTEND_HTML = `
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
         .nav-item:hover, .nav-item.active { color: var(--neon-cyan); border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); }
         
-        /* Language Selector */
         .lang-switch { cursor: pointer; font-family: var(--font-tech); color: #fff; border: 1px solid var(--neon-cyan); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; transition: 0.3s; }
         .lang-switch:hover { background: var(--neon-cyan); color: #000; }
 
@@ -118,21 +117,10 @@ const FRONTEND_HTML = `
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
 
-        #landing-view { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
-            background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
-            background-size: cover; background-position: center; 
-            z-index: 9999; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            transition: opacity 0.8s ease-in-out;
-        }
+        #landing-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s ease-in-out; }
         .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
         .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
-        .btn-enter { 
-            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
-            padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
-            cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden;
-        }
+        .btn-enter { background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden; }
         .btn-enter:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
 
         .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.6s ease-out; }
@@ -167,7 +155,6 @@ const FRONTEND_HTML = `
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
-        
         .ai-list { padding-left: 15px; margin-top: 5px; color: #94a3b8; }
         .ai-list li { margin-bottom: 4px; }
         .tag-pro { color: var(--success); font-weight: bold; font-size: 0.75rem; }
@@ -200,6 +187,16 @@ const FRONTEND_HTML = `
         .btn-plan.pro { background: var(--neon-cyan); color: #000; }
         .btn-plan.basic { background: #334155; color: #fff; }
 
+        /* MODAL STYLES */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: rgba(0,242,255,0.05); }
+        .modal-title { font-family: var(--font-tech); font-size: 1.5rem; color: var(--neon-cyan); }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .close-btn:hover { color: #fff; }
+        .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
+        .clause-title { color: #fff; font-weight: bold; margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 5px; display:inline-block; }
+
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -207,6 +204,17 @@ const FRONTEND_HTML = `
 </head>
 <body>
     <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;" data-i18n="computing">COMPUTING...</div></div></div>
+
+    <div id="docModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">DOCUMENT TITLE</span>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                </div>
+        </div>
+    </div>
 
     <div id="landing-view">
         <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA BROKER LOGO" class="landing-logo-img">
@@ -396,7 +404,8 @@ const FRONTEND_HTML = `
                 btn_curr: "CURRENT PLAN",
                 btn_upg: "UPGRADE NOW",
                 btn_contact: "CONTACT SALES",
-                computing: "COMPUTING..."
+                computing: "COMPUTING...",
+                read_btn: "READ"
             },
             tr: {
                 landing_sub: "Küresel Denizcilik Brokerlik Sistemi",
@@ -430,7 +439,8 @@ const FRONTEND_HTML = `
                 btn_curr: "MEVCUT PLAN",
                 btn_upg: "YÜKSELT",
                 btn_contact: "SATIŞLA GÖRÜŞ",
-                computing: "HESAPLANIYOR..."
+                computing: "HESAPLANIYOR...",
+                read_btn: "İNCELE"
             }
         };
 
@@ -448,6 +458,7 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
+            loadLibrary(); // Reload cards to update text inside JS generated content
         }
 
         // --- UI LOGIC ---
@@ -478,81 +489,178 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION ---
-        const ACADEMY_DATA = [
-            {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-            {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-            {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
-            {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
-            {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
-            {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
-        ];
-
+        // --- CONTENT GENERATION WITH REAL DATA ---
         const DOCS_DB = [
             {
                 category: "DRY BULK CHARTER PARTIES",
                 items: [
-                    {title: "GENCON 94", desc: "Standard Voyage Charter (Universal)."},
-                    {title: "NYPE 2015", desc: "New York Produce Exchange Time Charter."},
-                    {title: "AMWELSH 93", desc: "Americanized Welsh Coal Charter."},
-                    {title: "GRAINCON", desc: "Grain Voyage Charter Party."}
+                    {
+                        id: "gencon",
+                        title: "GENCON 94", 
+                        desc: "Standard Voyage Charter (Universal).",
+                        content: `PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)
+
+1. PREAMBLE
+It is this day agreed between the party mentioned in Box 3 as Owners of the steamer or motor-vessel named in Box 5... and the party mentioned in Box 4 as Charterers...
+
+2. OWNERS' RESPONSIBILITY CLAUSE
+Owners are to be responsible for loss of or damage to the goods or for delay in delivery of the goods only in case the loss, damage or delay has been caused by the personal want of due diligence on the part of the Owners...
+
+3. DEVIATION CLAUSE
+The Vessel has liberty to call at any port or ports in any order, for any purpose, to sail without pilots, to tow and/or assist vessels in all situations...
+
+4. PAYMENT OF FREIGHT
+The freight to be paid in the manner prescribed in Box 15 in cash without discount on delivery of the Cargo at mean rate of exchange...
+
+5. LOADING/DISCHARGING COSTS
+(a) Gross Terms: The agreed freight includes the cost of loading and discharging...
+(b) F.I.O. and Free Stowed/Trimmed: The Charterers shall bring the cargo into the holds, load, stow and/or trim and take the cargo from the holds...
+
+6. LAYTIME
+(a) Separate laytime for loading and discharging...
+(b) Total laytime for loading and discharging...
+
+7. DEMURRAGE
+Demurrage at the loading and discharging port is payable by the Charterers at the rate stated in Box 20 in the manner stated in Box 20 per day or pro rata for any part of a day...`
+                    },
+                    {
+                        id: "nype",
+                        title: "NYPE 2015", 
+                        desc: "New York Produce Exchange Time Charter.",
+                        content: `NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM
+
+1. DURATION
+The Owners agree to let and the Charterers agree to hire the Vessel from the time of delivery for a period of...
+
+2. DELIVERY
+The Vessel shall be placed at the disposal of the Charterers at...
+
+3. ON/OFF-HIRE SURVEY
+Prior to delivery and redelivery the parties shall, unless otherwise agreed, each appoint surveyors...
+
+4. OWNERS TO PROVIDE
+The Owners shall provide and pay for the insurance of the Vessel, all provisions, cabin, deck, engine-room and other necessary stores...
+
+5. CHARTERERS TO PROVIDE
+The Charterers shall provide and pay for all the fuel except as otherwise agreed, Port Charges, Pilotages...`
+                    }
                 ]
             },
             {
                 category: "TANKER (OIL/CHEM) CHARTER PARTIES",
                 items: [
-                    {title: "ASBATANKVOY", desc: "Association of Ship Brokers Tanker Voyage."},
-                    {title: "SHELLTIME 4", desc: "Standard Time Charter for Tankers."},
-                    {title: "BPVOY 4", desc: "BP Voyage Charter Party."}
-                ]
-            },
-            {
-                category: "GAS (LNG/LPG) CHARTER PARTIES",
-                items: [
-                    {title: "GASVOY 2005", desc: "Standard Gas Voyage Charter."},
-                    {title: "LNGVOY", desc: "Liquefied Natural Gas Charter."},
-                    {title: "SHELLLNGTIME", desc: "Time Charter for LNG Carriers."}
+                    {
+                        id: "asba",
+                        title: "ASBATANKVOY", 
+                        desc: "Association of Ship Brokers Tanker Voyage.",
+                        content: `ASBATANKVOY - TANKER VOYAGE CHARTER PARTY
+
+1. WARRANTY
+The Vessel, classed as specified in Part I hereof, and to be so maintained during the currency of this Charter...
+
+2. FREIGHT
+Freight shall be at the rate stipulated in Part I and shall be computed on intake quantity...
+
+3. DEADFREIGHT
+Should the Charterers fail to supply a full cargo, the Vessel may, at the Master's option, and shall, upon request of the Charterers, proceed on her voyage...
+
+4. LAYTIME
+Laytime shall not commence before 0600 local time on the Commencing Date specified in Part I...
+
+5. DEMURRAGE
+Charterers shall pay demurrage per running hour and pro rata for a part thereof at the rate specified in Part I...
+
+6. SAFE BERTHING
+The Vessel shall load and discharge at any safe place or wharf, or alongside vessels or lighters reachable on her arrival...`
+                    }
                 ]
             },
             {
                 category: "OPERATIONAL DOCUMENTS",
                 items: [
-                    {title: "Notice of Readiness (NOR)", desc: "Standard NOR template."},
-                    {title: "Statement of Facts (SOF)", desc: "Port agent time log."},
-                    {title: "Letter of Indemnity (LOI)", desc: "Clean B/L indemnity."}
+                    {
+                        id: "nor",
+                        title: "Notice of Readiness (NOR)", 
+                        desc: "Standard NOR template.",
+                        content: `NOTICE OF READINESS (TEMPLATE)
+
+To: [Charterers / Agents]
+From: Master of MV [Vessel Name]
+Date: [Date]
+Port: [Port Name]
+
+Dear Sirs,
+
+Please accept this Notice of Readiness that the above Vessel under my command arrived at [Location] at [Time/Date] and is in all respects ready to commence [Loading/Discharging] operations of her cargo of [Cargo Name] in accordance with the terms and conditions of the Charter Party dated [Date].
+
+Yours faithfully,
+
+Master
+[Signature]`
+                    }
                 ]
             }
         ];
 
         function loadLibrary() {
-            const aGrid = document.getElementById('academyGrid');
-            ACADEMY_DATA.forEach(item => {
-                aGrid.innerHTML += \`
-                    <div class="doc-card">
-                        <i class="fa-solid \${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
-                        <div class="doc-title">\${item.title}</div>
-                        <div class="doc-desc">\${item.desc}</div>
-                        <button class="btn-download">READ</button>
-                    </div>\`;
-            });
-
+            // Docs (Categorized) - Only this needs dynamic loading based on DB
             const dContainer = document.getElementById('docsContainer');
+            dContainer.innerHTML = ""; // Clear first
+            
             DOCS_DB.forEach(cat => {
-                let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
+                let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
                 cat.items.forEach(item => {
-                    html += \`
+                    html += `
                         <div class="doc-card">
                             <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
-                            <div class="doc-title">\${item.title}</div>
-                            <div class="doc-desc">\${item.desc}</div>
-                            <button class="btn-download" onclick="alert('Downloading template...')">DOWNLOAD</button>
-                        </div>\`;
+                            <div class="doc-title">${item.title}</div>
+                            <div class="doc-desc">${item.desc}</div>
+                            <button class="btn-download" onclick="openDoc('${item.id}')">${TRANSLATIONS[currentLang].read_btn}</button>
+                        </div>`;
                 });
-                html += \`</div>\`;
+                html += `</div>`;
                 dContainer.innerHTML += html;
+            });
+
+            // Knowledge Base (Static for now, but regenerated for lang update)
+            const aGrid = document.getElementById('academyGrid');
+            aGrid.innerHTML = "";
+            const ACADEMY_DATA = [
+                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
+                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
+                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."}
+            ];
+            ACADEMY_DATA.forEach(item => {
+                aGrid.innerHTML += `
+                    <div class="doc-card">
+                        <i class="fa-solid ${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
+                        <div class="doc-title">${item.title}</div>
+                        <div class="doc-desc">${item.desc}</div>
+                        <button class="btn-download">${TRANSLATIONS[currentLang].read_btn}</button>
+                    </div>`;
             });
         }
         loadLibrary();
+
+        // --- MODAL LOGIC ---
+        function openDoc(id) {
+            const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
+            if(doc) {
+                document.getElementById('modalTitle').innerText = doc.title;
+                document.getElementById('modalBody').innerText = doc.content;
+                document.getElementById('docModal').style.display = "block";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('docModal').style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('docModal')) {
+                closeModal();
+            }
+        }
 
         // --- CORE BROKER LOGIC ---
         const SPECS = { 
@@ -836,4 +944,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V65 (THE KNOWLEDGE VAULT) running on port ${port}`));
