@@ -20,6 +20,7 @@ app.use(express.static(__dirname));
 // =================================================================
 
 const VESSEL_SPECS = {
+    // --- DRY BULK ---
     "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex: 4500 },
     "HANDYMAX":     { type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, opex: 5000 },
     "SUPRAMAX":     { type: "BULK", dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, opex: 5500 },
@@ -28,12 +29,16 @@ const VESSEL_SPECS = {
     "KAMSARMAX":    { type: "BULK", dwt: 85000, default_speed: 13.0, sea_cons: 33, port_cons: 4.0, opex: 6700 },
     "CAPESIZE":     { type: "BULK", dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, opex: 8000 },
     "NEWCASTLEMAX": { type: "BULK", dwt: 205000, default_speed: 12.5, sea_cons: 50, port_cons: 5.5, opex: 8500 },
+
+    // --- TANKER ---
     "SMALL_CHEM":   { type: "TANKER", dwt: 19000, default_speed: 13.0, sea_cons: 18, port_cons: 3.0, opex: 6000 },
     "MR_TANKER":    { type: "TANKER", dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, opex: 7000 },
     "LR1":          { type: "TANKER", dwt: 75000, default_speed: 13.0, sea_cons: 32, port_cons: 5.0, opex: 7500 },
     "AFRAMAX":      { type: "TANKER", dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, opex: 8000 },
     "SUEZMAX":      { type: "TANKER", dwt: 160000, default_speed: 12.5, sea_cons: 48, port_cons: 7.0, opex: 9000 },
     "VLCC":         { type: "TANKER", dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 },
+
+    // --- GAS (LNG/LPG) ---
     "LPG_MGC":      { type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, opex: 9000 },
     "LPG_VLGC":     { type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, opex: 11000 },
     "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex: 14000 },
@@ -64,7 +69,8 @@ const CARGOES = {
     ]
 };
 
-let MARKET = { brent: 0, heatingOil: 0, vlsfo: 0, mgo: 0, lastUpdate: 0 };
+// GÜVENLİ MOD: EĞER YAHOO ÇALIŞMAZSA BU DEĞERLER GÖZÜKÜR
+let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
 try {
@@ -190,7 +196,7 @@ const FRONTEND_HTML = `
         .btn-plan.pro { background: var(--neon-cyan); color: #000; }
         .btn-plan.basic { background: #334155; color: #fff; }
 
-        /* MODAL STYLES */
+        /* MODAL EKLENDİ */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
         .modal-header { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: rgba(0,242,255,0.05); }
@@ -198,7 +204,7 @@ const FRONTEND_HTML = `
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-        
+
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -211,7 +217,10 @@ const FRONTEND_HTML = `
         <div class="modal-content">
             <div class="modal-header">
                 <span class="modal-title" id="modalTitle">DOCUMENT TITLE</span>
-                <span class="close-btn" onclick="closeModal()">&times;</span>
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <button class="btn-download" style="width:auto; padding:5px 15px;" onclick="downloadCurrentDoc()">DOWNLOAD AS FILE</button>
+                    <span class="close-btn" onclick="closeModal()">&times;</span>
+                </div>
             </div>
             <div class="modal-body" id="modalBody"></div>
         </div>
@@ -371,7 +380,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
         const CLIENT_VESSEL_SPECS = {
             "HANDYSIZE":    { default_speed: 13.0 },
             "HANDYMAX":     { default_speed: 13.0 },
@@ -393,7 +401,6 @@ const FRONTEND_HTML = `
             "LNG_Q_FLEX":   { default_speed: 19.5 }
         };
 
-        // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
                 landing_sub: "Global Maritime Brokerage System",
@@ -481,10 +488,9 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
-            loadLibrary(); // Reload cards to update text inside JS generated content
+            loadLibrary(); 
         }
 
-        // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
             setTimeout(() => {
@@ -512,34 +518,12 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
-            // Academy (Static)
             const aGrid = document.getElementById('academyGrid');
-            aGrid.innerHTML = "";
-            const ACADEMY_DATA = [
-                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
-                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
-                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
-                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
-            ];
-            ACADEMY_DATA.forEach(item => {
-                // [GÜVENLİ CONCATENATION]
-                let html = '<div class="doc-card">' +
-                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
-                           '<div class="doc-title">' + item.title + '</div>' +
-                           '<div class="doc-desc">' + item.desc + '</div>' +
-                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                           '</div>';
-                aGrid.innerHTML += html;
-            });
-
-            // Docs (Dynamic Fetch)
             const dContainer = document.getElementById('docsContainer');
+            aGrid.innerHTML = "";
             dContainer.innerHTML = ""; 
             
             try {
@@ -549,33 +533,58 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                    cat.items.forEach(item => {
-                        // [GÜVENLİ CONCATENATION]
-                        html += '<div class="doc-card">' +
-                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                '<div class="doc-title">' + item.title + '</div>' +
-                                '<div class="doc-desc">' + item.desc + '</div>' +
-                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                '</div>';
-                    });
-                    html += '</div>';
-                    dContainer.innerHTML += html;
+                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
+                        cat.items.forEach(item => {
+                            let html = '<div class="doc-card">' +
+                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
+                                       '<div class="doc-title">' + item.title + '</div>' +
+                                       '<div class="doc-desc">' + item.desc + '</div>' +
+                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                       '</div>';
+                            aGrid.innerHTML += html;
+                        });
+                    } else {
+                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                        cat.items.forEach(item => {
+                            html += '<div class="doc-card">' +
+                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                    '<div class="doc-title">' + item.title + '</div>' +
+                                    '<div class="doc-desc">' + item.desc + '</div>' +
+                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                    '</div>';
+                        });
+                        html += '</div>';
+                        dContainer.innerHTML += html;
+                    }
                 });
             } catch(e) {
-                // Fail silently
+                console.error("Error loading library");
             }
         }
         loadLibrary();
 
-        // [EKLEME]: MODAL FONKSİYONLARI
+        // --- MODAL & DOWNLOAD LOGIC ---
+        let currentDocTitle = "";
+        let currentDocContent = "";
+
         function openDoc(id) {
             const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
             if(doc) {
+                currentDocTitle = doc.title;
+                currentDocContent = doc.content;
                 document.getElementById('modalTitle').innerText = doc.title;
                 document.getElementById('modalBody').innerText = doc.content; 
                 document.getElementById('docModal').style.display = "block";
             }
+        }
+
+        function downloadCurrentDoc() {
+            const element = document.createElement('a');
+            const file = new Blob([currentDocContent], {type: 'text/plain;charset=utf-8'});
+            element.href = URL.createObjectURL(file);
+            element.download = currentDocTitle + ".txt";
+            document.body.appendChild(element);
+            element.click();
         }
 
         function closeModal() {
@@ -588,7 +597,6 @@ const FRONTEND_HTML = `
             }
         }
 
-        // --- CORE BROKER LOGIC ---
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
             if(type && CLIENT_VESSEL_SPECS[type]) {
@@ -609,10 +617,15 @@ const FRONTEND_HTML = `
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
                 const dl = document.getElementById('portList'); ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
-                const mRes = await fetch('/api/market'); const m = await mRes.json();
-                document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2);
-                document.getElementById('hoPrice').innerText = "$" + m.mgo.toFixed(0);
-                document.getElementById('vlsfoPrice').innerText = "$" + m.vlsfo.toFixed(0);
+                
+                // MARKET DATA FETCH
+                const mRes = await fetch('/api/market'); 
+                const m = await mRes.json();
+                if(m.brent) {
+                     document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2);
+                     document.getElementById('hoPrice').innerText = "$" + m.mgo.toFixed(0);
+                     document.getElementById('vlsfoPrice').innerText = "$" + m.vlsfo.toFixed(0);
+                }
             } catch(e) {}
         }
         init();
@@ -631,7 +644,6 @@ const FRONTEND_HTML = `
              } catch(e){} 
         }
 
-        // Map setup
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
@@ -760,6 +772,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V72 (THE ABSOLUTE FINAL) running on port ${port}`));
-// GET / route for serving the frontend HTML
-app.get('/', (req, res) => res.send(FRONTEND_HTML));
+app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
