@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs'; // fs modülünü ekledik (ports.json okumak için)
 
 const fetch = globalThis.fetch;
 const __filename = fileURLToPath(import.meta.url);
@@ -542,7 +542,7 @@ const FRONTEND_HTML = `
             const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
             if(doc) {
                 document.getElementById('modalTitle').innerText = doc.title;
-                document.getElementById('modalBody').innerText = doc.content; // textContent or innerText handles \n better
+                document.getElementById('modalBody').innerText = doc.content; 
                 document.getElementById('docModal').style.display = "block";
             }
         }
@@ -558,6 +558,16 @@ const FRONTEND_HTML = `
         }
 
         // --- CORE BROKER LOGIC ---
+        // VESSEL_SPECS is defined at top of script, we need to access it here
+        // We will just use the global constant VESSEL_SPECS
+        
+        function updateSpeed() { 
+            const type = document.getElementById('vType').value;
+            if(type && VESSEL_SPECS[type]) {
+                document.getElementById('vSpeed').value = VESSEL_SPECS[type].default_speed;
+            }
+        }
+
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 3440;
             const dLat = (lat2 - lat1) * Math.PI/180;
@@ -579,9 +589,6 @@ const FRONTEND_HTML = `
         }
         init();
 
-        function updateSpeed() { 
-            // Mock logic for speed update based on type
-        }
         async function fillCoords() { 
              const pName = document.getElementById('refPort').value.toUpperCase(); 
              if(!pName) return; 
@@ -635,7 +642,7 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
-                el.innerHTML = `<div class="ci-top"><span>${v.loadPort} -> ${v.dischPort}</span><span class="tce-badge">$${v.financials.tce.toLocaleString()}/day</span></div><div class="ci-bot"><span>${v.commodity}</span><span>Bal: ${v.ballastDist} NM</span></div>`;
+                el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + v.financials.tce.toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
             showDetails(voyages[0], list.children[0]);
@@ -647,18 +654,18 @@ const FRONTEND_HTML = `
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
-            document.getElementById('financialDetails').innerHTML = `
-                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">${v.ballastDist} NM</span></div>
-                <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">${v.ladenDist} NM</span></div>
-                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">${v.usedSpeed} kts</span></div>
-                <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">${v.totalDays.toFixed(1)}</span></div>
-                <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$${f.revenue.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-$${f.cost_ballast_fuel.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-$${f.cost_laden_fuel.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-$${(f.cost_port_dues+f.cost_canal).toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-$${f.cost_comm.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-$${f.cost_opex.toLocaleString()}</span></div>
-            `;
+            document.getElementById('financialDetails').innerHTML = 
+                '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">' + v.usedSpeed + ' kts</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">' + v.totalDays.toFixed(1) + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$' + f.revenue.toLocaleString() + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-$' + f.cost_ballast_fuel.toLocaleString() + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-$' + f.cost_laden_fuel.toLocaleString() + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-$' + (f.cost_port_dues+f.cost_canal).toLocaleString() + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-$' + f.cost_comm.toLocaleString() + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-$' + f.cost_opex.toLocaleString() + '</span></div>';
+            
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
             layerGroup.clearLayers();
             const pos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
@@ -673,171 +680,3 @@ const FRONTEND_HTML = `
 </body>
 </html>
 `;
-
-// =================================================================
-// 3. BACKEND LOGIC
-// =================================================================
-
-async function updateMarketData() {
-    if (Date.now() - MARKET.lastUpdate < 900000) return; 
-    try {
-        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
-        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
-        const brentData = await res.json();
-        const hoData = await resHO.json();
-        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
-        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
-        if(brentPrice && hoPriceGal) {
-            MARKET.brent = brentPrice;
-            MARKET.mgo = Math.round(hoPriceGal * 319); 
-            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
-            MARKET.lastUpdate = Date.now();
-            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
-        }
-    } catch(e) {}
-}
-
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
-    const dLat = (lat2 - lat1) * Math.PI/180;
-    const dLon = (lon2 - lon1) * Math.PI/180;
-    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c * 1.15); 
-}
-
-function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
-    const speed = shipSpeed || specs.default_speed;
-    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
-    const ballastDays = ballastDist / (speed * 24);
-    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
-    const ladenDays = ladenDist / (speed * 24);
-    
-    const cargoType = specs.type; 
-    const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
-    const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
-    
-    let qty = userQty;
-    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
-
-    const lRate = userLoadRate || cargo.loadRate;
-    const dRate = userDischRate || cargo.dischRate;
-
-    const loadDays = (qty / lRate) + 1;
-    const dischDays = (qty / dRate) + 1;
-    const portDays = Math.ceil(loadDays + dischDays);
-
-    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
-    const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
-    const costPortFuel = portDays * specs.port_cons * market.mgo;
-    const costPortDues = specs.dwt * 1.30; 
-    const totalDays = ballastDays + ladenDays + portDays;
-    
-    let costCanal = 0;
-    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
-    
-    const costOpex = totalDays * specs.opex;
-    const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.025; 
-    const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
-    const profit = grossRevenue - totalCost;
-    const tce = profit / totalDays;
-    
-    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
-}
-
-function generateAnalysis(v, specs) {
-    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
-    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
-    const tceVsOpex = v.financials.tce / specs.opex;
-
-    let sentiment = "NEUTRAL";
-    let color = "#94a3b8";
-    let advice = "";
-    let pros = [];
-    let cons = [];
-
-    if (tceVsOpex > 2.5) {
-        sentiment = "EXCEPTIONAL FIXTURE";
-        color = "#10b981"; 
-        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
-    } else if (tceVsOpex > 1.5) {
-        sentiment = "STRONG PERFORMER";
-        color = "#34d399";
-        advice = "Solid profit margin. Good option for positioning.";
-    } else if (tceVsOpex > 1.0) {
-        sentiment = "STANDARD MARKET";
-        color = "#f59e0b"; 
-        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
-    } else {
-        sentiment = "NEGATIVE RETURNS";
-        color = "#ef4444"; 
-        advice = "Loss-making voyage. Only consider for urgent repositioning.";
-    }
-
-    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
-    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
-    if (profitMargin > 30) pros.push("High Net Profit Margin");
-    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
-    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
-
-    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
-    html += `<div style="margin-bottom:10px;">${advice}</div>`;
-    
-    if (pros.length > 0) {
-        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
-        pros.forEach(p => html += `<li>${p}</li>`);
-        html += `</ul>`;
-    }
-    
-    if (cons.length > 0) {
-        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
-        cons.forEach(c => html += `<li>${c}</li>`);
-        html += `</ul>`;
-    }
-
-    return html;
-}
-
-// --- API ROUTES ---
-
-app.get('/', (req, res) => res.send(FRONTEND_HTML));
-app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
-app.get('/api/market', async (req, res) => { await updateMarketData(); res.json(MARKET); });
-app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
-
-app.post('/api/analyze', async (req, res) => {
-    await updateMarketData();
-    const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
-    
-    if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
-    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; 
-    const suggestions = [];
-    const allPorts = Object.keys(PORT_DB);
-    const sortedPorts = allPorts.map(pName => { return { name: pName, geo: PORT_DB[pName], dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng) }; }).sort((a,b) => a.dist - b.dist);
-    const candidates = sortedPorts.slice(0, 30);
-    for(let i=0; i<5; i++) {
-        const loadCand = candidates[Math.floor(Math.random() * candidates.length)];
-        const dischName = allPorts[Math.floor(Math.random() * allPorts.length)];
-        const dischGeo = PORT_DB[dischName];
-        if(loadCand.name === dischName) continue;
-        
-        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
-        
-        if(calc.financials.profit > -20000) {
-            suggestions.push({
-                loadPort: loadCand.name, dischPort: dischName, loadGeo: loadCand.geo, dischGeo: dischGeo,
-                commodity: calc.cargo.name, qty: calc.qty,
-                ballastDist: calc.ballastDist, ballastDays: calc.ballastDays,
-                ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
-                totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
-                financials: calc.financials, 
-                aiAnalysis: generateAnalysis(calc, specs) 
-            });
-        }
-    }
-    suggestions.sort((a,b) => b.financials.tce - a.financials.tce);
-    res.json({success: true, voyages: suggestions});
-});
-
-app.listen(port, () => console.log(`VIYA BROKER V66 (THE UNBREAKABLE) running on port ${port}`));
