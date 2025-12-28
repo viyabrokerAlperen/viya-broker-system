@@ -11,14 +11,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// API KEY FROM ENVIRONMENT
-const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
+// [DÜZELTME]: Senin Render ayarına (GEMINI_API_KEY) göre güncellendi.
+const API_KEY = process.env.GEMINI_API_KEY; 
 
-// [DEBUG LOG]: API Key durumunu konsola yaz (Güvenlik için ilk 4 harfi göster)
-if (GEMINI_API_KEY) {
-    console.log(`✅ AI SYSTEM: ONLINE (Key Detected: ${GEMINI_API_KEY.substring(0, 4)}...)`);
+// [DEBUG LOG]: Key kontrolü (Güvenlik için sadece var/yok kontrolü)
+if (API_KEY) {
+    console.log("✅ AI SYSTEM: ONLINE (API Key Detected)");
 } else {
-    console.error("❌ AI SYSTEM: OFFLINE (GOOGLE_API_KEY not found in Environment Variables)");
+    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY not found in Render Environment)");
 }
 
 app.use(cors());
@@ -74,7 +74,7 @@ const CARGOES = {
     ]
 };
 
-// MARKET DATA (Varsayılan değerlerle başlar, sonra güncellenir)
+// MARKET DATA (Varsayılan değerlerle başlar)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -94,10 +94,12 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
 
+
 // =================================================================
-// 2. HELPER FUNCTIONS (BACKEND LOGIC)
+// 2. HELPER FUNCTIONS (DEFINED ONCE)
 // =================================================================
 
+// [DÜZELTME]: Bu fonksiyon artık sadece burada tanımlı.
 async function updateMarketData() {
     if (Date.now() - MARKET.lastUpdate < 900000) return; 
     try {
@@ -922,10 +924,10 @@ app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
 app.post('/api/chat', async (req, res) => {
     const userMsg = req.body.message;
-    if (!GEMINI_API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
+    if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -983,5 +985,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V81 (THE SLEEP WALKER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V83 (THE SYNCHRONIZED) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
