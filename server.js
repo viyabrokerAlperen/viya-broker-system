@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (GENİŞLETİLMİŞ FİLO & KARGOLAR)
+// 1. DATA & CONFIG
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -83,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND
+// 2. FRONTEND (MULTI-LANGUAGE UI)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -106,10 +106,14 @@ const FRONTEND_HTML = `
         .brand { display: flex; align-items: center; cursor:pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
         .brand img { height: 40px; } 
         
-        .nav-links { display: flex; gap: 30px; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
         .nav-item:hover, .nav-item.active { color: var(--neon-cyan); border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); }
         
+        /* Language Selector */
+        .lang-switch { cursor: pointer; font-family: var(--font-tech); color: #fff; border: 1px solid var(--neon-cyan); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; transition: 0.3s; }
+        .lang-switch:hover { background: var(--neon-cyan); color: #000; }
+
         .live-ticker { font-family: var(--font-tech); font-size: 0.7rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
@@ -202,12 +206,12 @@ const FRONTEND_HTML = `
     </style>
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;">COMPUTING...</div></div></div>
+    <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;" data-i18n="computing">COMPUTING...</div></div></div>
 
     <div id="landing-view">
         <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA BROKER LOGO" class="landing-logo-img">
-        <div class="landing-sub">Global Maritime Brokerage System</div>
-        <button class="btn-enter" onclick="enterSystem()">ENTER TERMINAL</button>
+        <div class="landing-sub" data-i18n="landing_sub">Global Maritime Brokerage System</div>
+        <button class="btn-enter" onclick="enterSystem()" data-i18n="enter_btn">ENTER TERMINAL</button>
     </div>
 
     <nav id="mainNav">
@@ -216,10 +220,11 @@ const FRONTEND_HTML = `
             VIYA BROKER
         </div>
         <div class="nav-links">
-            <div class="nav-item active" onclick="switchView('dashboard')">Terminal</div>
-            <div class="nav-item" onclick="switchView('academy')">Knowledge Base</div>
-            <div class="nav-item" onclick="switchView('docs')">Document Center</div>
-            <div class="nav-item" onclick="switchView('pricing')">Membership</div>
+            <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
+            <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
+            <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Document Center</div>
+            <div class="nav-item" onclick="switchView('pricing')" data-i18n="nav_mem">Membership</div>
+            <div class="lang-switch" onclick="toggleLanguage()">EN | TR</div>
         </div>
         <div class="live-ticker">
             <div class="ticker-item"><span class="live-dot"></span> MARKET LIVE</div>
@@ -232,9 +237,9 @@ const FRONTEND_HTML = `
     <div id="dashboard" class="view-section">
         <div class="dash-grid">
             <aside class="panel">
-                <div class="p-header"><i class="fa-solid fa-ship"></i> VESSEL PARAMETERS</div>
+                <div class="p-header"><i class="fa-solid fa-ship"></i> <span data-i18n="panel_vessel">VESSEL PARAMETERS</span></div>
                 <div class="p-body">
-                    <div class="input-group"><label>VESSEL CLASS & TYPE</label>
+                    <div class="input-group"><label data-i18n="lbl_vessel">VESSEL CLASS & TYPE</label>
                         <select id="vType" onchange="updateSpeed()">
                             <optgroup label="DRY BULK FLEET">
                                 <option value="HANDYSIZE">Handysize (35k)</option>
@@ -262,57 +267,57 @@ const FRONTEND_HTML = `
                             </optgroup>
                         </select>
                     </div>
-                    <div class="input-group"><label>QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
+                    <div class="input-group"><label data-i18n="lbl_port">QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
                     <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
-                    <div class="input-group"><label>OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
+                    <div class="input-group"><label data-i18n="lbl_speed">OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
                     
-                    <div class="input-group"><label>CARGO QTY (TONS)</label><input type="number" id="vQty" placeholder="e.g. 50000" value="50000"></div>
+                    <div class="input-group"><label data-i18n="lbl_qty">CARGO QTY (TONS)</label><input type="number" id="vQty" placeholder="e.g. 50000" value="50000"></div>
                     <div class="input-group">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <div><label>LOAD RATE (MT/DAY)</label><input type="number" id="vLoadRate" value="15000"></div>
-                            <div><label>DISCH RATE (MT/DAY)</label><input type="number" id="vDischRate" value="10000"></div>
+                            <div><label data-i18n="lbl_lrate">LOAD RATE (MT/DAY)</label><input type="number" id="vLoadRate" value="15000"></div>
+                            <div><label data-i18n="lbl_drate">DISCH RATE (MT/DAY)</label><input type="number" id="vDischRate" value="10000"></div>
                         </div>
                     </div>
 
-                    <button class="btn-action" onclick="scanMarket()">SCAN MARKET OPPORTUNITIES</button>
+                    <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">SCAN MARKET OPPORTUNITIES</button>
                     <div id="cargoResultList" class="cargo-list" style="margin-top:20px; display:none;"></div>
                 </div>
             </aside>
             <div class="panel">
                 <div id="map"></div>
                 <div style="position:absolute; bottom:20px; left:20px; z-index:500; background:rgba(0,0,0,0.8); padding:10px; border-radius:4px; color:#fff; font-size:0.7rem; border:1px solid #333;">
-                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#f59e0b; border-radius:50%; margin-right:8px;"></span> Vessel</div>
-                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#10b981; border-radius:50%; margin-right:8px;"></span> Load Port</div>
-                    <div style="display:flex; align-items:center;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; margin-right:8px;"></span> Discharge</div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#f59e0b; border-radius:50%; margin-right:8px;"></span> <span data-i18n="map_vessel">Vessel</span></div>
+                    <div style="display:flex; align-items:center; margin-bottom:5px;"><span style="width:8px; height:8px; background:#10b981; border-radius:50%; margin-right:8px;"></span> <span data-i18n="map_load">Load Port</span></div>
+                    <div style="display:flex; align-items:center;"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; margin-right:8px;"></span> <span data-i18n="map_disch">Discharge</span></div>
                 </div>
             </div>
             <aside class="panel">
-                <div class="p-header"><i class="fa-solid fa-file-invoice-dollar"></i> VOYAGE ESTIMATION</div>
+                <div class="p-header"><i class="fa-solid fa-file-invoice-dollar"></i> <span data-i18n="panel_estim">VOYAGE ESTIMATION</span></div>
                 <div class="p-body" id="analysisPanel" style="display:none;">
                     <div class="stat-grid">
                         <div class="stat-card"><div class="stat-val" id="dispTCE" style="color:var(--neon-cyan)">$0</div><div class="stat-lbl">TCE / Day</div></div>
-                        <div class="stat-card"><div class="stat-val" id="dispProfit" style="color:var(--success)">$0</div><div class="stat-lbl">Net Profit</div></div>
+                        <div class="stat-card"><div class="stat-val" id="dispProfit" style="color:var(--success)">$0</div><div class="stat-lbl" data-i18n="stat_profit">Net Profit</div></div>
                     </div>
                     <div id="financialDetails"></div>
                     <div class="ai-insight" id="aiOutput"></div>
                 </div>
-                <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;">Waiting for vessel position data...</div>
+                <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;" data-i18n="empty_state">Waiting for vessel position data...</div>
             </aside>
         </div>
     </div>
 
     <div id="academy" class="view-section">
         <div class="library-section">
-            <div class="section-title">KNOWLEDGE BASE</div>
-            <div class="section-desc">Essential maritime commercial and legal concepts for modern brokers.</div>
+            <div class="section-title" data-i18n="sec_kb">KNOWLEDGE BASE</div>
+            <div class="section-desc" data-i18n="desc_kb">Essential maritime commercial and legal concepts for modern brokers.</div>
             <div class="docs-grid" id="academyGrid"></div>
         </div>
     </div>
 
     <div id="docs" class="view-section">
         <div class="library-section">
-            <div class="section-title">DOCUMENT CENTER</div>
-            <div class="section-desc">Industry standard Charter Parties, Riders and Operational Forms.</div>
+            <div class="section-title" data-i18n="sec_doc">DOCUMENT CENTER</div>
+            <div class="section-desc" data-i18n="desc_doc">Industry standard Charter Parties, Riders and Operational Forms.</div>
             <div id="docsContainer"></div>
         </div>
     </div>
@@ -323,33 +328,33 @@ const FRONTEND_HTML = `
                 <div class="plan-name">CADET</div>
                 <div class="plan-price">$0 <span>/mo</span></div>
                 <ul class="plan-features">
-                    <li><i class="fa-solid fa-check"></i> Distance Calculator</li>
-                    <li><i class="fa-solid fa-check"></i> 3 Daily Scans</li>
+                    <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_dist">Distance Calculator</span></li>
+                    <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_scans">3 Daily Scans</span></li>
                     <li><i class="fa-solid fa-xmark" style="color:#555"></i> Financial Analysis</li>
                 </ul>
-                <button class="btn-plan basic">CURRENT PLAN</button>
+                <button class="btn-plan basic" data-i18n="btn_curr">CURRENT PLAN</button>
             </div>
             <div class="price-card pro">
                 <div class="plan-name" style="color:var(--neon-cyan)">BROKER PRO</div>
                 <div class="plan-price">$49 <span>/mo</span></div>
                 <ul class="plan-features">
-                    <li><i class="fa-solid fa-check"></i> Unlimited Scans</li>
+                    <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_unl">Unlimited Scans</span></li>
                     <li><i class="fa-solid fa-check"></i> Real-Time TCE & Profit</li>
                     <li><i class="fa-solid fa-check"></i> Live Market Data</li>
                     <li><i class="fa-solid fa-check"></i> Document Access</li>
                 </ul>
-                <button class="btn-plan pro">UPGRADE NOW</button>
+                <button class="btn-plan pro" data-i18n="btn_upg">UPGRADE NOW</button>
             </div>
             <div class="price-card">
                 <div class="plan-name">OWNER</div>
                 <div class="plan-price">$199 <span>/mo</span></div>
                 <ul class="plan-features">
-                    <li><i class="fa-solid fa-check"></i> All Pro Features</li>
+                    <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_all">All Pro Features</span></li>
                     <li><i class="fa-solid fa-check"></i> API Access</li>
                     <li><i class="fa-solid fa-check"></i> Custom Reports</li>
                     <li><i class="fa-solid fa-check"></i> Dedicated Consultant</li>
                 </ul>
-                <button class="btn-plan basic">CONTACT SALES</button>
+                <button class="btn-plan basic" data-i18n="btn_contact">CONTACT SALES</button>
             </div>
         </div>
     </div>
@@ -357,6 +362,94 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
+        // --- TRANSLATION ENGINE ---
+        const TRANSLATIONS = {
+            en: {
+                landing_sub: "Global Maritime Brokerage System",
+                enter_btn: "ENTER TERMINAL",
+                nav_term: "Terminal",
+                nav_kb: "Knowledge Base",
+                nav_docs: "Document Center",
+                nav_mem: "Membership",
+                panel_vessel: "VESSEL PARAMETERS",
+                panel_estim: "VOYAGE ESTIMATION",
+                lbl_vessel: "VESSEL CLASS & TYPE",
+                lbl_port: "QUICK POSITION (PORT)",
+                lbl_speed: "OPERATIONAL SPEED (KTS)",
+                lbl_qty: "CARGO QTY (TONS)",
+                lbl_lrate: "LOAD RATE (MT/DAY)",
+                lbl_drate: "DISCH RATE (MT/DAY)",
+                btn_scan: "SCAN MARKET OPPORTUNITIES",
+                map_vessel: "Vessel",
+                map_load: "Load Port",
+                map_disch: "Discharge",
+                stat_profit: "Net Profit",
+                empty_state: "Waiting for vessel position data...",
+                sec_kb: "KNOWLEDGE BASE",
+                desc_kb: "Essential maritime commercial and legal concepts for modern brokers.",
+                sec_doc: "DOCUMENT CENTER",
+                desc_doc: "Industry standard Charter Parties, Riders and Operational Forms.",
+                feat_dist: "Distance Calculator",
+                feat_scans: "3 Daily Scans",
+                feat_unl: "Unlimited Scans",
+                feat_all: "All Pro Features",
+                btn_curr: "CURRENT PLAN",
+                btn_upg: "UPGRADE NOW",
+                btn_contact: "CONTACT SALES",
+                computing: "COMPUTING..."
+            },
+            tr: {
+                landing_sub: "Küresel Denizcilik Brokerlik Sistemi",
+                enter_btn: "TERMİNALE GİR",
+                nav_term: "Terminal",
+                nav_kb: "Bilgi Bankası",
+                nav_docs: "Doküman Merkezi",
+                nav_mem: "Üyelik",
+                panel_vessel: "GEMİ PARAMETRELERİ",
+                panel_estim: "SEFER TAHMİNİ",
+                lbl_vessel: "GEMİ SINIFI & TİPİ",
+                lbl_port: "HIZLI KONUM (LİMAN)",
+                lbl_speed: "OPERASYONEL HIZ (KTS)",
+                lbl_qty: "YÜK MİKTARI (TON)",
+                lbl_lrate: "YÜKLEME HIZI (TON/GÜN)",
+                lbl_drate: "TAHLİYE HIZI (TON/GÜN)",
+                btn_scan: "PİYASAYI TARAT",
+                map_vessel: "Gemi",
+                map_load: "Yükleme Limanı",
+                map_disch: "Tahliye Limanı",
+                stat_profit: "Net Kâr",
+                empty_state: "Gemi konum verisi bekleniyor...",
+                sec_kb: "BİLGİ BANKASI",
+                desc_kb: "Modern brokerler için temel ticari ve hukuki kavramlar.",
+                sec_doc: "DOKÜMAN MERKEZİ",
+                desc_doc: "Endüstri standardı Charter Party, Ek Maddeler ve Operasyonel Formlar.",
+                feat_dist: "Mesafe Hesaplayıcı",
+                feat_scans: "Günlük 3 Tarama",
+                feat_unl: "Sınırsız Tarama",
+                feat_all: "Tüm Pro Özellikler",
+                btn_curr: "MEVCUT PLAN",
+                btn_upg: "YÜKSELT",
+                btn_contact: "SATIŞLA GÖRÜŞ",
+                computing: "HESAPLANIYOR..."
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'tr' : 'en';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(TRANSLATIONS[currentLang][key]) {
+                    el.innerText = TRANSLATIONS[currentLang][key];
+                }
+            });
+        }
+
         // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
@@ -743,4 +836,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V63 (THE AI BROKER INTELLIGENCE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
