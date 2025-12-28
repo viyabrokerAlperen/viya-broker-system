@@ -11,14 +11,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// [DÜZELTME]: Senin Render ayarına (GEMINI_API_KEY) göre güncellendi.
+// [DÜZELTME]: Render Environment'taki isimle birebir aynı
 const API_KEY = process.env.GEMINI_API_KEY; 
 
-// [DEBUG LOG]: Key kontrolü (Güvenlik için sadece var/yok kontrolü)
 if (API_KEY) {
     console.log("✅ AI SYSTEM: ONLINE (API Key Detected)");
 } else {
-    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY not found in Render Environment)");
+    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY not found)");
 }
 
 app.use(cors());
@@ -74,7 +73,7 @@ const CARGOES = {
     ]
 };
 
-// MARKET DATA (Varsayılan değerlerle başlar)
+// MARKET DATA (Varsayılan değerlerle başlar, sonra güncellenir)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -94,12 +93,10 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
 
-
 // =================================================================
-// 2. HELPER FUNCTIONS (DEFINED ONCE)
+// 2. HELPER FUNCTIONS (DEFINED ONCE AT THE TOP)
 // =================================================================
 
-// [DÜZELTME]: Bu fonksiyon artık sadece burada tanımlı.
 async function updateMarketData() {
     if (Date.now() - MARKET.lastUpdate < 900000) return; 
     try {
@@ -137,7 +134,6 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
     
-    // Smart Cargo Selection
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
@@ -680,6 +676,7 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
+                    // SEPERATE ACADEMY AND DOCS
                     if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
                         cat.items.forEach(item => {
                             let html = '<div class="doc-card">' +
@@ -927,6 +924,7 @@ app.post('/api/chat', async (req, res) => {
     if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
 
     try {
+        // [DÜZELTME]: Orijinal 1.5 Flash modeline geri döndük
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -943,10 +941,17 @@ app.post('/api/chat', async (req, res) => {
         });
         
         const data = await response.json();
+        
+        // Hata yakalama
+        if (data.error) {
+            console.error("Google Gemini Error:", data.error);
+            return res.json({ reply: `AI Error: ${data.error.message}` });
+        }
+
         const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am analyzing the market, please try again.";
         res.json({ reply });
     } catch (error) {
-        console.error("AI Error:", error);
+        console.error("AI Network Error:", error);
         res.json({ reply: "AI Communication Error." });
     }
 });
@@ -985,5 +990,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V83 (THE SYNCHRONIZED) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V85 (THE LEGEND) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
