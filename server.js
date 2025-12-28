@@ -773,3 +773,5 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
+// GET / route for serving the frontend HTML
+app.get('/', (req, res) => res.send(FRONTEND_HTML));
