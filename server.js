@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// API KEY FROM ENVIRONMENT
+// API KEY (Environment Variable'dan çeker)
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
 
 app.use(cors());
@@ -67,6 +67,7 @@ const CARGOES = {
     ]
 };
 
+// MARKET DATA (Varsayılan değerlerle başlar, sonra güncellenir)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -88,7 +89,136 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND
+// 2. HELPER FUNCTIONS (BACKEND LOGIC) - MUST BE DEFINED BEFORE ROUTES
+// =================================================================
+
+async function updateMarketData() {
+    if (Date.now() - MARKET.lastUpdate < 900000) return; 
+    try {
+        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
+        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
+        const brentData = await res.json();
+        const hoData = await resHO.json();
+        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
+        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
+        if(brentPrice && hoPriceGal) {
+            MARKET.brent = brentPrice;
+            MARKET.mgo = Math.round(hoPriceGal * 319); 
+            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
+            MARKET.lastUpdate = Date.now();
+            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
+        }
+    } catch(e) {
+        console.log("⚠️ Market data update failed, using defaults.");
+    }
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440;
+    const dLat = (lat2 - lat1) * Math.PI/180;
+    const dLon = (lon2 - lon1) * Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c * 1.15); 
+}
+
+function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
+    const speed = shipSpeed || specs.default_speed;
+    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
+    const ballastDays = ballastDist / (speed * 24);
+    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
+    const ladenDays = ladenDist / (speed * 24);
+    
+    // Smart Cargo Selection
+    const cargoType = specs.type;
+    const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
+    const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
+    
+    let qty = userQty;
+    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
+
+    const lRate = userLoadRate || cargo.loadRate;
+    const dRate = userDischRate || cargo.dischRate;
+
+    const loadDays = (qty / lRate) + 1;
+    const dischDays = (qty / dRate) + 1;
+    const portDays = Math.ceil(loadDays + dischDays);
+
+    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
+    const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
+    const costPortFuel = portDays * specs.port_cons * market.mgo;
+    const costPortDues = specs.dwt * 1.30; 
+    const totalDays = ballastDays + ladenDays + portDays;
+    
+    let costCanal = 0;
+    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
+    
+    const costOpex = totalDays * specs.opex;
+    const grossRevenue = qty * cargo.rate;
+    const commission = grossRevenue * 0.025; 
+    const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
+    const profit = grossRevenue - totalCost;
+    const tce = profit / totalDays;
+    
+    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
+}
+
+function generateAnalysis(v, specs) {
+    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
+    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
+    const tceVsOpex = v.financials.tce / specs.opex;
+
+    let sentiment = "NEUTRAL";
+    let color = "#94a3b8";
+    let advice = "";
+    let pros = [];
+    let cons = [];
+
+    if (tceVsOpex > 2.5) {
+        sentiment = "EXCEPTIONAL FIXTURE";
+        color = "#10b981"; 
+        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
+    } else if (tceVsOpex > 1.5) {
+        sentiment = "STRONG PERFORMER";
+        color = "#34d399";
+        advice = "Solid profit margin. Good option for positioning.";
+    } else if (tceVsOpex > 1.0) {
+        sentiment = "STANDARD MARKET";
+        color = "#f59e0b"; 
+        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
+    } else {
+        sentiment = "NEGATIVE RETURNS";
+        color = "#ef4444"; 
+        advice = "Loss-making voyage. Only consider for urgent repositioning.";
+    }
+
+    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
+    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
+    if (profitMargin > 30) pros.push("High Net Profit Margin");
+    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
+    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
+
+    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
+    html += `<div style="margin-bottom:10px;">${advice}</div>`;
+    
+    if (pros.length > 0) {
+        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
+        pros.forEach(p => html += `<li>${p}</li>`);
+        html += `</ul>`;
+    }
+    
+    if (cons.length > 0) {
+        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
+        cons.forEach(c => html += `<li>${c}</li>`);
+        html += `</ul>`;
+    }
+
+    return html;
+}
+
+
+// =================================================================
+// 3. FRONTEND HTML CONSTANT
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -187,7 +317,7 @@ const FRONTEND_HTML = `
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
         
-        /* CHAT STYLES */
+        /* CHAT WIDGET STYLES */
         .chat-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--neon-cyan); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1500; box-shadow: 0 0 20px rgba(0,242,255,0.4); transition: 0.3s; font-size: 24px; color: #000; }
         .chat-btn:hover { transform: scale(1.1); }
         .chat-window { display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; background: rgba(10, 15, 25, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 1500; flex-direction: column; backdrop-filter: blur(10px); }
@@ -660,7 +790,6 @@ const FRONTEND_HTML = `
             return Math.round(R * c * 1.15); 
         }
 
-        // --- RESTORED: UPDATE MARKET DATA ON INIT ---
         async function init() {
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
@@ -730,6 +859,7 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
+                // [GÜVENLİ CONCATENATION]
                 el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + v.financials.tce.toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
@@ -742,6 +872,7 @@ const FRONTEND_HTML = `
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
+            // [GÜVENLİ CONCATENATION]
             document.getElementById('financialDetails').innerHTML = 
                 '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
                 '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
@@ -770,12 +901,145 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC
+// 3. BACKEND LOGIC (HELPER FUNCTIONS DEFINED FIRST)
+// =================================================================
+
+async function updateMarketData() {
+    if (Date.now() - MARKET.lastUpdate < 900000) return; 
+    try {
+        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
+        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
+        const brentData = await res.json();
+        const hoData = await resHO.json();
+        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
+        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
+        if(brentPrice && hoPriceGal) {
+            MARKET.brent = brentPrice;
+            MARKET.mgo = Math.round(hoPriceGal * 319); 
+            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
+            MARKET.lastUpdate = Date.now();
+            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
+        }
+    } catch(e) {
+        console.log("⚠️ Market data update failed, using defaults.");
+    }
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440;
+    const dLat = (lat2 - lat1) * Math.PI/180;
+    const dLon = (lon2 - lon1) * Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c * 1.15); 
+}
+
+function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
+    const speed = shipSpeed || specs.default_speed;
+    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
+    const ballastDays = ballastDist / (speed * 24);
+    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
+    const ladenDays = ladenDist / (speed * 24);
+    
+    const cargoType = specs.type;
+    const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
+    const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
+    
+    let qty = userQty;
+    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
+
+    const lRate = userLoadRate || cargo.loadRate;
+    const dRate = userDischRate || cargo.dischRate;
+
+    const loadDays = (qty / lRate) + 1;
+    const dischDays = (qty / dRate) + 1;
+    const portDays = Math.ceil(loadDays + dischDays);
+
+    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
+    const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
+    const costPortFuel = portDays * specs.port_cons * market.mgo;
+    const costPortDues = specs.dwt * 1.30; 
+    const totalDays = ballastDays + ladenDays + portDays;
+    
+    let costCanal = 0;
+    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
+    
+    const costOpex = totalDays * specs.opex;
+    const grossRevenue = qty * cargo.rate;
+    const commission = grossRevenue * 0.025; 
+    const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
+    const profit = grossRevenue - totalCost;
+    const tce = profit / totalDays;
+    
+    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
+}
+
+function generateAnalysis(v, specs) {
+    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
+    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
+    const tceVsOpex = v.financials.tce / specs.opex;
+
+    let sentiment = "NEUTRAL";
+    let color = "#94a3b8";
+    let advice = "";
+    let pros = [];
+    let cons = [];
+
+    if (tceVsOpex > 2.5) {
+        sentiment = "EXCEPTIONAL FIXTURE";
+        color = "#10b981"; 
+        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
+    } else if (tceVsOpex > 1.5) {
+        sentiment = "STRONG PERFORMER";
+        color = "#34d399";
+        advice = "Solid profit margin. Good option for positioning.";
+    } else if (tceVsOpex > 1.0) {
+        sentiment = "STANDARD MARKET";
+        color = "#f59e0b"; 
+        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
+    } else {
+        sentiment = "NEGATIVE RETURNS";
+        color = "#ef4444"; 
+        advice = "Loss-making voyage. Only consider for urgent repositioning.";
+    }
+
+    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
+    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
+    if (profitMargin > 30) pros.push("High Net Profit Margin");
+    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
+    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
+
+    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
+    html += `<div style="margin-bottom:10px;">${advice}</div>`;
+    
+    if (pros.length > 0) {
+        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
+        pros.forEach(p => html += `<li>${p}</li>`);
+        html += `</ul>`;
+    }
+    
+    if (cons.length > 0) {
+        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
+        cons.forEach(c => html += `<li>${c}</li>`);
+        html += `</ul>`;
+    }
+
+    return html;
+}
+
+// =================================================================
+// 4. API ROUTES
 // =================================================================
 
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
-app.get('/api/market', async (req, res) => { await updateMarketData(); res.json(MARKET); });
+
+app.get('/api/market', async (req, res) => { 
+    await updateMarketData(); 
+    res.json(MARKET); 
+});
+
 app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
+
 app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
 app.post('/api/chat', async (req, res) => {
@@ -833,7 +1097,7 @@ app.post('/api/analyze', async (req, res) => {
                 ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
                 totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
                 financials: calc.financials, 
-                aiAnalysis: generateAnalysis(calc, specs) 
+                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
             });
         }
     }
@@ -841,5 +1105,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V78 (THE FIX) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V79 (THE UNSINKABLE) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
