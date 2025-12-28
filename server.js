@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs'; // fs modülünü ekledik (ports.json okumak için)
 
 const fetch = globalThis.fetch;
 const __filename = fileURLToPath(import.meta.url);
@@ -83,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND
+// 2. FRONTEND (MULTI-LANGUAGE UI & FIXED DOCUMENTS)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -195,8 +195,7 @@ const FRONTEND_HTML = `
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-        .clause-title { color: #fff; font-weight: bold; margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 5px; display:inline-block; }
-
+        
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -211,8 +210,7 @@ const FRONTEND_HTML = `
                 <span class="modal-title" id="modalTitle">DOCUMENT TITLE</span>
                 <span class="close-btn" onclick="closeModal()">&times;</span>
             </div>
-            <div class="modal-body" id="modalBody">
-                </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
@@ -458,91 +456,25 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
-            loadLibrary(); // Reload cards to update text inside JS generated content
+            loadLibrary();
         }
 
-        // --- UI LOGIC ---
-        function enterSystem() {
-            document.getElementById('landing-view').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('landing-view').style.display = 'none';
-                document.getElementById('mainNav').style.display = 'flex';
-                document.getElementById('dashboard').classList.add('active');
-                map.invalidateSize();
-            }, 800);
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Enter" && document.getElementById('landing-view').style.display !== 'none') {
-                enterSystem();
-            }
-        });
-
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(viewId === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
-            if(viewId === 'academy') document.querySelectorAll('.nav-item')[1].classList.add('active');
-            if(viewId === 'docs') document.querySelectorAll('.nav-item')[2].classList.add('active');
-            if(viewId === 'pricing') document.querySelectorAll('.nav-item')[3].classList.add('active');
-            if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
-        }
-
-        // --- CONTENT GENERATION WITH REAL DATA ---
+        // --- CONTENT WITH CLEAN DATA ---
         const DOCS_DB = [
             {
                 category: "DRY BULK CHARTER PARTIES",
                 items: [
                     {
                         id: "gencon",
-                        title: "GENCON 94", 
+                        title: "GENCON 94",
                         desc: "Standard Voyage Charter (Universal).",
-                        content: `PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)
-
-1. PREAMBLE
-It is this day agreed between the party mentioned in Box 3 as Owners of the steamer or motor-vessel named in Box 5... and the party mentioned in Box 4 as Charterers...
-
-2. OWNERS' RESPONSIBILITY CLAUSE
-Owners are to be responsible for loss of or damage to the goods or for delay in delivery of the goods only in case the loss, damage or delay has been caused by the personal want of due diligence on the part of the Owners...
-
-3. DEVIATION CLAUSE
-The Vessel has liberty to call at any port or ports in any order, for any purpose, to sail without pilots, to tow and/or assist vessels in all situations...
-
-4. PAYMENT OF FREIGHT
-The freight to be paid in the manner prescribed in Box 15 in cash without discount on delivery of the Cargo at mean rate of exchange...
-
-5. LOADING/DISCHARGING COSTS
-(a) Gross Terms: The agreed freight includes the cost of loading and discharging...
-(b) F.I.O. and Free Stowed/Trimmed: The Charterers shall bring the cargo into the holds, load, stow and/or trim and take the cargo from the holds...
-
-6. LAYTIME
-(a) Separate laytime for loading and discharging...
-(b) Total laytime for loading and discharging...
-
-7. DEMURRAGE
-Demurrage at the loading and discharging port is payable by the Charterers at the rate stated in Box 20 in the manner stated in Box 20 per day or pro rata for any part of a day...`
+                        content: "PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)\\n\\n1. PREAMBLE\\nIt is this day agreed between the party mentioned in Box 3 as Owners...\\n\\n2. OWNERS' RESPONSIBILITY CLAUSE\\nOwners are to be responsible for loss of or damage to the goods..."
                     },
                     {
                         id: "nype",
-                        title: "NYPE 2015", 
+                        title: "NYPE 2015",
                         desc: "New York Produce Exchange Time Charter.",
-                        content: `NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM
-
-1. DURATION
-The Owners agree to let and the Charterers agree to hire the Vessel from the time of delivery for a period of...
-
-2. DELIVERY
-The Vessel shall be placed at the disposal of the Charterers at...
-
-3. ON/OFF-HIRE SURVEY
-Prior to delivery and redelivery the parties shall, unless otherwise agreed, each appoint surveyors...
-
-4. OWNERS TO PROVIDE
-The Owners shall provide and pay for the insurance of the Vessel, all provisions, cabin, deck, engine-room and other necessary stores...
-
-5. CHARTERERS TO PROVIDE
-The Charterers shall provide and pay for all the fuel except as otherwise agreed, Port Charges, Pilotages...`
+                        content: "NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM\\n\\n1. DURATION\\nThe Owners agree to let and the Charterers agree to hire the Vessel..."
                     }
                 ]
             },
@@ -551,27 +483,9 @@ The Charterers shall provide and pay for all the fuel except as otherwise agreed
                 items: [
                     {
                         id: "asba",
-                        title: "ASBATANKVOY", 
+                        title: "ASBATANKVOY",
                         desc: "Association of Ship Brokers Tanker Voyage.",
-                        content: `ASBATANKVOY - TANKER VOYAGE CHARTER PARTY
-
-1. WARRANTY
-The Vessel, classed as specified in Part I hereof, and to be so maintained during the currency of this Charter...
-
-2. FREIGHT
-Freight shall be at the rate stipulated in Part I and shall be computed on intake quantity...
-
-3. DEADFREIGHT
-Should the Charterers fail to supply a full cargo, the Vessel may, at the Master's option, and shall, upon request of the Charterers, proceed on her voyage...
-
-4. LAYTIME
-Laytime shall not commence before 0600 local time on the Commencing Date specified in Part I...
-
-5. DEMURRAGE
-Charterers shall pay demurrage per running hour and pro rata for a part thereof at the rate specified in Part I...
-
-6. SAFE BERTHING
-The Vessel shall load and discharge at any safe place or wharf, or alongside vessels or lighters reachable on her arrival...`
+                        content: "ASBATANKVOY - TANKER VOYAGE CHARTER PARTY\\n\\n1. WARRANTY\\nThe Vessel, classed as specified in Part I hereof...\\n\\n2. FREIGHT\\nFreight shall be at the rate stipulated in Part I..."
                     }
                 ]
             },
@@ -580,49 +494,32 @@ The Vessel shall load and discharge at any safe place or wharf, or alongside ves
                 items: [
                     {
                         id: "nor",
-                        title: "Notice of Readiness (NOR)", 
+                        title: "Notice of Readiness (NOR)",
                         desc: "Standard NOR template.",
-                        content: `NOTICE OF READINESS (TEMPLATE)
-
-To: [Charterers / Agents]
-From: Master of MV [Vessel Name]
-Date: [Date]
-Port: [Port Name]
-
-Dear Sirs,
-
-Please accept this Notice of Readiness that the above Vessel under my command arrived at [Location] at [Time/Date] and is in all respects ready to commence [Loading/Discharging] operations of her cargo of [Cargo Name] in accordance with the terms and conditions of the Charter Party dated [Date].
-
-Yours faithfully,
-
-Master
-[Signature]`
+                        content: "NOTICE OF READINESS (TEMPLATE)\\n\\nTo: [Charterers / Agents]\\nFrom: Master of MV [Vessel Name]\\nDate: [Date]\\n\\nDear Sirs,\\n\\nPlease accept this Notice of Readiness..."
                     }
                 ]
             }
         ];
 
         function loadLibrary() {
-            // Docs (Categorized) - Only this needs dynamic loading based on DB
             const dContainer = document.getElementById('docsContainer');
-            dContainer.innerHTML = ""; // Clear first
+            dContainer.innerHTML = "";
             
             DOCS_DB.forEach(cat => {
-                let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
+                let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
                 cat.items.forEach(item => {
-                    html += `
-                        <div class="doc-card">
-                            <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
-                            <div class="doc-title">${item.title}</div>
-                            <div class="doc-desc">${item.desc}</div>
-                            <button class="btn-download" onclick="openDoc('${item.id}')">${TRANSLATIONS[currentLang].read_btn}</button>
-                        </div>`;
+                    html += '<div class="doc-card">' +
+                            '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                            '<div class="doc-title">' + item.title + '</div>' +
+                            '<div class="doc-desc">' + item.desc + '</div>' +
+                            '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                            '</div>';
                 });
-                html += `</div>`;
+                html += '</div>';
                 dContainer.innerHTML += html;
             });
 
-            // Knowledge Base (Static for now, but regenerated for lang update)
             const aGrid = document.getElementById('academyGrid');
             aGrid.innerHTML = "";
             const ACADEMY_DATA = [
@@ -631,23 +528,21 @@ Master
                 {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."}
             ];
             ACADEMY_DATA.forEach(item => {
-                aGrid.innerHTML += `
-                    <div class="doc-card">
-                        <i class="fa-solid ${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
-                        <div class="doc-title">${item.title}</div>
-                        <div class="doc-desc">${item.desc}</div>
-                        <button class="btn-download">${TRANSLATIONS[currentLang].read_btn}</button>
-                    </div>`;
+                aGrid.innerHTML += '<div class="doc-card">' +
+                                   '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
+                                   '<div class="doc-title">' + item.title + '</div>' +
+                                   '<div class="doc-desc">' + item.desc + '</div>' +
+                                   '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                   '</div>';
             });
         }
         loadLibrary();
 
-        // --- MODAL LOGIC ---
         function openDoc(id) {
             const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
             if(doc) {
                 document.getElementById('modalTitle').innerText = doc.title;
-                document.getElementById('modalBody').innerText = doc.content;
+                document.getElementById('modalBody').innerText = doc.content; // textContent or innerText handles \n better
                 document.getElementById('docModal').style.display = "block";
             }
         }
@@ -663,31 +558,14 @@ Master
         }
 
         // --- CORE BROKER LOGIC ---
-        const SPECS = { 
-            "HANDYSIZE":    { dwt: 35000, default_speed: 13.0 },
-            "HANDYMAX":     { dwt: 45000, default_speed: 13.0 },
-            "SUPRAMAX":     { dwt: 58000, default_speed: 13.5 },
-            "ULTRAMAX":     { dwt: 64000, default_speed: 13.5 },
-            "PANAMAX":      { dwt: 82000, default_speed: 13.0 },
-            "KAMSARMAX":    { dwt: 85000, default_speed: 13.0 },
-            "CAPESIZE":     { dwt: 180000, default_speed: 12.5 },
-            "NEWCASTLEMAX": { dwt: 205000, default_speed: 12.5 },
-            "SMALL_CHEM":   { dwt: 19000, default_speed: 13.0 },
-            "MR_TANKER":    { dwt: 50000, default_speed: 13.0 },
-            "LR1":          { dwt: 75000, default_speed: 13.0 },
-            "AFRAMAX":      { dwt: 115000, default_speed: 12.5 },
-            "SUEZMAX":      { dwt: 160000, default_speed: 12.5 },
-            "VLCC":         { dwt: 300000, default_speed: 12.0 },
-            "LPG_MGC":      { dwt: 38000, default_speed: 16.0 },
-            "LPG_VLGC":     { dwt: 55000, default_speed: 16.5 },
-            "LNG_CONV":     { dwt: 75000, default_speed: 19.0 },
-            "LNG_Q_FLEX":   { dwt: 110000, default_speed: 19.5 }
-        };
-
-        const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
-        const layerGroup = L.layerGroup().addTo(map);
-        let shipMarker = null;
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 3440;
+            const dLat = (lat2 - lat1) * Math.PI/180;
+            const dLon = (lon2 - lon1) * Math.PI/180;
+            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return Math.round(R * c * 1.15); 
+        }
 
         async function init() {
             try {
@@ -701,8 +579,29 @@ Master
         }
         init();
 
-        function updateSpeed() { const type = document.getElementById('vType').value; if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type].default_speed; }
-        async function fillCoords() { const pName = document.getElementById('refPort').value.toUpperCase(); if(!pName) return; try{ const res = await fetch('/api/port-coords?port='+pName); const d = await res.json(); if(d.lat){ document.getElementById('vLat').value=d.lat; document.getElementById('vLng').value=d.lng; updateShipMarker(d.lat, d.lng); }}catch(e){} }
+        function updateSpeed() { 
+            // Mock logic for speed update based on type
+        }
+        async function fillCoords() { 
+             const pName = document.getElementById('refPort').value.toUpperCase(); 
+             if(!pName) return; 
+             try{ 
+                 const res = await fetch('/api/port-coords?port='+pName); 
+                 const d = await res.json(); 
+                 if(d.lat){ 
+                     document.getElementById('vLat').value=d.lat; 
+                     document.getElementById('vLng').value=d.lng; 
+                     updateShipMarker(d.lat, d.lng); 
+                 }
+             } catch(e){} 
+        }
+
+        // Map setup
+        const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
+        const layerGroup = L.layerGroup().addTo(map);
+        let shipMarker = null;
+
         function updateShipMarker(lat, lng) { if(shipMarker) map.removeLayer(shipMarker); shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL"); map.setView([lat, lng], 4); }
 
         async function scanMarket() {
@@ -736,7 +635,7 @@ Master
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
-                el.innerHTML = \`<div class="ci-top"><span>\${v.loadPort} -> \${v.dischPort}</span><span class="tce-badge">\$\${v.financials.tce.toLocaleString()}/day</span></div><div class="ci-bot"><span>\${v.commodity}</span><span>Bal: \${v.ballastDist} NM</span></div>\`;
+                el.innerHTML = `<div class="ci-top"><span>${v.loadPort} -> ${v.dischPort}</span><span class="tce-badge">$${v.financials.tce.toLocaleString()}/day</span></div><div class="ci-bot"><span>${v.commodity}</span><span>Bal: ${v.ballastDist} NM</span></div>`;
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
             showDetails(voyages[0], list.children[0]);
@@ -748,18 +647,18 @@ Master
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
-            document.getElementById('financialDetails').innerHTML = \`
-                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">\${v.ballastDist} NM</span></div>
-                <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">\${v.ladenDist} NM</span></div>
-                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">\${v.usedSpeed} kts</span></div>
-                <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">\${v.totalDays.toFixed(1)}</span></div>
-                <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">\$\${f.revenue.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-\$\${f.cost_ballast_fuel.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-\$\${f.cost_laden_fuel.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-\$\${(f.cost_port_dues+f.cost_canal).toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-\$\${f.cost_comm.toLocaleString()}</span></div>
-                <div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.cost_opex.toLocaleString()}</span></div>
-            \`;
+            document.getElementById('financialDetails').innerHTML = `
+                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">${v.ballastDist} NM</span></div>
+                <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">${v.ladenDist} NM</span></div>
+                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">${v.usedSpeed} kts</span></div>
+                <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">${v.totalDays.toFixed(1)}</span></div>
+                <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$${f.revenue.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-$${f.cost_ballast_fuel.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-$${f.cost_laden_fuel.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-$${(f.cost_port_dues+f.cost_canal).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-$${f.cost_comm.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-$${f.cost_opex.toLocaleString()}</span></div>
+            `;
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
             layerGroup.clearLayers();
             const pos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
@@ -814,8 +713,7 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
     
-    // AKILLI KARGO SEÇİMİ
-    const cargoType = specs.type; // "BULK", "TANKER", or "GAS"
+    const cargoType = specs.type; 
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
     
@@ -859,10 +757,9 @@ function generateAnalysis(v, specs) {
     let pros = [];
     let cons = [];
 
-    // SENARYO ANALİZİ
     if (tceVsOpex > 2.5) {
         sentiment = "EXCEPTIONAL FIXTURE";
-        color = "#10b981"; // Green
+        color = "#10b981"; 
         advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
     } else if (tceVsOpex > 1.5) {
         sentiment = "STRONG PERFORMER";
@@ -870,15 +767,14 @@ function generateAnalysis(v, specs) {
         advice = "Solid profit margin. Good option for positioning.";
     } else if (tceVsOpex > 1.0) {
         sentiment = "STANDARD MARKET";
-        color = "#f59e0b"; // Orange
+        color = "#f59e0b"; 
         advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
     } else {
         sentiment = "NEGATIVE RETURNS";
-        color = "#ef4444"; // Red
+        color = "#ef4444"; 
         advice = "Loss-making voyage. Only consider for urgent repositioning.";
     }
 
-    // PROS & CONS
     if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
     if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
     if (profitMargin > 30) pros.push("High Net Profit Margin");
@@ -915,7 +811,7 @@ app.post('/api/analyze', async (req, res) => {
     const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
     
     if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
-    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; // Fallback
+    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; 
     const suggestions = [];
     const allPorts = Object.keys(PORT_DB);
     const sortedPorts = allPorts.map(pName => { return { name: pName, geo: PORT_DB[pName], dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng) }; }).sort((a,b) => a.dist - b.dist);
@@ -936,7 +832,7 @@ app.post('/api/analyze', async (req, res) => {
                 ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
                 totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
                 financials: calc.financials, 
-                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
+                aiAnalysis: generateAnalysis(calc, specs) 
             });
         }
     }
@@ -944,4 +840,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V65 (THE KNOWLEDGE VAULT) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V66 (THE UNBREAKABLE) running on port ${port}`));
