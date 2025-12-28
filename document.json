@@ -1,0 +1,41 @@
+[
+  {
+    "category": "DRY BULK CHARTER PARTIES",
+    "items": [
+      {
+        "id": "gencon",
+        "title": "GENCON 94",
+        "desc": "Standard Voyage Charter (Universal).",
+        "content": "PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)\n\n1. PREAMBLE\nIt is this day agreed between the party mentioned in Box 3 as Owners of the steamer or motor-vessel named in Box 5... and the party mentioned in Box 4 as Charterers...\n\n2. OWNERS' RESPONSIBILITY CLAUSE\nOwners are to be responsible for loss of or damage to the goods or for delay in delivery of the goods only in case the loss, damage or delay has been caused by the personal want of due diligence on the part of the Owners...\n\n3. DEVIATION CLAUSE\nThe Vessel has liberty to call at any port or ports in any order, for any purpose, to sail without pilots, to tow and/or assist vessels in all situations..."
+      },
+      {
+        "id": "nype",
+        "title": "NYPE 2015",
+        "desc": "New York Produce Exchange Time Charter.",
+        "content": "NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM\n\n1. DURATION\nThe Owners agree to let and the Charterers agree to hire the Vessel from the time of delivery for a period of...\n\n2. DELIVERY\nThe Vessel shall be placed at the disposal of the Charterers at...\n\n3. ON/OFF-HIRE SURVEY\nPrior to delivery and redelivery the parties shall, unless otherwise agreed, each appoint surveyors..."
+      }
+    ]
+  },
+  {
+    "category": "TANKER (OIL/CHEM) CHARTER PARTIES",
+    "items": [
+      {
+        "id": "asba",
+        "title": "ASBATANKVOY",
+        "desc": "Association of Ship Brokers Tanker Voyage.",
+        "content": "ASBATANKVOY - TANKER VOYAGE CHARTER PARTY\n\n1. WARRANTY\nThe Vessel, classed as specified in Part I hereof, and to be so maintained during the currency of this Charter...\n\n2. FREIGHT\nFreight shall be at the rate stipulated in Part I and shall be computed on intake quantity...\n\n3. DEADFREIGHT\nShould the Charterers fail to supply a full cargo, the Vessel may, at the Master's option, and shall, upon request of the Charterers, proceed on her voyage..."
+      }
+    ]
+  },
+  {
+    "category": "OPERATIONAL DOCUMENTS",
+    "items": [
+      {
+        "id": "nor",
+        "title": "Notice of Readiness (NOR)",
+        "desc": "Standard NOR template.",
+        "content": "NOTICE OF READINESS (TEMPLATE)\n\nTo: [Charterers / Agents]\nFrom: Master of MV [Vessel Name]\nDate: [Date]\nPort: [Port Name]\n\nDear Sirs,\n\nPlease accept this Notice of Readiness that the above Vessel under my command arrived at [Location] at [Time/Date] and is in all respects ready to commence [Loading/Discharging] operations of her cargo of [Cargo Name] in accordance with the terms and conditions of the Charter Party dated [Date].\n\nYours faithfully,\n\nMaster\n[Signature]"
+      }
+    ]
+  }
+]
