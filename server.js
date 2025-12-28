@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// API KEY (Environment Variable'dan çeker)
+// API KEY FROM ENVIRONMENT
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
 
 app.use(cors());
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG
+// 1. DATA & CONFIG & HELPER FUNCTIONS (BACKEND LOGIC)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -87,9 +87,7 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
 
-// =================================================================
-// 2. HELPER FUNCTIONS (BACKEND LOGIC)
-// =================================================================
+// --- BACKEND HELPER FUNCTIONS ---
 
 async function updateMarketData() {
     if (Date.now() - MARKET.lastUpdate < 900000) return; 
@@ -216,7 +214,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 3. FRONTEND HTML
+// 2. FRONTEND HTML CONSTANT
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -628,10 +626,9 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
-            loadLibrary(); // Reload cards to update text inside JS generated content
+            loadLibrary(); 
         }
 
-        // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
             setTimeout(() => {
@@ -659,58 +656,48 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
-            // Knowledge Base (Static for now)
             const aGrid = document.getElementById('academyGrid');
-            aGrid.innerHTML = "";
-            const ACADEMY_DATA = [
-                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
-                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
-                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
-                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
-            ];
-            ACADEMY_DATA.forEach(item => {
-                // [GÜVENLİ CONCATENATION]
-                let html = '<div class="doc-card">' +
-                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
-                           '<div class="doc-title">' + item.title + '</div>' +
-                           '<div class="doc-desc">' + item.desc + '</div>' +
-                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                           '</div>';
-                aGrid.innerHTML += html;
-            });
-
-            // Docs (Fetched from API)
             const dContainer = document.getElementById('docsContainer');
-            dContainer.innerHTML = ""; // Clear first
+            aGrid.innerHTML = "";
+            dContainer.innerHTML = ""; 
             
             try {
-                if (DOCS_DB.length === 0) {
+                if(DOCS_DB.length === 0) {
                      const res = await fetch('/api/documents');
                      DOCS_DB = await res.json();
                 }
 
                 DOCS_DB.forEach(cat => {
-                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                    cat.items.forEach(item => {
-                        // [GÜVENLİ CONCATENATION]
-                        html += '<div class="doc-card">' +
-                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                '<div class="doc-title">' + item.title + '</div>' +
-                                '<div class="doc-desc">' + item.desc + '</div>' +
-                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                '</div>';
-                    });
-                    html += '</div>';
-                    dContainer.innerHTML += html;
+                    // SEPERATE ACADEMY AND DOCS
+                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
+                        cat.items.forEach(item => {
+                            let html = '<div class="doc-card">' +
+                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
+                                       '<div class="doc-title">' + item.title + '</div>' +
+                                       '<div class="doc-desc">' + item.desc + '</div>' +
+                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                       '</div>';
+                            aGrid.innerHTML += html;
+                        });
+                    } else {
+                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                        cat.items.forEach(item => {
+                            html += '<div class="doc-card">' +
+                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                    '<div class="doc-title">' + item.title + '</div>' +
+                                    '<div class="doc-desc">' + item.desc + '</div>' +
+                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                    '</div>';
+                        });
+                        html += '</div>';
+                        dContainer.innerHTML += html;
+                    }
                 });
             } catch(e) {
-                dContainer.innerHTML = '<div style="color:#ef4444; padding:20px;">Error loading documents. Please try again.</div>';
+                console.error("Error loading library");
             }
         }
         loadLibrary();
@@ -786,7 +773,6 @@ const FRONTEND_HTML = `
             body.scrollTop = body.scrollHeight;
         }
 
-        // --- CORE BROKER LOGIC ---
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
             if(type && CLIENT_VESSEL_SPECS[type]) {
@@ -834,7 +820,6 @@ const FRONTEND_HTML = `
              } catch(e){} 
         }
 
-        // Map setup
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
@@ -915,134 +900,6 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC (HELPER FUNCTIONS DEFINED FIRST)
-// =================================================================
-
-async function updateMarketData() {
-    if (Date.now() - MARKET.lastUpdate < 900000) return; 
-    try {
-        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
-        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
-        const brentData = await res.json();
-        const hoData = await resHO.json();
-        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
-        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
-        if(brentPrice && hoPriceGal) {
-            MARKET.brent = brentPrice;
-            MARKET.mgo = Math.round(hoPriceGal * 319); 
-            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
-            MARKET.lastUpdate = Date.now();
-            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
-        }
-    } catch(e) {
-        console.log("⚠️ Market data update failed, using defaults.");
-    }
-}
-
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
-    const dLat = (lat2 - lat1) * Math.PI/180;
-    const dLon = (lon2 - lon1) * Math.PI/180;
-    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c * 1.15); 
-}
-
-function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
-    const speed = shipSpeed || specs.default_speed;
-    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
-    const ballastDays = ballastDist / (speed * 24);
-    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
-    const ladenDays = ladenDist / (speed * 24);
-    
-    // Smart Cargo Selection
-    const cargoType = specs.type;
-    const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
-    const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
-    
-    let qty = userQty;
-    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
-
-    const lRate = userLoadRate || cargo.loadRate;
-    const dRate = userDischRate || cargo.dischRate;
-
-    const loadDays = (qty / lRate) + 1;
-    const dischDays = (qty / dRate) + 1;
-    const portDays = Math.ceil(loadDays + dischDays);
-
-    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
-    const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
-    const costPortFuel = portDays * specs.port_cons * market.mgo;
-    const costPortDues = specs.dwt * 1.30; 
-    const totalDays = ballastDays + ladenDays + portDays;
-    
-    let costCanal = 0;
-    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
-    
-    const costOpex = totalDays * specs.opex;
-    const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.025; 
-    const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
-    const profit = grossRevenue - totalCost;
-    const tce = profit / totalDays;
-    
-    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
-}
-
-function generateAnalysis(v, specs) {
-    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
-    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
-    const tceVsOpex = v.financials.tce / specs.opex;
-
-    let sentiment = "NEUTRAL";
-    let color = "#94a3b8";
-    let advice = "";
-    let pros = [];
-    let cons = [];
-
-    if (tceVsOpex > 2.5) {
-        sentiment = "EXCEPTIONAL FIXTURE";
-        color = "#10b981"; 
-        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
-    } else if (tceVsOpex > 1.5) {
-        sentiment = "STRONG PERFORMER";
-        color = "#34d399";
-        advice = "Solid profit margin. Good option for positioning.";
-    } else if (tceVsOpex > 1.0) {
-        sentiment = "STANDARD MARKET";
-        color = "#f59e0b"; 
-        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
-    } else {
-        sentiment = "NEGATIVE RETURNS";
-        color = "#ef4444"; 
-        advice = "Loss-making voyage. Only consider for urgent repositioning.";
-    }
-
-    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
-    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
-    if (profitMargin > 30) pros.push("High Net Profit Margin");
-    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
-    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
-
-    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
-    html += `<div style="margin-bottom:10px;">${advice}</div>`;
-    
-    if (pros.length > 0) {
-        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
-        pros.forEach(p => html += `<li>${p}</li>`);
-        html += `</ul>`;
-    }
-    
-    if (cons.length > 0) {
-        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
-        cons.forEach(c => html += `<li>${c}</li>`);
-        html += `</ul>`;
-    }
-
-    return html;
-}
-
-// =================================================================
 // 4. API ROUTES
 // =================================================================
 
@@ -1120,5 +977,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V80 (THE MASTERPIECE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V81 (THE SLEEP WALKER) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
