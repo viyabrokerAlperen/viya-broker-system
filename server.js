@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// API KEY FROM ENVIRONMENT (GÜVENLİ YÖNTEM)
+// API KEY FROM ENVIRONMENT
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
 
 app.use(cors());
@@ -19,11 +19,10 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (FULL FLEET RESTORED)
+// 1. DATA & CONFIG
 // =================================================================
 
 const VESSEL_SPECS = {
-    // --- DRY BULK ---
     "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex: 4500 },
     "HANDYMAX":     { type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, opex: 5000 },
     "SUPRAMAX":     { type: "BULK", dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, opex: 5500 },
@@ -32,16 +31,12 @@ const VESSEL_SPECS = {
     "KAMSARMAX":    { type: "BULK", dwt: 85000, default_speed: 13.0, sea_cons: 33, port_cons: 4.0, opex: 6700 },
     "CAPESIZE":     { type: "BULK", dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, opex: 8000 },
     "NEWCASTLEMAX": { type: "BULK", dwt: 205000, default_speed: 12.5, sea_cons: 50, port_cons: 5.5, opex: 8500 },
-
-    // --- TANKER ---
     "SMALL_CHEM":   { type: "TANKER", dwt: 19000, default_speed: 13.0, sea_cons: 18, port_cons: 3.0, opex: 6000 },
     "MR_TANKER":    { type: "TANKER", dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, opex: 7000 },
     "LR1":          { type: "TANKER", dwt: 75000, default_speed: 13.0, sea_cons: 32, port_cons: 5.0, opex: 7500 },
     "AFRAMAX":      { type: "TANKER", dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, opex: 8000 },
     "SUEZMAX":      { type: "TANKER", dwt: 160000, default_speed: 12.5, sea_cons: 48, port_cons: 7.0, opex: 9000 },
     "VLCC":         { type: "TANKER", dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex: 10500 },
-
-    // --- GAS (LNG/LPG) ---
     "LPG_MGC":      { type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, opex: 9000 },
     "LPG_VLGC":     { type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, opex: 11000 },
     "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex: 14000 },
@@ -93,7 +88,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (MULTI-LANGUAGE + REAL AI CHAT + AUTO COORDS)
+// 2. FRONTEND
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -191,8 +186,8 @@ const FRONTEND_HTML = `
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-
-        /* CHAT WIDGET STYLES */
+        
+        /* CHAT STYLES */
         .chat-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--neon-cyan); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1500; box-shadow: 0 0 20px rgba(0,242,255,0.4); transition: 0.3s; font-size: 24px; color: #000; }
         .chat-btn:hover { transform: scale(1.1); }
         .chat-window { display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; background: rgba(10, 15, 25, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 1500; flex-direction: column; backdrop-filter: blur(10px); }
@@ -548,7 +543,6 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    // SEPERATE ACADEMY AND DOCS
                     if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
                         cat.items.forEach(item => {
                             let html = '<div class="doc-card">' +
@@ -613,7 +607,7 @@ const FRONTEND_HTML = `
             }
         }
 
-        // --- CHAT LOGIC ---
+        // --- AI CHAT LOGIC ---
         function toggleChat() {
             const w = document.getElementById('chatWindow');
             w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
@@ -633,7 +627,6 @@ const FRONTEND_HTML = `
             input.value = '';
             body.scrollTop = body.scrollHeight;
 
-            // Loading bubble
             const loadingId = 'loading-' + Date.now();
             body.innerHTML += '<div class="msg ai" id="' + loadingId + '">...</div>';
 
@@ -667,6 +660,7 @@ const FRONTEND_HTML = `
             return Math.round(R * c * 1.15); 
         }
 
+        // --- RESTORED: UPDATE MARKET DATA ON INIT ---
         async function init() {
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
@@ -736,7 +730,6 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
-                // [GÜVENLİ CONCATENATION]
                 el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + v.financials.tce.toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
@@ -749,7 +742,6 @@ const FRONTEND_HTML = `
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
-            // [GÜVENLİ CONCATENATION]
             document.getElementById('financialDetails').innerHTML = 
                 '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
                 '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
@@ -849,5 +841,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V77 (THE AI SUPREME COMMANDER) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V78 (THE FIX) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
