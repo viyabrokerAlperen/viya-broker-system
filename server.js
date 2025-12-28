@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (GENİŞLETİLMİŞ FİLO)
+// 1. DATA & CONFIG (GENİŞLETİLMİŞ FİLO & KARGOLAR)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -41,7 +41,7 @@ const VESSEL_SPECS = {
     // --- GAS (LNG/LPG) ---
     "LPG_MGC":      { type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, opex: 9000 },
     "LPG_VLGC":     { type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, opex: 11000 },
-    "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex: 14000 }, // ~145k cbm
+    "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex: 14000 },
     "LNG_Q_FLEX":   { type: "GAS", dwt: 110000, default_speed: 19.5, sea_cons: 90, port_cons: 10.0, opex: 16000 }
 };
 
@@ -50,7 +50,7 @@ const CARGOES = {
         {name: "Grain", rate: 32, loadRate: 15000, dischRate: 10000},
         {name: "Coal", rate: 24, loadRate: 25000, dischRate: 20000},
         {name: "Iron Ore", rate: 19, loadRate: 40000, dischRate: 35000},
-        {name: "Steel Coils", rate: 45, loadRate: 8000, dischRate: 6000},
+        {name: "Steel Products", rate: 45, loadRate: 8000, dischRate: 6000},
         {name: "Fertilizer", rate: 29, loadRate: 12000, dischRate: 10000},
         {name: "Scrap", rate: 35, loadRate: 10000, dischRate: 8000},
         {name: "Bauxite", rate: 21, loadRate: 30000, dischRate: 25000}
@@ -69,7 +69,6 @@ const CARGOES = {
     ]
 };
 
-// GLOBAL MARKET STATE
 let MARKET = { brent: 0, heatingOil: 0, vlsfo: 0, mgo: 0, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -84,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (GÜNCELLENMİŞ GEMİ SEÇİM MENÜSÜ)
+// 2. FRONTEND
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -164,6 +163,11 @@ const FRONTEND_HTML = `
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
+        
+        .ai-list { padding-left: 15px; margin-top: 5px; color: #94a3b8; }
+        .ai-list li { margin-bottom: 4px; }
+        .tag-pro { color: var(--success); font-weight: bold; font-size: 0.75rem; }
+        .tag-con { color: var(--danger); font-weight: bold; font-size: 0.75rem; }
 
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
@@ -643,10 +647,59 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
 }
 
-function generateAnalysis(v) {
-    let advice = v.financials.tce > 20000 ? "STRONGLY RECOMMENDED" : "STANDARD FIXTURE";
-    if(v.financials.tce < 6000) advice = "NEGATIVE RETURNS";
-    return `<strong>AI STRATEGY:</strong><br>${advice}<br>Ballast: ${v.ballastDist} NM`;
+function generateAnalysis(v, specs) {
+    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
+    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
+    const tceVsOpex = v.financials.tce / specs.opex;
+
+    let sentiment = "NEUTRAL";
+    let color = "#94a3b8";
+    let advice = "";
+    let pros = [];
+    let cons = [];
+
+    // SENARYO ANALİZİ
+    if (tceVsOpex > 2.5) {
+        sentiment = "EXCEPTIONAL FIXTURE";
+        color = "#10b981"; // Green
+        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
+    } else if (tceVsOpex > 1.5) {
+        sentiment = "STRONG PERFORMER";
+        color = "#34d399";
+        advice = "Solid profit margin. Good option for positioning.";
+    } else if (tceVsOpex > 1.0) {
+        sentiment = "STANDARD MARKET";
+        color = "#f59e0b"; // Orange
+        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
+    } else {
+        sentiment = "NEGATIVE RETURNS";
+        color = "#ef4444"; // Red
+        advice = "Loss-making voyage. Only consider for urgent repositioning.";
+    }
+
+    // PROS & CONS
+    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
+    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
+    if (profitMargin > 30) pros.push("High Net Profit Margin");
+    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
+    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
+
+    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
+    html += `<div style="margin-bottom:10px;">${advice}</div>`;
+    
+    if (pros.length > 0) {
+        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
+        pros.forEach(p => html += `<li>${p}</li>`);
+        html += `</ul>`;
+    }
+    
+    if (cons.length > 0) {
+        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
+        cons.forEach(c => html += `<li>${c}</li>`);
+        html += `</ul>`;
+    }
+
+    return html;
 }
 
 // --- API ROUTES ---
@@ -661,7 +714,7 @@ app.post('/api/analyze', async (req, res) => {
     const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
     
     if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
-    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"];
+    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; // Fallback
     const suggestions = [];
     const allPorts = Object.keys(PORT_DB);
     const sortedPorts = allPorts.map(pName => { return { name: pName, geo: PORT_DB[pName], dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng) }; }).sort((a,b) => a.dist - b.dist);
@@ -681,7 +734,8 @@ app.post('/api/analyze', async (req, res) => {
                 ballastDist: calc.ballastDist, ballastDays: calc.ballastDays,
                 ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
                 totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
-                financials: calc.financials, aiAnalysis: generateAnalysis(calc)
+                financials: calc.financials, 
+                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
             });
         }
     }
@@ -689,4 +743,4 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V62 (THE GLOBAL FLEET) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V63 (THE AI BROKER INTELLIGENCE) running on port ${port}`));
