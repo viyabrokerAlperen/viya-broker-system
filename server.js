@@ -76,13 +76,13 @@ try {
     console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
 } catch (e) { console.error("❌ ERROR: ports.json missing."); }
 
-// --- DOKÜMANLARI JSON'DAN OKUMA (EKLEME) ---
+// DOCUMENTS.JSON OKUMA
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
     DOCS_DATA = JSON.parse(docData);
-    console.log(`✅ DOCUMENTS: Loaded from documents.json`);
-} catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
+    console.log(`✅ DOCUMENTS: Library loaded successfully.`);
+} catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
 
 
 // =================================================================
@@ -190,7 +190,7 @@ const FRONTEND_HTML = `
         .btn-plan.pro { background: var(--neon-cyan); color: #000; }
         .btn-plan.basic { background: #334155; color: #fff; }
 
-        /* [EKLEME]: MODAL STİLİ */
+        /* MODAL STYLES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
         .modal-header { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: rgba(0,242,255,0.05); }
@@ -198,7 +198,7 @@ const FRONTEND_HTML = `
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-
+        
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -481,7 +481,7 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
-            loadLibrary(); 
+            loadLibrary(); // Reload cards to update text inside JS generated content
         }
 
         // --- UI LOGIC ---
@@ -512,7 +512,7 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // [DEĞİŞİKLİK]: DOCS_DB ARTIK SUNUCUDAN ÇEKİLİYOR
+        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
@@ -721,7 +721,7 @@ app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
 app.get('/api/market', async (req, res) => { await updateMarketData(); res.json(MARKET); });
 app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
 
-// [EKLEME]: YENİ ROUTE: BELGELERİ GÖNDERİR
+// YENİ ROUTE: BELGELERİ GÖNDERİR
 app.get('/api/documents', (req, res) => {
     res.json(DOCS_DATA);
 });
@@ -760,4 +760,6 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V71 (THE INTEGRATED SYSTEM) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V72 (THE ABSOLUTE FINAL) running on port ${port}`));
+// GET / route for serving the frontend HTML
+app.get('/', (req, res) => res.send(FRONTEND_HTML));
