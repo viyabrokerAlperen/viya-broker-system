@@ -11,12 +11,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// API KEY FROM ENVIRONMENT (GÜVENLİ YÖNTEM)
+const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG
+// 1. DATA & CONFIG (FULL FLEET RESTORED)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -69,7 +72,6 @@ const CARGOES = {
     ]
 };
 
-// GÜVENLİ MOD: EĞER YAHOO ÇALIŞMAZSA BU DEĞERLER GÖZÜKÜR
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -82,7 +84,6 @@ try {
     console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
 } catch (e) { console.error("❌ ERROR: ports.json missing."); }
 
-// DOCUMENTS.JSON OKUMA
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
@@ -92,7 +93,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (MULTI-LANGUAGE UI)
+// 2. FRONTEND (MULTI-LANGUAGE + REAL AI CHAT + AUTO COORDS)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -182,21 +183,7 @@ const FRONTEND_HTML = `
         .btn-download { background: transparent; border: 1px solid #334155; color: #94a3b8; width: 100%; padding: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-weight: 600; }
         .btn-download:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
 
-        .pricing-container { display: flex; justify-content: center; gap: 30px; padding-top: 50px; flex-wrap: wrap; }
-        .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); width: 300px; padding: 40px; text-align: center; position: relative; transition: 0.3s; }
-        .price-card:hover { transform: scale(1.03); border-color: var(--neon-cyan); }
-        .price-card.pro { border: 1px solid var(--neon-cyan); box-shadow: 0 0 30px rgba(0,242,255,0.1); }
-        .plan-name { font-family: var(--font-tech); font-size: 1.2rem; color: #94a3b8; margin-bottom: 10px; }
-        .plan-price { font-size: 3rem; color: #fff; font-weight: 700; margin-bottom: 30px; }
-        .plan-price span { font-size: 1rem; color: #555; font-weight: 400; }
-        .plan-features { list-style: none; padding: 0; text-align: left; margin-bottom: 30px; color: #cbd5e1; font-size: 0.9rem; }
-        .plan-features li { margin-bottom: 12px; display: flex; gap: 10px; }
-        .plan-features i { color: var(--success); }
-        .btn-plan { width: 100%; padding: 15px; font-weight: 700; border: none; cursor: pointer; font-family: var(--font-tech); }
-        .btn-plan.pro { background: var(--neon-cyan); color: #000; }
-        .btn-plan.basic { background: #334155; color: #fff; }
-
-        /* MODAL EKLENDİ */
+        /* MODAL STYLES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
         .modal-header { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: rgba(0,242,255,0.05); }
@@ -204,6 +191,19 @@ const FRONTEND_HTML = `
         .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .close-btn:hover { color: #fff; }
         .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
+
+        /* CHAT WIDGET STYLES */
+        .chat-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--neon-cyan); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1500; box-shadow: 0 0 20px rgba(0,242,255,0.4); transition: 0.3s; font-size: 24px; color: #000; }
+        .chat-btn:hover { transform: scale(1.1); }
+        .chat-window { display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; background: rgba(10, 15, 25, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 1500; flex-direction: column; backdrop-filter: blur(10px); }
+        .chat-header { padding: 15px; background: rgba(0,242,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); font-family: var(--font-tech); color: var(--neon-cyan); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; }
+        .chat-input-area { padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
+        .chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px; border-radius: 4px; outline: none; }
+        .chat-send { background: var(--neon-cyan); border: none; color: #000; padding: 0 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .msg { padding: 8px 12px; border-radius: 4px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+        .msg.user { align-self: flex-end; background: rgba(0,242,255,0.2); color: #fff; border-right: 2px solid var(--neon-cyan); }
+        .msg.ai { align-self: flex-start; background: rgba(255,255,255,0.05); color: #cbd5e1; border-left: 2px solid var(--neon-purple); }
 
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -223,6 +223,21 @@ const FRONTEND_HTML = `
                 </div>
             </div>
             <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="chat-btn" onclick="toggleChat()"><i class="fa-solid fa-robot"></i></div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span><i class="fa-solid fa-brain" style="margin-right:8px;"></i>VIYA AI</span>
+            <span style="cursor:pointer;" onclick="toggleChat()">&times;</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="msg ai">Hello Captain! I am VIYA AI. I can assist you with Charter Parties, Market Rates, or Operational questions.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask anything..." onkeypress="handleEnter(event)">
+            <button class="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -533,6 +548,7 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
+                    // SEPERATE ACADEMY AND DOCS
                     if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
                         cat.items.forEach(item => {
                             let html = '<div class="doc-card">' +
@@ -595,6 +611,44 @@ const FRONTEND_HTML = `
             if (event.target == document.getElementById('docModal')) {
                 closeModal();
             }
+        }
+
+        // --- CHAT LOGIC ---
+        function toggleChat() {
+            const w = document.getElementById('chatWindow');
+            w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendChat();
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if(!msg) return;
+
+            const body = document.getElementById('chatBody');
+            body.innerHTML += '<div class="msg user">' + msg + '</div>';
+            input.value = '';
+            body.scrollTop = body.scrollHeight;
+
+            // Loading bubble
+            const loadingId = 'loading-' + Date.now();
+            body.innerHTML += '<div class="msg ai" id="' + loadingId + '">...</div>';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: msg})
+                });
+                const data = await res.json();
+                document.getElementById(loadingId).innerText = data.reply;
+            } catch(e) {
+                document.getElementById(loadingId).innerText = "Communication error.";
+            }
+            body.scrollTop = body.scrollHeight;
         }
 
         function updateSpeed() { 
@@ -724,18 +778,41 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 3. BACKEND LOGIC (REAL-TIME ENGINE - V56 PRESERVED)
+// 3. BACKEND LOGIC
 // =================================================================
-
-// ... (API ROUTES - DOCS ROUTE EKLENDİ)
 
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
 app.get('/api/market', async (req, res) => { await updateMarketData(); res.json(MARKET); });
 app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
+app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
-// YENİ ROUTE: BELGELERİ GÖNDERİR
-app.get('/api/documents', (req, res) => {
-    res.json(DOCS_DATA);
+app.post('/api/chat', async (req, res) => {
+    const userMsg = req.body.message;
+    if (!GEMINI_API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: `You are VIYA AI, an expert Maritime Broker, Captain, and Legal Consultant. 
+                        Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}.
+                        User asks: "${userMsg}"
+                        Answer professionally, concisely, and use maritime terminology.`
+                    }]
+                }]
+            })
+        });
+        
+        const data = await response.json();
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am analyzing the market, please try again.";
+        res.json({ reply });
+    } catch (error) {
+        console.error("AI Error:", error);
+        res.json({ reply: "AI Communication Error." });
+    }
 });
 
 app.post('/api/analyze', async (req, res) => {
@@ -764,7 +841,7 @@ app.post('/api/analyze', async (req, res) => {
                 ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
                 totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
                 financials: calc.financials, 
-                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
+                aiAnalysis: generateAnalysis(calc, specs) 
             });
         }
     }
@@ -772,6 +849,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
-// GET / route for serving the frontend HTML
+app.listen(port, () => console.log(`VIYA BROKER V77 (THE AI SUPREME COMMANDER) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
