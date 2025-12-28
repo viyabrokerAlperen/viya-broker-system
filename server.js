@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG (BACKEND DATA)
+// 1. DATA & CONFIG
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -83,7 +83,7 @@ try {
 
 
 // =================================================================
-// 2. FRONTEND (STRING CONCATENATION FIX)
+// 2. FRONTEND (MULTI-LANGUAGE UI)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -187,15 +187,6 @@ const FRONTEND_HTML = `
         .btn-plan.pro { background: var(--neon-cyan); color: #000; }
         .btn-plan.basic { background: #334155; color: #fff; }
 
-        /* MODAL STYLES */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; background: rgba(0,242,255,0.05); }
-        .modal-title { font-family: var(--font-tech); font-size: 1.5rem; color: var(--neon-cyan); }
-        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .close-btn:hover { color: #fff; }
-        .modal-body { padding: 30px; max-height: 70vh; overflow-y: auto; color: #cbd5e1; font-size: 0.95rem; line-height: 1.8; font-family: 'Courier New', monospace; white-space: pre-wrap; }
-        
         .loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 2000; place-items: center; }
         .spinner { width: 50px; height: 50px; border: 3px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -203,16 +194,6 @@ const FRONTEND_HTML = `
 </head>
 <body>
     <div class="loader" id="loader"><div style="text-align: center;"><div class="spinner" style="margin: 0 auto 15px;"></div><div style="font-family: var(--font-tech); color: var(--neon-cyan); font-size:1rem;" data-i18n="computing">COMPUTING...</div></div></div>
-
-    <div id="docModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title" id="modalTitle">DOCUMENT TITLE</span>
-                <span class="close-btn" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-        </div>
-    </div>
 
     <div id="landing-view">
         <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA BROKER LOGO" class="landing-logo-img">
