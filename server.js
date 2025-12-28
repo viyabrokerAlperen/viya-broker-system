@@ -110,6 +110,7 @@ const FRONTEND_HTML = `
         .nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 5px; }
         .nav-item:hover, .nav-item.active { color: var(--neon-cyan); border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); }
         
+        /* Language Selector */
         .lang-switch { cursor: pointer; font-family: var(--font-tech); color: #fff; border: 1px solid var(--neon-cyan); padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; transition: 0.3s; }
         .lang-switch:hover { background: var(--neon-cyan); color: #000; }
 
@@ -117,10 +118,21 @@ const FRONTEND_HTML = `
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
 
-        #landing-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s ease-in-out; }
+        #landing-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; 
+            background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
+            background-size: cover; background-position: center; 
+            z-index: 9999; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: opacity 0.8s ease-in-out;
+        }
         .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
         .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
-        .btn-enter { background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden; }
+        .btn-enter { 
+            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); 
+            padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); 
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden;
+        }
         .btn-enter:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
 
         .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.6s ease-out; }
@@ -155,6 +167,7 @@ const FRONTEND_HTML = `
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
         .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
+        
         .ai-list { padding-left: 15px; margin-top: 5px; color: #94a3b8; }
         .ai-list li { margin-bottom: 4px; }
         .tag-pro { color: var(--success); font-weight: bold; font-size: 0.75rem; }
@@ -349,28 +362,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
-        const CLIENT_VESSEL_SPECS = {
-            "HANDYSIZE":    { default_speed: 13.0 },
-            "HANDYMAX":     { default_speed: 13.0 },
-            "SUPRAMAX":     { default_speed: 13.5 },
-            "ULTRAMAX":     { default_speed: 13.5 },
-            "PANAMAX":      { default_speed: 13.0 },
-            "KAMSARMAX":    { default_speed: 13.0 },
-            "CAPESIZE":     { default_speed: 12.5 },
-            "NEWCASTLEMAX": { default_speed: 12.5 },
-            "SMALL_CHEM":   { default_speed: 13.0 },
-            "MR_TANKER":    { default_speed: 13.0 },
-            "LR1":          { default_speed: 13.0 },
-            "AFRAMAX":      { default_speed: 12.5 },
-            "SUEZMAX":      { default_speed: 12.5 },
-            "VLCC":         { default_speed: 12.0 },
-            "LPG_MGC":      { default_speed: 16.0 },
-            "LPG_VLGC":     { default_speed: 16.5 },
-            "LNG_CONV":     { default_speed: 19.0 },
-            "LNG_Q_FLEX":   { default_speed: 19.5 }
-        };
-
         // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
@@ -405,8 +396,7 @@ const FRONTEND_HTML = `
                 btn_curr: "CURRENT PLAN",
                 btn_upg: "UPGRADE NOW",
                 btn_contact: "CONTACT SALES",
-                computing: "COMPUTING...",
-                read_btn: "READ"
+                computing: "COMPUTING..."
             },
             tr: {
                 landing_sub: "Küresel Denizcilik Brokerlik Sistemi",
@@ -440,8 +430,7 @@ const FRONTEND_HTML = `
                 btn_curr: "MEVCUT PLAN",
                 btn_upg: "YÜKSELT",
                 btn_contact: "SATIŞLA GÖRÜŞ",
-                computing: "HESAPLANIYOR...",
-                read_btn: "İNCELE"
+                computing: "HESAPLANIYOR..."
             }
         };
 
@@ -459,114 +448,138 @@ const FRONTEND_HTML = `
                     el.innerText = TRANSLATIONS[currentLang][key];
                 }
             });
-            loadLibrary();
         }
 
-        // --- CONTENT WITH CLEAN DATA ---
+        // --- UI LOGIC ---
+        function enterSystem() {
+            document.getElementById('landing-view').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('landing-view').style.display = 'none';
+                document.getElementById('mainNav').style.display = 'flex';
+                document.getElementById('dashboard').classList.add('active');
+                map.invalidateSize();
+            }, 800);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Enter" && document.getElementById('landing-view').style.display !== 'none') {
+                enterSystem();
+            }
+        });
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(viewId === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(viewId === 'academy') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(viewId === 'docs') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            if(viewId === 'pricing') document.querySelectorAll('.nav-item')[3].classList.add('active');
+            if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        // --- CONTENT GENERATION ---
+        const ACADEMY_DATA = [
+            {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
+            {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
+            {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
+            {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
+            {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
+            {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
+        ];
+
         const DOCS_DB = [
             {
                 category: "DRY BULK CHARTER PARTIES",
                 items: [
-                    {
-                        id: "gencon",
-                        title: "GENCON 94",
-                        desc: "Standard Voyage Charter (Universal).",
-                        content: "PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)\\n\\n1. PREAMBLE\\nIt is this day agreed between the party mentioned in Box 3 as Owners...\\n\\n2. OWNERS' RESPONSIBILITY CLAUSE\\nOwners are to be responsible for loss of or damage to the goods..."
-                    },
-                    {
-                        id: "nype",
-                        title: "NYPE 2015",
-                        desc: "New York Produce Exchange Time Charter.",
-                        content: "NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM\\n\\n1. DURATION\\nThe Owners agree to let and the Charterers agree to hire the Vessel..."
-                    }
+                    {title: "GENCON 94", desc: "Standard Voyage Charter (Universal)."},
+                    {title: "NYPE 2015", desc: "New York Produce Exchange Time Charter."},
+                    {title: "AMWELSH 93", desc: "Americanized Welsh Coal Charter."},
+                    {title: "GRAINCON", desc: "Grain Voyage Charter Party."}
                 ]
             },
             {
                 category: "TANKER (OIL/CHEM) CHARTER PARTIES",
                 items: [
-                    {
-                        id: "asba",
-                        title: "ASBATANKVOY",
-                        desc: "Association of Ship Brokers Tanker Voyage.",
-                        content: "ASBATANKVOY - TANKER VOYAGE CHARTER PARTY\\n\\n1. WARRANTY\\nThe Vessel, classed as specified in Part I hereof...\\n\\n2. FREIGHT\\nFreight shall be at the rate stipulated in Part I..."
-                    }
+                    {title: "ASBATANKVOY", desc: "Association of Ship Brokers Tanker Voyage."},
+                    {title: "SHELLTIME 4", desc: "Standard Time Charter for Tankers."},
+                    {title: "BPVOY 4", desc: "BP Voyage Charter Party."}
+                ]
+            },
+            {
+                category: "GAS (LNG/LPG) CHARTER PARTIES",
+                items: [
+                    {title: "GASVOY 2005", desc: "Standard Gas Voyage Charter."},
+                    {title: "LNGVOY", desc: "Liquefied Natural Gas Charter."},
+                    {title: "SHELLLNGTIME", desc: "Time Charter for LNG Carriers."}
                 ]
             },
             {
                 category: "OPERATIONAL DOCUMENTS",
                 items: [
-                    {
-                        id: "nor",
-                        title: "Notice of Readiness (NOR)",
-                        desc: "Standard NOR template.",
-                        content: "NOTICE OF READINESS (TEMPLATE)\\n\\nTo: [Charterers / Agents]\\nFrom: Master of MV [Vessel Name]\\nDate: [Date]\\n\\nDear Sirs,\\n\\nPlease accept this Notice of Readiness..."
-                    }
+                    {title: "Notice of Readiness (NOR)", desc: "Standard NOR template."},
+                    {title: "Statement of Facts (SOF)", desc: "Port agent time log."},
+                    {title: "Letter of Indemnity (LOI)", desc: "Clean B/L indemnity."}
                 ]
             }
         ];
 
         function loadLibrary() {
-            const dContainer = document.getElementById('docsContainer');
-            dContainer.innerHTML = "";
-            
-            DOCS_DB.forEach(cat => {
-                let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                cat.items.forEach(item => {
-                    html += '<div class="doc-card">' +
-                            '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                            '<div class="doc-title">' + item.title + '</div>' +
-                            '<div class="doc-desc">' + item.desc + '</div>' +
-                            '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                            '</div>';
-                });
-                html += '</div>';
-                dContainer.innerHTML += html;
+            const aGrid = document.getElementById('academyGrid');
+            ACADEMY_DATA.forEach(item => {
+                aGrid.innerHTML += \`
+                    <div class="doc-card">
+                        <i class="fa-solid \${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
+                        <div class="doc-title">\${item.title}</div>
+                        <div class="doc-desc">\${item.desc}</div>
+                        <button class="btn-download">READ</button>
+                    </div>\`;
             });
 
-            const aGrid = document.getElementById('academyGrid');
-            aGrid.innerHTML = "";
-            const ACADEMY_DATA = [
-                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."}
-            ];
-            ACADEMY_DATA.forEach(item => {
-                aGrid.innerHTML += '<div class="doc-card">' +
-                                   '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
-                                   '<div class="doc-title">' + item.title + '</div>' +
-                                   '<div class="doc-desc">' + item.desc + '</div>' +
-                                   '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                   '</div>';
+            const dContainer = document.getElementById('docsContainer');
+            DOCS_DB.forEach(cat => {
+                let html = \`<div class="category-header">\${cat.category}</div><div class="docs-grid">\`;
+                cat.items.forEach(item => {
+                    html += \`
+                        <div class="doc-card">
+                            <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
+                            <div class="doc-title">\${item.title}</div>
+                            <div class="doc-desc">\${item.desc}</div>
+                            <button class="btn-download" onclick="alert('Downloading template...')">DOWNLOAD</button>
+                        </div>\`;
+                });
+                html += \`</div>\`;
+                dContainer.innerHTML += html;
             });
         }
         loadLibrary();
 
-        function openDoc(id) {
-            const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
-            if(doc) {
-                document.getElementById('modalTitle').innerText = doc.title;
-                document.getElementById('modalBody').innerText = doc.content; 
-                document.getElementById('docModal').style.display = "block";
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('docModal').style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('docModal')) {
-                closeModal();
-            }
-        }
-
         // --- CORE BROKER LOGIC ---
-        function updateSpeed() { 
-            const type = document.getElementById('vType').value;
-            if(type && CLIENT_VESSEL_SPECS[type]) {
-                document.getElementById('vSpeed').value = CLIENT_VESSEL_SPECS[type].default_speed;
-            }
-        }
+        const SPECS = { 
+            "HANDYSIZE":    { dwt: 35000, default_speed: 13.0 },
+            "HANDYMAX":     { dwt: 45000, default_speed: 13.0 },
+            "SUPRAMAX":     { dwt: 58000, default_speed: 13.5 },
+            "ULTRAMAX":     { dwt: 64000, default_speed: 13.5 },
+            "PANAMAX":      { dwt: 82000, default_speed: 13.0 },
+            "KAMSARMAX":    { dwt: 85000, default_speed: 13.0 },
+            "CAPESIZE":     { dwt: 180000, default_speed: 12.5 },
+            "NEWCASTLEMAX": { dwt: 205000, default_speed: 12.5 },
+            "SMALL_CHEM":   { dwt: 19000, default_speed: 13.0 },
+            "MR_TANKER":    { dwt: 50000, default_speed: 13.0 },
+            "LR1":          { dwt: 75000, default_speed: 13.0 },
+            "AFRAMAX":      { dwt: 115000, default_speed: 12.5 },
+            "SUEZMAX":      { dwt: 160000, default_speed: 12.5 },
+            "VLCC":         { dwt: 300000, default_speed: 12.0 },
+            "LPG_MGC":      { dwt: 38000, default_speed: 16.0 },
+            "LPG_VLGC":     { dwt: 55000, default_speed: 16.5 },
+            "LNG_CONV":     { dwt: 75000, default_speed: 19.0 },
+            "LNG_Q_FLEX":   { dwt: 110000, default_speed: 19.5 }
+        };
+
+        const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
+        const layerGroup = L.layerGroup().addTo(map);
+        let shipMarker = null;
 
         async function init() {
             try {
@@ -580,26 +593,8 @@ const FRONTEND_HTML = `
         }
         init();
 
-        async function fillCoords() { 
-             const pName = document.getElementById('refPort').value.toUpperCase(); 
-             if(!pName) return; 
-             try{ 
-                 const res = await fetch('/api/port-coords?port='+pName); 
-                 const d = await res.json(); 
-                 if(d.lat){ 
-                     document.getElementById('vLat').value=d.lat; 
-                     document.getElementById('vLng').value=d.lng; 
-                     updateShipMarker(d.lat, d.lng); 
-                 }
-             } catch(e){} 
-        }
-
-        // Map setup
-        const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
-        const layerGroup = L.layerGroup().addTo(map);
-        let shipMarker = null;
-
+        function updateSpeed() { const type = document.getElementById('vType').value; if(SPECS[type]) document.getElementById('vSpeed').value = SPECS[type].default_speed; }
+        async function fillCoords() { const pName = document.getElementById('refPort').value.toUpperCase(); if(!pName) return; try{ const res = await fetch('/api/port-coords?port='+pName); const d = await res.json(); if(d.lat){ document.getElementById('vLat').value=d.lat; document.getElementById('vLng').value=d.lng; updateShipMarker(d.lat, d.lng); }}catch(e){} }
         function updateShipMarker(lat, lng) { if(shipMarker) map.removeLayer(shipMarker); shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL"); map.setView([lat, lng], 4); }
 
         async function scanMarket() {
@@ -633,7 +628,7 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
-                el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + v.financials.tce.toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
+                el.innerHTML = \`<div class="ci-top"><span>\${v.loadPort} -> \${v.dischPort}</span><span class="tce-badge">\$\${v.financials.tce.toLocaleString()}/day</span></div><div class="ci-bot"><span>\${v.commodity}</span><span>Bal: \${v.ballastDist} NM</span></div>\`;
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
             showDetails(voyages[0], list.children[0]);
@@ -645,18 +640,18 @@ const FRONTEND_HTML = `
             const f = v.financials;
             document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
-            document.getElementById('financialDetails').innerHTML = 
-                '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">' + v.usedSpeed + ' kts</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">' + v.totalDays.toFixed(1) + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$' + f.revenue.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-$' + f.cost_ballast_fuel.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-$' + f.cost_laden_fuel.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-$' + (f.cost_port_dues+f.cost_canal).toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-$' + f.cost_comm.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-$' + f.cost_opex.toLocaleString() + '</span></div>';
-            
+            document.getElementById('financialDetails').innerHTML = \`
+                <div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">\${v.ballastDist} NM</span></div>
+                <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">\${v.ladenDist} NM</span></div>
+                <div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">\${v.usedSpeed} kts</span></div>
+                <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">\${v.totalDays.toFixed(1)}</span></div>
+                <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">\$\${f.revenue.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-\$\${f.cost_ballast_fuel.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-\$\${f.cost_laden_fuel.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-\$\${(f.cost_port_dues+f.cost_canal).toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-\$\${f.cost_comm.toLocaleString()}</span></div>
+                <div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-\$\${f.cost_opex.toLocaleString()}</span></div>
+            \`;
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
             layerGroup.clearLayers();
             const pos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
@@ -671,3 +666,174 @@ const FRONTEND_HTML = `
 </body>
 </html>
 `;
+
+// =================================================================
+// 3. BACKEND LOGIC
+// =================================================================
+
+async function updateMarketData() {
+    if (Date.now() - MARKET.lastUpdate < 900000) return; 
+    try {
+        const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
+        const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
+        const brentData = await res.json();
+        const hoData = await resHO.json();
+        const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
+        const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
+        if(brentPrice && hoPriceGal) {
+            MARKET.brent = brentPrice;
+            MARKET.mgo = Math.round(hoPriceGal * 319); 
+            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
+            MARKET.lastUpdate = Date.now();
+            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
+        }
+    } catch(e) {}
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440;
+    const dLat = (lat2 - lat1) * Math.PI/180;
+    const dLon = (lon2 - lon1) * Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c * 1.15); 
+}
+
+function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
+    const speed = shipSpeed || specs.default_speed;
+    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
+    const ballastDays = ballastDist / (speed * 24);
+    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
+    const ladenDays = ladenDist / (speed * 24);
+    
+    // AKILLI KARGO SEÇİMİ
+    const cargoType = specs.type; // "BULK", "TANKER", or "GAS"
+    const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
+    const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
+    
+    let qty = userQty;
+    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
+
+    const lRate = userLoadRate || cargo.loadRate;
+    const dRate = userDischRate || cargo.dischRate;
+
+    const loadDays = (qty / lRate) + 1;
+    const dischDays = (qty / dRate) + 1;
+    const portDays = Math.ceil(loadDays + dischDays);
+
+    const costBallastFuel = ballastDays * specs.sea_cons * market.vlsfo;
+    const costLadenFuel = ladenDays * specs.sea_cons * market.vlsfo;
+    const costPortFuel = portDays * specs.port_cons * market.mgo;
+    const costPortDues = specs.dwt * 1.30; 
+    const totalDays = ballastDays + ladenDays + portDays;
+    
+    let costCanal = 0;
+    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
+    
+    const costOpex = totalDays * specs.opex;
+    const grossRevenue = qty * cargo.rate;
+    const commission = grossRevenue * 0.025; 
+    const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
+    const profit = grossRevenue - totalCost;
+    const tce = profit / totalDays;
+    
+    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
+}
+
+function generateAnalysis(v, specs) {
+    const profitMargin = (v.financials.profit / v.financials.revenue) * 100;
+    const ballastRatio = (v.ballastDist / (v.ballastDist + v.ladenDist)) * 100;
+    const tceVsOpex = v.financials.tce / specs.opex;
+
+    let sentiment = "NEUTRAL";
+    let color = "#94a3b8";
+    let advice = "";
+    let pros = [];
+    let cons = [];
+
+    // SENARYO ANALİZİ
+    if (tceVsOpex > 2.5) {
+        sentiment = "EXCEPTIONAL FIXTURE";
+        color = "#10b981"; // Green
+        advice = "This voyage offers outstanding returns, significantly above market average. Immediate fixing recommended.";
+    } else if (tceVsOpex > 1.5) {
+        sentiment = "STRONG PERFORMER";
+        color = "#34d399";
+        advice = "Solid profit margin. Good option for positioning.";
+    } else if (tceVsOpex > 1.0) {
+        sentiment = "STANDARD MARKET";
+        color = "#f59e0b"; // Orange
+        advice = "Covers OPEX but profit is thin. Consider if it positions for a better follow-on cargo.";
+    } else {
+        sentiment = "NEGATIVE RETURNS";
+        color = "#ef4444"; // Red
+        advice = "Loss-making voyage. Only consider for urgent repositioning.";
+    }
+
+    // PROS & CONS
+    if (ballastRatio < 15) pros.push("Minimal Ballast (Efficient)");
+    if (v.totalDays < 20) pros.push("Short Duration (Quick Cashflow)");
+    if (profitMargin > 30) pros.push("High Net Profit Margin");
+    if (v.ballastDist > 1000) cons.push("Long Ballast Leg");
+    if (v.financials.tce < specs.opex) cons.push("Below OPEX Levels");
+
+    let html = `<div style="margin-bottom:10px; font-family:var(--font-tech); color:${color}; font-size:1.1rem; font-weight:bold;">${sentiment}</div>`;
+    html += `<div style="margin-bottom:10px;">${advice}</div>`;
+    
+    if (pros.length > 0) {
+        html += `<ul class="ai-list" style="margin-bottom:10px;"><span class="tag-pro">PROS:</span>`;
+        pros.forEach(p => html += `<li>${p}</li>`);
+        html += `</ul>`;
+    }
+    
+    if (cons.length > 0) {
+        html += `<ul class="ai-list"><span class="tag-con">RISKS:</span>`;
+        cons.forEach(c => html += `<li>${c}</li>`);
+        html += `</ul>`;
+    }
+
+    return html;
+}
+
+// --- API ROUTES ---
+
+app.get('/', (req, res) => res.send(FRONTEND_HTML));
+app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
+app.get('/api/market', async (req, res) => { await updateMarketData(); res.json(MARKET); });
+app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
+
+app.post('/api/analyze', async (req, res) => {
+    await updateMarketData();
+    const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
+    
+    if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
+    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; // Fallback
+    const suggestions = [];
+    const allPorts = Object.keys(PORT_DB);
+    const sortedPorts = allPorts.map(pName => { return { name: pName, geo: PORT_DB[pName], dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng) }; }).sort((a,b) => a.dist - b.dist);
+    const candidates = sortedPorts.slice(0, 30);
+    for(let i=0; i<5; i++) {
+        const loadCand = candidates[Math.floor(Math.random() * candidates.length)];
+        const dischName = allPorts[Math.floor(Math.random() * allPorts.length)];
+        const dischGeo = PORT_DB[dischName];
+        if(loadCand.name === dischName) continue;
+        
+        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
+        
+        if(calc.financials.profit > -20000) {
+            suggestions.push({
+                loadPort: loadCand.name, dischPort: dischName, loadGeo: loadCand.geo, dischGeo: dischGeo,
+                commodity: calc.cargo.name, qty: calc.qty,
+                ballastDist: calc.ballastDist, ballastDays: calc.ballastDays,
+                ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
+                totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
+                financials: calc.financials, 
+                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
+            });
+        }
+    }
+    suggestions.sort((a,b) => b.financials.tce - a.financials.tce);
+    res.json({success: true, voyages: suggestions});
+});
+
+app.listen(port, () => console.log(`VIYA BROKER V64 (THE POLYGLOT BROKER) running on port ${port}`));
