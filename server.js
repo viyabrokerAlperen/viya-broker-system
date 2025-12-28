@@ -14,12 +14,19 @@ const port = process.env.PORT || 3000;
 // API KEY FROM ENVIRONMENT
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY; 
 
+// [DEBUG LOG]: API Key durumunu konsola yaz (Güvenlik için ilk 4 harfi göster)
+if (GEMINI_API_KEY) {
+    console.log(`✅ AI SYSTEM: ONLINE (Key Detected: ${GEMINI_API_KEY.substring(0, 4)}...)`);
+} else {
+    console.error("❌ AI SYSTEM: OFFLINE (GOOGLE_API_KEY not found in Environment Variables)");
+}
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG & HELPER FUNCTIONS (BACKEND LOGIC)
+// 1. DATA & CONFIG
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -67,7 +74,7 @@ const CARGOES = {
     ]
 };
 
-// MARKET DATA (Varsayılan değerlerle başlar)
+// MARKET DATA (Varsayılan değerlerle başlar, sonra güncellenir)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
 let PORT_DB = {};
@@ -87,7 +94,9 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
 
-// --- BACKEND HELPER FUNCTIONS ---
+// =================================================================
+// 2. HELPER FUNCTIONS (BACKEND LOGIC)
+// =================================================================
 
 async function updateMarketData() {
     if (Date.now() - MARKET.lastUpdate < 900000) return; 
@@ -214,7 +223,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 2. FRONTEND HTML CONSTANT
+// 3. FRONTEND HTML
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -516,7 +525,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
         const CLIENT_VESSEL_SPECS = {
             "HANDYSIZE":    { default_speed: 13.0 },
             "HANDYMAX":     { default_speed: 13.0 },
@@ -538,7 +546,6 @@ const FRONTEND_HTML = `
             "LNG_Q_FLEX":   { default_speed: 19.5 }
         };
 
-        // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
                 landing_sub: "Global Maritime Brokerage System",
@@ -671,7 +678,6 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    // SEPERATE ACADEMY AND DOCS
                     if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
                         cat.items.forEach(item => {
                             let html = '<div class="doc-card">' +
