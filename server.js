@@ -73,10 +73,8 @@ const CARGOES = {
     ]
 };
 
-// Market verileri (Fallback için varsayılan değerler)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
-// Liman verilerini yükle
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -87,7 +85,6 @@ try {
     console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
 } catch (e) { console.error("❌ ERROR: ports.json missing."); }
 
-// Dökümanları yükle
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
@@ -95,9 +92,8 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
 
-
 // =================================================================
-// 2. HELPER FUNCTIONS (BACKEND LOGIC)
+// 2. HELPER FUNCTIONS
 // =================================================================
 
 async function updateMarketData() {
@@ -224,7 +220,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 3. FRONTEND HTML (EMBEDDED)
+// 3. FRONTEND HTML (FULL CONTENT)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -526,6 +522,7 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
+        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
         const CLIENT_VESSEL_SPECS = {
             "HANDYSIZE":    { default_speed: 13.0 },
             "HANDYMAX":     { default_speed: 13.0 },
@@ -547,6 +544,7 @@ const FRONTEND_HTML = `
             "LNG_Q_FLEX":   { default_speed: 19.5 }
         };
 
+        // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
                 landing_sub: "Global Maritime Brokerage System",
@@ -637,6 +635,7 @@ const FRONTEND_HTML = `
             loadLibrary(); 
         }
 
+        // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
             setTimeout(() => {
@@ -664,13 +663,35 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
+        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
+            // Academy (Static for now)
             const aGrid = document.getElementById('academyGrid');
-            const dContainer = document.getElementById('docsContainer');
             aGrid.innerHTML = "";
-            dContainer.innerHTML = ""; 
+            const ACADEMY_DATA = [
+                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
+                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
+                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
+                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
+                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
+                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
+            ];
+            ACADEMY_DATA.forEach(item => {
+                // [GÜVENLİ CONCATENATION]
+                let html = '<div class="doc-card">' +
+                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
+                           '<div class="doc-title">' + item.title + '</div>' +
+                           '<div class="doc-desc">' + item.desc + '</div>' +
+                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                           '</div>';
+                aGrid.innerHTML += html;
+            });
+
+            // Docs (Dynamic Fetch)
+            const dContainer = document.getElementById('docsContainer');
+            dContainer.innerHTML = ""; // Clear first
             
             try {
                 if(DOCS_DB.length === 0) {
@@ -679,38 +700,26 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    // SEPERATE ACADEMY AND DOCS
-                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
-                        cat.items.forEach(item => {
-                            let html = '<div class="doc-card">' +
-                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
-                                       '<div class="doc-title">' + item.title + '</div>' +
-                                       '<div class="doc-desc">' + item.desc + '</div>' +
-                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                       '</div>';
-                            aGrid.innerHTML += html;
-                        });
-                    } else {
-                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                        cat.items.forEach(item => {
-                            html += '<div class="doc-card">' +
-                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                    '<div class="doc-title">' + item.title + '</div>' +
-                                    '<div class="doc-desc">' + item.desc + '</div>' +
-                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                    '</div>';
-                        });
-                        html += '</div>';
-                        dContainer.innerHTML += html;
-                    }
+                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                    cat.items.forEach(item => {
+                        // [GÜVENLİ CONCATENATION]
+                        html += '<div class="doc-card">' +
+                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                '<div class="doc-title">' + item.title + '</div>' +
+                                '<div class="doc-desc">' + item.desc + '</div>' +
+                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                '</div>';
+                    });
+                    html += '</div>';
+                    dContainer.innerHTML += html;
                 });
             } catch(e) {
-                console.error("Error loading library");
+                // Fail silently
             }
         }
         loadLibrary();
 
-        // --- MODAL & DOWNLOAD LOGIC ---
+        // --- MODAL LOGIC ---
         let currentDocTitle = "";
         let currentDocContent = "";
 
@@ -781,6 +790,7 @@ const FRONTEND_HTML = `
             body.scrollTop = body.scrollHeight;
         }
 
+        // --- CORE BROKER LOGIC ---
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
             if(type && CLIENT_VESSEL_SPECS[type]) {
@@ -922,7 +932,6 @@ app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; r
 
 app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
-// [YENİ]: AKILLI AI MODEL SEÇİCİ (FALLBACK SİSTEMİ)
 app.post('/api/chat', async (req, res) => {
     const userMsg = req.body.message;
     if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
@@ -943,10 +952,14 @@ app.post('/api/chat', async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are VIYA AI, an expert Maritime Broker, Captain, and Legal Consultant. 
-                            Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}.
-                            User asks: "${userMsg}"
-                            Answer professionally, concisely, and use maritime terminology.`
+                            text: `You are VIYA AI, an elite Maritime Expert. You possess the combined knowledge of a Master Mariner (Captain), a Shipbroker, a Maritime Lawyer, and a Shipowner. Your tone is professional, authoritative yet polite, and highly knowledgeable. 
+
+                            IMPORTANT INSTRUCTIONS:
+                            1. LANGUAGE: If the user speaks Turkish, YOU MUST ANSWER IN TURKISH. If they speak English, answer in English. Adapt to the user's language instantly.
+                            2. PERSONA: Act like a seasoned Captain ("Efendi Kaptan"). Be helpful but firm on regulations.
+                            3. CONTEXT: Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}. Use this if relevant.
+
+                            User asks: "${userMsg}"`
                         }]
                     }]
                 })
@@ -1003,6 +1016,6 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V89 (THE FINAL SLEEP) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V91 (THE UNBROKEN) running on port ${port}`));
 // Serve the frontend for root requests
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
