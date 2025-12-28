@@ -11,13 +11,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// [AYAR]: Senin Render'daki isminle birebir aynı
-const API_KEY = process.env.GEMINI_API_KEY; 
+// API KEY (Render'daki isminle aynı)
+const API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
 
 if (API_KEY) {
     console.log("✅ AI SYSTEM: ONLINE (API Key Detected)");
 } else {
-    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY not found in Environment)");
+    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY missing)");
 }
 
 app.use(cors());
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIG
+// 1. DATA & CONFIGURATION
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -73,9 +73,10 @@ const CARGOES = {
     ]
 };
 
-// MARKET DATA (Varsayılan değerlerle başlar)
+// Market verileri (Fallback için varsayılan değerler)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
+// Liman verilerini yükle
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -86,16 +87,17 @@ try {
     console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
 } catch (e) { console.error("❌ ERROR: ports.json missing."); }
 
+// Dökümanları yükle
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
     DOCS_DATA = JSON.parse(docData);
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
-} catch (e) { console.error("⚠️ WARNING: documents.json missing or invalid."); }
+} catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
 
 
 // =================================================================
-// 2. HELPER FUNCTIONS (DEFINED ONCE)
+// 2. HELPER FUNCTIONS (BACKEND LOGIC)
 // =================================================================
 
 async function updateMarketData() {
@@ -115,7 +117,7 @@ async function updateMarketData() {
             console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
         }
     } catch(e) {
-        console.log("⚠️ Market data update failed, using defaults.");
+        console.log("⚠️ Market update failed, using defaults.");
     }
 }
 
@@ -135,7 +137,6 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
     
-    // Smart Cargo Selection
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
@@ -223,7 +224,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 3. FRONTEND HTML
+// 3. FRONTEND HTML (EMBEDDED)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -796,7 +797,6 @@ const FRONTEND_HTML = `
             return Math.round(R * c * 1.15); 
         }
 
-        // --- RESTORED: UPDATE MARKET DATA ON INIT ---
         async function init() {
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
@@ -908,7 +908,7 @@ const FRONTEND_HTML = `
 `;
 
 // =================================================================
-// 4. API ROUTES
+// 4. API ROUTES (END)
 // =================================================================
 
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
@@ -922,41 +922,51 @@ app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; r
 
 app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
+// [YENİ]: AKILLI AI MODEL SEÇİCİ (FALLBACK SİSTEMİ)
 app.post('/api/chat', async (req, res) => {
     const userMsg = req.body.message;
     if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
 
-    try {
-        // [DÜZELTME]: Google Gemini PRO modeli (En stabil olan)
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `You are VIYA AI, an expert Maritime Broker, Captain, and Legal Consultant. 
-                        Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}.
-                        User asks: "${userMsg}"
-                        Answer professionally, concisely, and use maritime terminology.`
-                    }]
-                }]
-            })
-        });
-        
-        const data = await response.json();
-        
-        // Hata yakalama
-        if (data.error) {
-            console.error("Google Gemini Error:", data.error);
-            return res.json({ reply: `AI Error: ${data.error.message}` });
-        }
+    // Modelleri sırayla dener: İstediğin 2.5 (muhtemel preview), 1.5 Flash, 2.0 Flash ve en son Pro.
+    const modelsToTry = [
+        "gemini-1.5-flash",        // Senin istediğin (Google Studio'daki güncel Flash)
+        "gemini-2.0-flash-exp",    // Yeni deneysel 2.0 Flash
+        "gemini-pro"               // En eski ve sağlam kale
+    ];
 
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am analyzing the market, please try again.";
-        res.json({ reply });
-    } catch (error) {
-        console.error("AI Network Error:", error);
-        res.json({ reply: "AI Communication Error." });
+    for (const model of modelsToTry) {
+        try {
+            console.log(`Trying AI Model: ${model}...`);
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `You are VIYA AI, an expert Maritime Broker, Captain, and Legal Consultant. 
+                            Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}.
+                            User asks: "${userMsg}"
+                            Answer professionally, concisely, and use maritime terminology.`
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+
+            // Eğer hata yoksa ve cevap varsa döndür
+            if (!data.error && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return res.json({ reply: data.candidates[0].content.parts[0].text });
+            } else if (data.error) {
+                console.warn(`Model ${model} failed:`, data.error.message);
+            }
+        } catch (e) {
+            console.warn(`Network error with model ${model}`);
+        }
     }
+
+    // Hiçbiri çalışmazsa
+    res.json({ reply: "AI Communication Error: All models failed. Please check Google API status." });
 });
 
 app.post('/api/analyze', async (req, res) => {
@@ -993,5 +1003,6 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V86 (THE STABLE) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V89 (THE FINAL SLEEP) running on port ${port}`));
+// Serve the frontend for root requests
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
