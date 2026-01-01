@@ -1,3 +1,87 @@
 [
-  { "category": "CHARTER PARTIES", "items": [ { "id": "cp1", "title": "GENCON 94", "desc": "Standard Voyage Charter Party", "content": "This is the full text of GENCON 94..." }, { "id": "cp2", "title": "NYPE 2015", "desc": "Time Charter Party", "content": "This is the full text of NYPE 2015..." } ] }
+  {
+    "category": "KNOWLEDGE BASE (ACADEMY)",
+    "items": [
+      {
+        "id": "incoterms",
+        "title": "INCOTERMS 2020",
+        "desc": "Transfer of risk and cost points (FOB, CIF, CFR).",
+        "content": "INCOTERMS 2020 - KEY MARITIME TERMS\n\n1. FOB (Free On Board)\n- Risk transfers to buyer when goods are placed on board the vessel at the named port of shipment.\n- Buyer bears all costs from that point onwards.\n- Seller must clear goods for export.\n\n2. CFR (Cost and Freight)\n- Seller must pay the costs and freight to bring the goods to the named port of destination.\n- Risk transfers to buyer when goods are on board the vessel.\n- Seller clears export customs.\n\n3. CIF (Cost, Insurance and Freight)\n- Same as CFR, but Seller must also obtain marine insurance against the buyer's risk of loss/damage during carriage.\n\n4. FAS (Free Alongside Ship)\n- Risk transfers when goods are placed alongside the vessel (e.g., on a quay or barge) nominated by the buyer.\n- Used mainly for bulk cargo."
+      },
+      {
+        "id": "laytime",
+        "title": "LAYTIME & DEMURRAGE",
+        "desc": "Calculation principles: SHINC, SHEX, WWD.",
+        "content": "LAYTIME CALCULATIONS GUIDE\n\n1. DEFINITION\nLaytime is the amount of time allowed in a Voyage Charter for the loading and discharging of cargo.\n\n2. KEY ABBREVIATIONS\n- SHINC: Sundays and Holidays Included (Work continues 7 days).\n- SHEX: Sundays and Holidays Excluded (Work stops on weekends).\n- WWD: Weather Working Days (Bad weather pauses the clock).\n- EIU: Even If Used (If charterer works on a holiday, it doesn't count against time).\n- UU: Unless Used (If charterer works on a holiday, it COUNTS against time).\n\n3. DEMURRAGE\nFinancial penalty paid by the Charterer to the Shipowner for exceeding the agreed laytime.\n\n4. DESPATCH\nFinancial reward paid by the Shipowner to the Charterer for finishing operations faster than agreed (usually half the demurrage rate)."
+      }
+    ]
+  },
+  {
+    "category": "DRY BULK CHARTER PARTIES",
+    "items": [
+      {
+        "id": "gencon",
+        "title": "GENCON 94",
+        "desc": "Standard Voyage Charter (Universal).",
+        "content": "PART I - STANDARD VOYAGE CHARTER PARTY (GENCON 94)\n\n1. PREAMBLE\nIt is this day agreed between the party mentioned in Box 3 as Owners of the steamer or motor-vessel named in Box 5... and the party mentioned in Box 4 as Charterers.\n\n2. OWNERS' RESPONSIBILITY CLAUSE\nOwners are to be responsible for loss of or damage to the goods or for delay in delivery of the goods only in case the loss, damage or delay has been caused by the personal want of due diligence on the part of the Owners or their Manager to make the Vessel in all respects seaworthy.\n\n3. DEVIATION CLAUSE\nThe Vessel has liberty to call at any port or ports in any order, for any purpose, to sail without pilots, to tow and/or assist vessels in all situations.\n\n4. PAYMENT OF FREIGHT\nThe freight to be paid in the manner prescribed in Box 15 in cash without discount on delivery of the Cargo at mean rate of exchange ruling on day or days of payment.\n\n5. LOADING/DISCHARGING COSTS\n(a) Gross Terms: The agreed freight includes the cost of loading and discharging.\n(b) F.I.O. and Free Stowed/Trimmed: The Charterers shall bring the cargo into the holds, load, stow and/or trim and take the cargo from the holds... free of any risk, liability and expense whatsoever to the Owners.\n\n6. LAYTIME\n(a) Separate laytime for loading and discharging.\n(b) Total laytime for loading and discharging.\n\n7. DEMURRAGE\nDemurrage at the loading and discharging port is payable by the Charterers at the rate stated in Box 20 in the manner stated in Box 20 per day or pro rata for any part of a day.\n\n8. LIEN CLAUSE\nThe Owners shall have a lien on the cargo and on all sub-freights payable in respect of the cargo, for freight, deadfreight, demurrage, claims for damages and for all other amounts due under this Charter Party including costs of recovering same.\n\n9. CANCELLING CLAUSE\nShould the Vessel not be ready to load (whether in berth or not) on or before the date indicated in Box 21, Charterers have the option of cancelling this contract.\n\n10. GENERAL AVERAGE\nGeneral Average to be settled according to York-Antwerp Rules 1994 and any subsequent modification thereof."
+      },
+      {
+        "id": "nype",
+        "title": "NYPE 2015",
+        "desc": "New York Produce Exchange Time Charter.",
+        "content": "NYPE 2015 - NEW YORK PRODUCE EXCHANGE FORM (TIME CHARTER)\n\n1. DURATION\nThe Owners agree to let and the Charterers agree to hire the Vessel from the time of delivery for a period of [Insert Period] within below mentioned trading limits.\n\n2. DELIVERY\nThe Vessel shall be placed at the disposal of the Charterers at [Port]... The Vessel on her delivery shall be ready to receive cargo with clean-swept holds and tight, staunch, strong and in every way fitted for the service.\n\n3. OWNERS TO PROVIDE\nThe Owners shall provide and pay for the insurance of the Vessel, all provisions, cabin, deck, engine-room and other necessary stores, including boiler water and maintain her class.\n\n4. CHARTERERS TO PROVIDE\nThe Charterers shall provide and pay for all the fuel except as otherwise agreed, Port Charges, Pilotages, Agencies, Commissions, Consular Charges (except those pertaining to the Crew).\n\n5. BUNKER FUEL\nThe Charterers on delivery, and the Owners on redelivery, shall take over and pay for all bunkers remaining on board the Vessel at the current market prices at the ports of delivery and redelivery.\n\n6. OFF-HIRE CLAUSE\nIn the event of the loss of time from deficiency of men or stores, fire, breakdown or damages to hull, machinery or equipment, grounding, detention by average accidents to ship or cargo... the payment of hire shall cease for the time thereby lost."
+      }
+    ]
+  },
+  {
+    "category": "TANKER (OIL/CHEM) CHARTER PARTIES",
+    "items": [
+      {
+        "id": "asba",
+        "title": "ASBATANKVOY",
+        "desc": "Association of Ship Brokers Tanker Voyage.",
+        "content": "ASBATANKVOY - TANKER VOYAGE CHARTER PARTY\n\n1. WARRANTY - VOYAGE - CARGO\nThe Vessel, classed as specified in Part I hereof, and to be so maintained during the currency of this Charter, shall, with all convenient dispatch, proceed as ordered to Loading Port(s)... and there load a full and complete cargo.\n\n2. FREIGHT\nFreight shall be at the rate stipulated in Part I and shall be computed on intake quantity (except deadfreight) as shown on the Inspector's Certificate of Inspection. Payment of freight shall be made by Charterer without discount upon delivery of cargo at destination.\n\n3. DEADFREIGHT\nShould the Charterers fail to supply a full cargo, the Vessel may, at the Master's option, and shall, upon request of the Charterers, proceed on her voyage, provided that the tanks in which cargo is loaded are sufficiently filled to put her in seaworthy condition. In that event, however, deadfreight shall be paid at the rate specified in Part I on the difference between the intake quantity and the quantity the Vessel would have carried if loaded to her minimum permissible freeboard.\n\n4. LAYTIME\nLaytime shall not commence before 0600 local time on the Commencing Date specified in Part I unless with Charterer's sanction. If the Vessel has not given notice of readiness to load by 1600 local time on the Cancelling Date specified in Part I, Charterer shall have the option of cancelling this Charter.\n\n5. SAFE BERTHING - SHIFTING\nThe Vessel shall load and discharge at any safe place or wharf, or alongside vessels or lighters reachable on her arrival, which shall be designated and procured by the Charterer, provided the Vessel can proceed thereto, lie at, and depart therefrom always safely afloat.\n\n6. PUMPING CLAUSE\nThe Owner warrants that the Vessel is capable of discharging her entire cargo within 24 hours (or maintain 100 PSI at ship's rail) provided shore facilities permit."
+      }
+    ]
+  },
+  {
+    "category": "CRITICAL CLAUSES (RIDERS)",
+    "items": [
+      {
+        "id": "warrisk",
+        "title": "War Risks Clause (VOYWAR 2013)",
+        "desc": "Safety in conflict zones.",
+        "content": "VOYWAR 2013 (WAR RISKS CLAUSE)\n\n(a) For the purpose of this Clause, the words \"War Risks\" shall include any war (whether actual or threatened), act of war, civil war, hostilities, revolution, rebellion, civil commotion, warlike operations, the laying of mines...\n\n(b) If at any time prior to the Vessel's arrival at the loading or discharging port it appears that, in the reasonable judgement of the Master and/or the Owners, the Vessel, her cargo, crew or other persons on board the Vessel may be, or are likely to be, exposed to War Risks, the Owners may give notice to the Charterers...\n\n(c) The Owners shall not be required to load cargo or to proceed to or through any port, place, area or zone... where it appears that the Vessel may be exposed to War Risks."
+      },
+      {
+        "id": "piracy",
+        "title": "Piracy Clause",
+        "desc": "Gulf of Aden / West Africa protection.",
+        "content": "BIMCO PIRACY CLAUSE FOR TIME CHARTER PARTIES 2013\n\n(a) The Vessel shall not be obliged to proceed or required to continue to or through, any port, place, area or zone, or any waterway or canal (hereinafter “Area”), where it appears that the Vessel, her cargo, crew or other persons on board the Vessel, in the reasonable judgement of the Master and/or the Owners, may be, or are likely to be, exposed to the acts of piracy/armed robbery...\n\n(b) If the Owners determine that the Vessel is to proceed through an Area where there is a risk of Piracy, they shall have the liberty to take reasonable preventative measures (such as razor wire, water cannons) and/or embark security personnel."
+      }
+    ]
+  },
+  {
+    "category": "OPERATIONAL DOCUMENTS",
+    "items": [
+      {
+        "id": "nor",
+        "title": "Notice of Readiness (NOR)",
+        "desc": "Standard NOR template.",
+        "content": "NOTICE OF READINESS (TEMPLATE)\n\nTo: [Charterers / Port Agents / Shippers]\nFrom: Master of MV [Vessel Name]\nDate: [Date]\nTime: [Time LT]\nPort: [Port Name]\n\nDear Sirs,\n\nSUBJECT: NOTICE OF READINESS\n\nPlease accept this Notice of Readiness that the above Vessel under my command arrived at [Anchorage/Pilot Station/Berth] at [Time] hours on [Date].\n\nThe Vessel is in all respects ready to commence [Loading/Discharging] operations of her cargo of [Cargo Description/Quantity] in accordance with the terms and conditions of the Charter Party dated [CP Date].\n\nLaytime to commence in accordance with the Charter Party.\n\nYours faithfully,\n\n-------------------------\nMaster of MV [Vessel Name]\n\n\nACCEPTED BY:\nDate: _________________\nTime: _________________\n\n-------------------------\nFor and on behalf of Charterers/Shippers/Receivers"
+      },
+      {
+        "id": "sof",
+        "title": "Statement of Facts (SOF)",
+        "desc": "Time log template.",
+        "content": "STATEMENT OF FACTS (TEMPLATE)\n\nVESSEL: ___________________\nPORT: _____________________\n\nEVENTS LOG:\n\n[DATE] | [TIME] | EVENT\n--------------------------------------------\n...    | ...    | Vessel Arrived at Pilot Stn\n...    | ...    | Pilot on Board\n...    | ...    | First Line Ashore\n...    | ...    | All Fast\n...    | ...    | Gangway Down / Customs Onboard\n...    | ...    | NOR Tendered\n...    | ...    | NOR Accepted\n...    | ...    | Cargo Hoses/Cranes Connected\n...    | ...    | Commenced Loading/Discharging\n...    | ...    | Completed Loading/Discharging\n...    | ...    | Documents On Board\n...    | ...    | Vessel Sailed\n\nREMARKS:\n- Rain delays: ...\n- Crane breakdown: ...\n\n\nSigned: (Master) ______________  (Agent) ______________"
+      },
+      {
+        "id": "loi",
+        "title": "Letter of Indemnity (LOI)",
+        "desc": "For clean Bill of Lading.",
+        "content": "LETTER OF INDEMNITY (CLEAN BILL OF LADING)\n\nTo: The Owners of the M.V. [Vessel Name]\nDear Sirs,\n\nIn consideration of your issuing a set of clean Bills of Lading for [Cargo Quantity/Description]... notwithstanding that the Mate's Receipts / Tally Clerk's Receipts are claused as follows: [Insert Remarks, e.g., 'Atmospheric Rust on top tier']...\n\nWe hereby undertake and agree to indemnify you fully against all consequences and/or liabilities of any kind whatsoever directly or indirectly arising from or relating to your issuing such clean Bills of Lading..."
+      }
+    ]
+  }
 ]
