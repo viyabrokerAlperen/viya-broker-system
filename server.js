@@ -15,7 +15,7 @@ const port = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
 
 if (API_KEY) {
-    console.log("✅ VIYA AI SYSTEM: ONLINE (API Key Detected)");
+    console.log("✅ VIYA AI SYSTEM: ONLINE (Access Key Verified)");
 } else {
     console.error("❌ VIYA AI SYSTEM: OFFLINE (GEMINI_API_KEY Missing)");
 }
@@ -25,83 +25,28 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. ADVANCED DATA & CONFIGURATION (DETAYLI FİNANSAL VERİLER)
+// 1. ADVANCED DATA & CONFIGURATION
 // =================================================================
 
-// Gemi Tiplerine Göre Detaylı Günlük OPEX (USD/Gün)
 const VESSEL_SPECS = {
-    "HANDYSIZE": { 
-        type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, 
-        opex_details: { crew: 2200, victualling: 250, maintenance: 600, insurance: 350, stores: 250, admin: 400 } 
-    },
-    "HANDYMAX": { 
-        type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, 
-        opex_details: { crew: 2300, victualling: 260, maintenance: 650, insurance: 400, stores: 280, admin: 450 } 
-    },
-    "SUPRAMAX": { 
-        type: "BULK", dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, 
-        opex_details: { crew: 2400, victualling: 280, maintenance: 700, insurance: 450, stores: 300, admin: 500 } 
-    },
-    "ULTRAMAX": { 
-        type: "BULK", dwt: 64000, default_speed: 13.5, sea_cons: 29, port_cons: 3.5, 
-        opex_details: { crew: 2500, victualling: 300, maintenance: 750, insurance: 500, stores: 320, admin: 550 } 
-    },
-    "PANAMAX": { 
-        type: "BULK", dwt: 82000, default_speed: 13.0, sea_cons: 32, port_cons: 4.0, 
-        opex_details: { crew: 2600, victualling: 320, maintenance: 800, insurance: 600, stores: 400, admin: 600 } 
-    },
-    "KAMSARMAX": { 
-        type: "BULK", dwt: 85000, default_speed: 13.0, sea_cons: 33, port_cons: 4.0, 
-        opex_details: { crew: 2650, victualling: 330, maintenance: 850, insurance: 650, stores: 420, admin: 620 } 
-    },
-    "CAPESIZE": { 
-        type: "BULK", dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, 
-        opex_details: { crew: 2800, victualling: 350, maintenance: 1000, insurance: 900, stores: 500, admin: 700 } 
-    },
-    "NEWCASTLEMAX": { 
-        type: "BULK", dwt: 205000, default_speed: 12.5, sea_cons: 50, port_cons: 5.5, 
-        opex_details: { crew: 2900, victualling: 360, maintenance: 1100, insurance: 950, stores: 550, admin: 750 } 
-    },
-    "SMALL_CHEM": { 
-        type: "TANKER", dwt: 19000, default_speed: 13.0, sea_cons: 18, port_cons: 3.0, 
-        opex_details: { crew: 2500, victualling: 300, maintenance: 800, insurance: 500, stores: 400, admin: 600 } 
-    },
-    "MR_TANKER": { 
-        type: "TANKER", dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, 
-        opex_details: { crew: 2800, victualling: 350, maintenance: 900, insurance: 800, stores: 450, admin: 650 } 
-    },
-    "LR1": { 
-        type: "TANKER", dwt: 75000, default_speed: 13.0, sea_cons: 32, port_cons: 5.0, 
-        opex_details: { crew: 3000, victualling: 380, maintenance: 1000, insurance: 900, stores: 500, admin: 700 } 
-    },
-    "AFRAMAX": { 
-        type: "TANKER", dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, 
-        opex_details: { crew: 3200, victualling: 400, maintenance: 1200, insurance: 1100, stores: 600, admin: 800 } 
-    },
-    "SUEZMAX": { 
-        type: "TANKER", dwt: 160000, default_speed: 12.5, sea_cons: 48, port_cons: 7.0, 
-        opex_details: { crew: 3400, victualling: 420, maintenance: 1400, insurance: 1300, stores: 700, admin: 900 } 
-    },
-    "VLCC": { 
-        type: "TANKER", dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, 
-        opex_details: { crew: 3600, victualling: 450, maintenance: 1600, insurance: 1600, stores: 800, admin: 1000 } 
-    },
-    "LPG_MGC": { 
-        type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, 
-        opex_details: { crew: 3500, victualling: 400, maintenance: 1500, insurance: 1200, stores: 600, admin: 800 } 
-    },
-    "LPG_VLGC": { 
-        type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, 
-        opex_details: { crew: 3800, victualling: 450, maintenance: 1800, insurance: 1500, stores: 800, admin: 1000 } 
-    },
-    "LNG_CONV": { 
-        type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, 
-        opex_details: { crew: 4000, victualling: 500, maintenance: 2000, insurance: 2000, stores: 1000, admin: 1500 } 
-    },
-    "LNG_Q_FLEX": { 
-        type: "GAS", dwt: 110000, default_speed: 19.5, sea_cons: 90, port_cons: 10.0, 
-        opex_details: { crew: 4500, victualling: 550, maintenance: 2500, insurance: 2500, stores: 1200, admin: 1800 } 
-    }
+    "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex_details: { crew: 2200, victualling: 250, maintenance: 600, insurance: 350, stores: 250, admin: 400 } },
+    "HANDYMAX":     { type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, opex_details: { crew: 2300, victualling: 260, maintenance: 650, insurance: 400, stores: 280, admin: 450 } },
+    "SUPRAMAX":     { type: "BULK", dwt: 58000, default_speed: 13.5, sea_cons: 28, port_cons: 3.5, opex_details: { crew: 2400, victualling: 280, maintenance: 700, insurance: 450, stores: 300, admin: 500 } },
+    "ULTRAMAX":     { type: "BULK", dwt: 64000, default_speed: 13.5, sea_cons: 29, port_cons: 3.5, opex_details: { crew: 2500, victualling: 300, maintenance: 750, insurance: 500, stores: 320, admin: 550 } },
+    "PANAMAX":      { type: "BULK", dwt: 82000, default_speed: 13.0, sea_cons: 32, port_cons: 4.0, opex_details: { crew: 2600, victualling: 320, maintenance: 800, insurance: 600, stores: 400, admin: 600 } },
+    "KAMSARMAX":    { type: "BULK", dwt: 85000, default_speed: 13.0, sea_cons: 33, port_cons: 4.0, opex_details: { crew: 2650, victualling: 330, maintenance: 850, insurance: 650, stores: 420, admin: 620 } },
+    "CAPESIZE":     { type: "BULK", dwt: 180000, default_speed: 12.5, sea_cons: 45, port_cons: 5.0, opex_details: { crew: 2800, victualling: 350, maintenance: 1000, insurance: 900, stores: 500, admin: 700 } },
+    "NEWCASTLEMAX": { type: "BULK", dwt: 205000, default_speed: 12.5, sea_cons: 50, port_cons: 5.5, opex_details: { crew: 2900, victualling: 360, maintenance: 1100, insurance: 950, stores: 550, admin: 750 } },
+    "SMALL_CHEM":   { type: "TANKER", dwt: 19000, default_speed: 13.0, sea_cons: 18, port_cons: 3.0, opex_details: { crew: 2500, victualling: 300, maintenance: 800, insurance: 500, stores: 400, admin: 600 } },
+    "MR_TANKER":    { type: "TANKER", dwt: 50000, default_speed: 13.0, sea_cons: 26, port_cons: 4.5, opex_details: { crew: 2800, victualling: 350, maintenance: 900, insurance: 800, stores: 450, admin: 650 } },
+    "LR1":          { type: "TANKER", dwt: 75000, default_speed: 13.0, sea_cons: 32, port_cons: 5.0, opex_details: { crew: 3000, victualling: 380, maintenance: 1000, insurance: 900, stores: 500, admin: 700 } },
+    "AFRAMAX":      { type: "TANKER", dwt: 115000, default_speed: 12.5, sea_cons: 40, port_cons: 6.0, opex_details: { crew: 3200, victualling: 400, maintenance: 1200, insurance: 1100, stores: 600, admin: 800 } },
+    "SUEZMAX":      { type: "TANKER", dwt: 160000, default_speed: 12.5, sea_cons: 48, port_cons: 7.0, opex_details: { crew: 3400, victualling: 420, maintenance: 1400, insurance: 1300, stores: 700, admin: 900 } },
+    "VLCC":         { type: "TANKER", dwt: 300000, default_speed: 12.0, sea_cons: 65, port_cons: 8.0, opex_details: { crew: 3600, victualling: 450, maintenance: 1600, insurance: 1600, stores: 800, admin: 1000 } },
+    "LPG_MGC":      { type: "GAS", dwt: 38000, default_speed: 16.0, sea_cons: 35, port_cons: 6.0, opex_details: { crew: 3500, victualling: 400, maintenance: 1500, insurance: 1200, stores: 600, admin: 800 } },
+    "LPG_VLGC":     { type: "GAS", dwt: 55000, default_speed: 16.5, sea_cons: 45, port_cons: 7.0, opex_details: { crew: 3800, victualling: 450, maintenance: 1800, insurance: 1500, stores: 800, admin: 1000 } },
+    "LNG_CONV":     { type: "GAS", dwt: 75000, default_speed: 19.0, sea_cons: 70, port_cons: 8.0, opex_details: { crew: 4000, victualling: 500, maintenance: 2000, insurance: 2000, stores: 1000, admin: 1500 } },
+    "LNG_Q_FLEX":   { type: "GAS", dwt: 110000, default_speed: 19.5, sea_cons: 90, port_cons: 10.0, opex_details: { crew: 4500, victualling: 550, maintenance: 2500, insurance: 2500, stores: 1200, admin: 1800 } }
 };
 
 const CARGOES = {
@@ -129,8 +74,8 @@ const CARGOES = {
 };
 
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
-
 let PORT_DB = {};
+
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
     const jsonData = JSON.parse(rawData);
@@ -144,21 +89,20 @@ let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
     DOCS_DATA = JSON.parse(docData);
-    console.log(`✅ DOCUMENTS: Library loaded successfully.`);
-} catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
+} catch (e) {}
 
 let REGS_DATA = [];
-let REGS_CONTEXT = "";
+let REGS_CONTEXT = ""; 
 try {
     const regData = fs.readFileSync(path.join(__dirname, 'regulations.json'));
     REGS_DATA = JSON.parse(regData);
     REGS_CONTEXT = REGS_DATA.map(r => `[${r.code}] ${r.title}: ${r.summary}`).join(" | ");
     console.log(`✅ REGULATIONS: ${REGS_DATA.length} statutes loaded.`);
-} catch (e) { console.error("⚠️ WARNING: regulations.json missing."); }
+} catch (e) {}
 
 
 // =================================================================
-// 2. HELPER FUNCTIONS (BACKEND LOGIC)
+// 2. HELPER FUNCTIONS
 // =================================================================
 
 async function updateMarketData() {
@@ -175,11 +119,8 @@ async function updateMarketData() {
             MARKET.mgo = Math.round(hoPriceGal * 319); 
             MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
             MARKET.lastUpdate = Date.now();
-            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
         }
-    } catch(e) {
-        console.log("⚠️ Market update failed, using defaults.");
-    }
+    } catch(e) {}
 }
 
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -191,94 +132,58 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return Math.round(R * c * 1.15); 
 }
 
-// [V100] ULTRA DETAILED CALCULATION ENGINE
 function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
     const speed = shipSpeed || specs.default_speed;
     const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     
-    // Cargo Selection
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
-    
-    let qty = userQty;
-    if (!qty || qty > specs.dwt) qty = Math.floor(specs.dwt * 0.95);
+    let qty = userQty || Math.floor(specs.dwt * 0.95);
 
-    // Duration
     const ballastDays = ballastDist / (speed * 24);
     const ladenDays = ladenDist / (speed * 24);
-    const loadDays = (qty / (userLoadRate || 15000)) + 1; // +1 Turn time
+    const loadDays = (qty / (userLoadRate || 15000)) + 1; 
     const dischDays = (qty / (userDischRate || 10000)) + 1;
     const portDays = Math.ceil(loadDays + dischDays);
     const totalDays = ballastDays + ladenDays + portDays;
 
-    // --- 1. VOYAGE COSTS (SEFER MALİYETLERİ) ---
-    
-    // A. BUNKER (YAKIT)
-    const seaCons = specs.sea_cons;
-    const portCons = specs.port_cons;
-    const costMainEngine = (ballastDays + ladenDays) * seaCons * market.vlsfo;
-    const costAuxEngine = portDays * portCons * market.mgo; 
-    const costLubricants = totalDays * 400; // Günlük ortalama $400 yağ gideri
+    const costMainEngine = (ballastDays + ladenDays) * specs.sea_cons * market.vlsfo;
+    const costAuxEngine = portDays * specs.port_cons * market.mgo; 
+    const costLubricants = totalDays * 400;
     const totalFuelCost = costMainEngine + costAuxEngine + costLubricants;
 
-    // B. PORT CHARGES (LİMAN GİDERLERİ)
-    const grt = specs.dwt * 0.65; // Approximate GRT
-    // Port Dues (Liman Rüsumları)
-    const duesLoad = grt * 1.1; // $1.1 per GRT
+    const grt = specs.dwt * 0.65; 
+    const duesLoad = grt * 1.1; 
     const duesDisch = grt * 1.1;
-    // Pilotage (Kılavuzluk) - Giriş/Çıkış x 2 Liman
     const pilotage = 3500 * 2 * 2; 
-    // Towage (Römorkör) - 2 Römorkör x Giriş/Çıkış x 2 Liman
     const towage = 2500 * 2 * 2 * 2;
-    // Line Handling (Palamar)
     const lineHandling = 1000 * 2 * 2;
-    // Berth Hire (Rıhtım İşgaliye) - Günlük
     const berthHire = portDays * 1500;
-    // Waste/Slop (Atık)
     const wasteFees = 2000;
-    // Agency Fees (Acente)
-    const agencyFees = 3000 * 2; // 2 Liman
-
+    const agencyFees = 3000 * 2; 
     const totalPortCosts = duesLoad + duesDisch + pilotage + towage + lineHandling + berthHire + wasteFees + agencyFees;
 
-    // C. CARGO HANDLING (YÜK ELLEÇLEME - Owner Expenses)
-    // Varsayım: FIOST değilse (veya Owner adına küçük giderler)
-    const stevedoring = 0; // Genelde kiracı öder ama burada owner adına ekstra varsa
-    const dunnageLashing = qty * (cargo.stowing || 0.5); // Malzeme/Sabitleme
-    const holdCleaning = 4000; // Yıkama
+    const stevedoring = 0; 
+    const dunnageLashing = qty * (cargo.stowing || 0.5); 
+    const holdCleaning = 4000; 
     const totalCargoCosts = dunnageLashing + holdCleaning + stevedoring;
 
-    // D. CANAL & STRAITS (KANAL/BOĞAZ)
     let costCanal = 0;
-    // Basit bir coğrafi kontrol (Süveyş/Panama vb.)
     if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 250000;
 
-    // --- 2. OPERATING EXPENSES (OPEX - İŞLETME MALİYETLERİ) ---
-    // Gemi tipine özel detaylı günlük OPEX
     const od = specs.opex_details || { crew: 2500, victualling: 300, maintenance: 800, insurance: 600, stores: 400, admin: 500 };
     const dailyOpexTotal = Object.values(od).reduce((a, b) => a + b, 0);
-    
-    const costCrew = od.crew * totalDays;
-    const costVictualling = od.victualling * totalDays;
-    const costMaint = od.maintenance * totalDays;
-    const costIns = od.insurance * totalDays; // H&M + P&I
-    const costStores = od.stores * totalDays;
-    const costAdmin = od.admin * totalDays;
-    
     const totalOpexCost = dailyOpexTotal * totalDays;
 
-    // --- 3. REVENUE (GELİR) ---
     const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.0375; // %3.75 Broker/Address Comm
+    const commission = grossRevenue * 0.0375; 
     
-    // --- SUMMARY ---
     const totalVoyageCosts = totalFuelCost + totalPortCosts + totalCargoCosts + costCanal + commission;
     const totalCostsAll = totalVoyageCosts + totalOpexCost;
     
     const netProfit = grossRevenue - totalCostsAll;
-    // TCE Calculation: (Net Freight - Voyage Costs) / Duration
     const tce = (grossRevenue - totalVoyageCosts) / totalDays;
 
     return { 
@@ -295,12 +200,12 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
                 total: totalVoyageCosts
             },
             opex: {
-                crew: costCrew,
-                victualling: costVictualling,
-                maintenance: costMaint,
-                insurance: costIns,
-                stores: costStores,
-                admin: costAdmin,
+                crew: od.crew * totalDays,
+                victualling: od.victualling * totalDays,
+                maintenance: od.maintenance * totalDays,
+                insurance: od.insurance * totalDays,
+                stores: od.stores * totalDays,
+                admin: od.admin * totalDays,
                 daily: dailyOpexTotal,
                 total: totalOpexCost
             },
@@ -356,7 +261,6 @@ const FRONTEND_HTML = `
         :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --neon-gold: #fbbf24; --deep-space: #050a14; --panel-bg: rgba(10, 15, 25, 0.95); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.1); --text-main: #e2e8f0; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:13px; }
-        
         nav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.5rem 2rem; display: none; justify-content: space-between; align-items: center; transition: 0.5s; }
         .brand { display: flex; align-items: center; cursor:pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
         .brand img { height: 40px; } 
@@ -367,36 +271,29 @@ const FRONTEND_HTML = `
         .live-ticker { font-family: var(--font-tech); font-size: 0.7rem; color: var(--text-muted); display:flex; gap:20px; align-items:center; }
         .blinking { animation: blinker 2s linear infinite; color: var(--success); font-weight:bold;}
         @keyframes blinker { 50% { opacity: 0.5; } }
-
         #landing-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(rgba(3,5,8,0.9), rgba(3,5,8,0.8)), url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: opacity 0.8s ease-in-out; }
         .landing-logo-img { max-width: 300px; margin-bottom: 30px; filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); }
         .landing-sub { font-size: 1.2rem; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; font-weight: 300; font-family: var(--font-tech); }
         .btn-enter { background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); padding: 15px 50px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden; }
         .btn-enter:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
-
         .view-section { display: none; padding-top: 80px; height: 100vh; animation: fadeIn 0.6s ease-out; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
         .dash-grid { display: grid; grid-template-columns: 380px 1fr 450px; gap: 15px; padding: 15px; height: calc(100vh - 80px); }
         .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); }
         .p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
         .p-body { padding: 15px; overflow-y: auto; flex: 1; }
-
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 0.65rem; color: #64748b; margin-bottom: 4px; font-weight: 700; letter-spacing: 0.5px; }
         .input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 2px; font-family: var(--font-ui); font-size: 0.85rem; transition: 0.3s; }
         .btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 14px; font-size: 0.9rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 2px; width: 100%; transition: 0.3s; margin-top: 10px; letter-spacing: 1px; }
-        
         .cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
         .cargo-item:hover { background: rgba(0,242,255,0.05); border-left-color: var(--neon-cyan); }
         .cargo-item.active { background: rgba(0,242,255,0.1); border-left-color: var(--neon-cyan); border-top: 1px solid var(--neon-cyan); border-bottom: 1px solid var(--neon-cyan); border-right: 1px solid var(--neon-cyan); }
         .ci-top { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; color: #fff; font-size: 0.9rem; }
         .ci-bot { display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; }
         .tce-badge { background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 6px; border-radius: 2px; font-family: var(--font-tech); font-size: 0.7rem; }
-
         #map { width: 100%; height: 100%; background: #0b1221; }
-
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-card { background: rgba(0,0,0,0.4); padding: 12px; border: 1px solid var(--border-color); text-align: center; }
         .stat-val { font-family: var(--font-tech); font-size: 1.2rem; color: #fff; font-weight: 700; }
@@ -405,7 +302,11 @@ const FRONTEND_HTML = `
         .d-val { font-weight: 500; font-family: 'Courier New', monospace; }
         .d-val.neg { color: var(--danger); }
         .d-val.pos { color: var(--success); }
-
+        .ai-insight { background: rgba(0, 242, 255, 0.05); border-left: 2px solid var(--neon-cyan); padding: 15px; margin-top: 15px; font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
+        .ai-list { padding-left: 15px; margin-top: 5px; color: #94a3b8; }
+        .ai-list li { margin-bottom: 4px; }
+        .tag-pro { color: var(--success); font-weight: bold; font-size: 0.75rem; }
+        .tag-con { color: var(--danger); font-weight: bold; font-size: 0.75rem; }
         .library-section { max-width: 1400px; margin: 0 auto; padding: 20px; }
         .section-title { font-family: var(--font-tech); font-size: 1.8rem; color: #fff; margin-bottom: 10px; border-left: 4px solid var(--neon-cyan); padding-left: 15px; }
         .section-desc { color: var(--text-muted); margin-bottom: 40px; margin-left: 20px; }
@@ -418,7 +319,6 @@ const FRONTEND_HTML = `
         .doc-desc { font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px; min-height: 40px; }
         .btn-download { background: transparent; border: 1px solid #334155; color: #94a3b8; width: 100%; padding: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-weight: 600; }
         .btn-download:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
         .pricing-container { display: flex; justify-content: center; gap: 30px; padding-top: 50px; flex-wrap: wrap; }
         .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); width: 320px; padding: 40px; text-align: center; position: relative; transition: 0.3s; }
         .price-card:hover { transform: scale(1.05); }
@@ -846,48 +746,49 @@ const FRONTEND_HTML = `
             const vc = b.voyage_costs;
             const ox = b.opex;
             
+            // [DÜZELTME]: Frontend template literal içindeki $ işaretleri escape edildi (\$)
             const html = \`
                 <table class="fin-table">
                     <tr><th colspan="2" class="fin-lbl" style="font-size:1rem; border-bottom:2px solid var(--neon-cyan);">1. REVENUE (GELİR)</th></tr>
-                    <tr><td class="fin-lbl">Gross Freight (${currentVoyageData.qty}mt x $${currentVoyageData.cargo.rate})</td><td>$${Math.floor(b.revenue).toLocaleString()}</td></tr>
-                    <tr class="fin-section-total"><td class="fin-lbl">NET REVENUE (After Comm)</td><td>$${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
+                    <tr><td class="fin-lbl">Gross Freight (\${currentVoyageData.qty}mt x $\${currentVoyageData.cargo.rate})</td><td>$\${Math.floor(b.revenue).toLocaleString()}</td></tr>
+                    <tr class="fin-section-total"><td class="fin-lbl">NET REVENUE (After Comm)</td><td>$\${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
                     
                     <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">2. VOYAGE COSTS (SEFER GİDERLERİ)</th></tr>
-                    <tr><td class="fin-lbl"><strong>A. Bunkers (Yakıt)</strong></td><td><strong>$${Math.floor(vc.fuel.total).toLocaleString()}</strong></td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Main Engine</td><td>$${Math.floor(vc.fuel.main).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Aux Engine (Port)</td><td>$${Math.floor(vc.fuel.aux).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Lubricants</td><td>$${Math.floor(vc.fuel.lubes).toLocaleString()}</td></tr>
+                    <tr><td class="fin-lbl"><strong>A. Bunkers (Yakıt)</strong></td><td><strong>$\${Math.floor(vc.fuel.total).toLocaleString()}</strong></td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Main Engine</td><td>$\${Math.floor(vc.fuel.main).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Aux Engine (Port)</td><td>$\${Math.floor(vc.fuel.aux).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Lubricants</td><td>$\${Math.floor(vc.fuel.lubes).toLocaleString()}</td></tr>
                     
-                    <tr><td class="fin-lbl"><strong>B. Port Charges (Liman)</strong></td><td><strong>$${Math.floor(vc.port.total).toLocaleString()}</strong></td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Dues (Rüsum)</td><td>$${Math.floor(vc.port.dues).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Pilotage (Kılavuz)</td><td>$${Math.floor(vc.port.pilot).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Towage (Römorkör)</td><td>$${Math.floor(vc.port.towage).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Agency & Misc</td><td>$${Math.floor(vc.port.agency + vc.port.waste).toLocaleString()}</td></tr>
+                    <tr><td class="fin-lbl"><strong>B. Port Charges (Liman)</strong></td><td><strong>$\${Math.floor(vc.port.total).toLocaleString()}</strong></td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Dues (Rüsum)</td><td>$\${Math.floor(vc.port.dues).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Pilotage (Kılavuz)</td><td>$\${Math.floor(vc.port.pilot).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Towage (Römorkör)</td><td>$\${Math.floor(vc.port.towage).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Agency & Misc</td><td>$\${Math.floor(vc.port.agency + vc.port.waste).toLocaleString()}</td></tr>
 
-                    <tr><td class="fin-lbl"><strong>C. Cargo Handling</strong></td><td><strong>$${Math.floor(vc.cargo.total).toLocaleString()}</strong></td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Hold Cleaning / Lashing</td><td>$${Math.floor(vc.cargo.total).toLocaleString()}</td></tr>
+                    <tr><td class="fin-lbl"><strong>C. Cargo Handling</strong></td><td><strong>$\${Math.floor(vc.cargo.total).toLocaleString()}</strong></td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Hold Cleaning / Lashing</td><td>$\${Math.floor(vc.cargo.total).toLocaleString()}</td></tr>
 
                     <tr><td class="fin-lbl"><strong>D. Others</strong></td><td></td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Canal Transit</td><td>$${Math.floor(vc.canal).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Brokerage Comm</td><td>$${Math.floor(vc.comm).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Canal Transit</td><td>$\${Math.floor(vc.canal).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Brokerage Comm</td><td>$\${Math.floor(vc.comm).toLocaleString()}</td></tr>
                     
-                    <tr class="fin-section-total"><td class="fin-lbl">TOTAL VOYAGE COSTS</td><td>$${Math.floor(vc.total).toLocaleString()}</td></tr>
+                    <tr class="fin-section-total"><td class="fin-lbl">TOTAL VOYAGE COSTS</td><td>$\${Math.floor(vc.total).toLocaleString()}</td></tr>
 
                     <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">3. OPERATING EXPENSES (OPEX - GÜNLÜK)</th></tr>
-                    <tr><td class="fin-lbl">Total OPEX (${currentVoyageData.totalDays.toFixed(1)} days)</td><td><strong>$${Math.floor(ox.total).toLocaleString()}</strong></td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Crewing (Personel)</td><td>$${Math.floor(ox.crew).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Insurance (H&M, P&I)</td><td>$${Math.floor(ox.insurance).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Maintenance & Stores</td><td>$${Math.floor(ox.maintenance + ox.stores).toLocaleString()}</td></tr>
-                    <tr class="fin-sub-row"><td class="fin-lbl">- Victualling & Admin</td><td>$${Math.floor(ox.victualling + ox.admin).toLocaleString()}</td></tr>
+                    <tr><td class="fin-lbl">Total OPEX (\${currentVoyageData.totalDays.toFixed(1)} days)</td><td><strong>$\${Math.floor(ox.total).toLocaleString()}</strong></td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Crewing (Personel)</td><td>$\${Math.floor(ox.crew).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Insurance (H&M, P&I)</td><td>$\${Math.floor(ox.insurance).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Maintenance & Stores</td><td>$\${Math.floor(ox.maintenance + ox.stores).toLocaleString()}</td></tr>
+                    <tr class="fin-sub-row"><td class="fin-lbl">- Victualling & Admin</td><td>$\${Math.floor(ox.victualling + ox.admin).toLocaleString()}</td></tr>
 
                     <tr><th colspan="2" style="padding-top:30px;"></th></tr>
                     <tr class="fin-grand-total">
                         <td class="fin-lbl">NET PROFIT (KÂR)</td>
-                        <td>$${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td>
+                        <td>$\${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td>
                     </tr>
                     <tr>
                         <td class="fin-lbl" style="color:#aaa;">TCE (Time Charter Equivalent)</td>
-                        <td style="color:var(--neon-cyan); font-weight:bold;">$${Math.floor(currentVoyageData.financials.tce).toLocaleString()} / day</td>
+                        <td style="color:var(--neon-cyan); font-weight:bold;">$\${Math.floor(currentVoyageData.financials.tce).toLocaleString()} / day</td>
                     </tr>
                 </table>
             \`;
@@ -929,7 +830,6 @@ const FRONTEND_HTML = `
         }
 
         function getDistance(lat1, lon1, lat2, lon2) {
-            // Client side simplistic distance for sorting
             const R = 3440;
             const dLat = (lat2 - lat1) * Math.PI/180;
             const dLon = (lon2 - lon1) * Math.PI/180;
@@ -1004,6 +904,7 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
+                // [DÜZELTME]: Frontend template literal escape
                 el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + Math.floor(v.financials.tce).toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
@@ -1018,7 +919,7 @@ const FRONTEND_HTML = `
             document.getElementById('dispTCE').innerText = "$" + Math.floor(v.financials.tce).toLocaleString();
             document.getElementById('dispProfit').innerText = "$" + Math.floor(v.financials.profit).toLocaleString();
             
-            // Simplified view for side panel
+            // [DÜZELTME]: Frontend template literal escape
             document.getElementById('financialDetails').innerHTML = 
                 '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
                 '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
@@ -1132,14 +1033,14 @@ app.post('/api/analyze', async (req, res) => {
         
         const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
         
-        if(calc.financials.profit > -100000) { // Biraz esnek filtre
+        if(calc.financials.profit > -200000) { // Biraz esnek filtre
             suggestions.push({
                 loadPort: loadCand.name, dischPort: dischName, loadGeo: loadCand.geo, dischGeo: dischGeo,
                 commodity: calc.cargo.name, qty: calc.qty,
                 ballastDist: calc.ballastDist, ladenDist: calc.ladenDist,
                 totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
                 financials: calc.financials, 
-                breakdown: calc.breakdown, // Pass detailed breakdown to frontend
+                breakdown: calc.breakdown, 
                 aiAnalysis: generateAnalysis(calc, specs)
             });
         }
@@ -1148,5 +1049,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V100 (THE CENTENNIAL) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V101 (THE UNCRASHABLE) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
