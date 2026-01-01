@@ -1,0 +1,50 @@
+[
+  {
+    "id": "REG-001",
+    "code": "SOLAS",
+    "title": "Safety of Life at Sea (SOLAS)",
+    "category": "Safety",
+    "summary": "Sets minimum safety standards in the construction, equipment and operation of merchant ships.",
+    "content": "The International Convention for the Safety of Life at Sea (SOLAS) is an international maritime treaty which sets minimum safety standards in the construction, equipment and operation of merchant ships. Key chapters include: Chapter I (General Provisions), Chapter II-1 (Construction - Structure, subdivision and stability, machinery and electrical installations), Chapter III (Life-saving appliances and arrangements), Chapter IV (Radiocommunications), Chapter V (Safety of navigation)."
+  },
+  {
+    "id": "REG-002",
+    "code": "MARPOL",
+    "title": "Prevention of Pollution from Ships (MARPOL)",
+    "category": "Environment",
+    "summary": "Main international convention covering prevention of pollution of the marine environment by ships from operational or accidental causes.",
+    "content": "The International Convention for the Prevention of Pollution from Ships (MARPOL) is the main international convention covering prevention of pollution of the marine environment by ships. Annex I: Oil, Annex II: Noxious Liquid Substances in Bulk, Annex III: Harmful Substances Carried by Sea in Packaged Form, Annex IV: Sewage from Ships, Annex V: Garbage from Ships, Annex VI: Air Pollution from Ships (SOx, NOx, EEDI, SEEMP)."
+  },
+  {
+    "id": "REG-003",
+    "code": "STCW",
+    "title": "Standards of Training, Certification and Watchkeeping (STCW)",
+    "category": "Crew & Manning",
+    "summary": "Sets qualification standards for masters, officers and watch personnel on seagoing merchant ships.",
+    "content": "The International Convention on Standards of Training, Certification and Watchkeeping for Seafarers (STCW) sets qualification standards for masters, officers and watch personnel on seagoing merchant ships. It was adopted in 1978. Key amendments include the 1995 amendments and the 2010 Manila Amendments. It mandates minimum rest hours (10 hours in any 24-hour period, 77 hours in any 7-day period)."
+  },
+  {
+    "id": "REG-004",
+    "code": "MLC 2006",
+    "title": "Maritime Labour Convention (MLC)",
+    "category": "Labor Rights",
+    "summary": "Establishing minimum working and living standards for all seafarers working on ships flying the flags of ratifying countries.",
+    "content": "The Maritime Labour Convention (MLC), 2006, establishes minimum working and living standards for all seafarers working on ships flying the flags of ratifying countries. It covers: Minimum age, Medical certification, Qualifications, Employment agreements, Hours of work and rest, Accommodation, recreational facilities, food and catering, Health protection, medical care, welfare and social security protection."
+  },
+  {
+    "id": "REG-005",
+    "code": "HAGUE-VISBY",
+    "title": "Hague-Visby Rules",
+    "category": "Cargo Liability",
+    "summary": "International rules for the international carriage of goods by sea.",
+    "content": "The Hague-Visby Rules are a set of international rules for the international carriage of goods by sea. They slightly updated the Hague Rules. They set out the duties of the carrier (seaworthiness, care for cargo) and the rights/immunities of the carrier (e.g., 'Act of God', 'Perils of the Sea'). Limits of liability are often calculated based on SDR per package or kilogram."
+  },
+  {
+    "id": "REG-006",
+    "code": "IMSBC",
+    "title": "IMSBC Code",
+    "category": "Cargo Safety",
+    "summary": "International Maritime Solid Bulk Cargoes Code.",
+    "content": "The IMSBC Code facilitates the safe stowage and shipment of solid bulk cargoes by providing information on the dangers associated with the shipment of certain types of solid bulk cargoes and instructions on the procedures to be adopted when the shipment of solid bulk cargoes is contemplated. It classifies cargoes into Group A (liquefy), Group B (chemical hazard), and Group C (neither)."
+  }
+]
