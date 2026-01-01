@@ -2,11 +2,11 @@
     --neon-cyan: #00f2ff; 
     --neon-purple: #bc13fe; 
     --neon-gold: #fbbf24; 
-    --deep-space: #050a14; 
-    --panel-bg: rgba(10, 15, 25, 0.95); 
+    --deep-space: #02040a; /* Daha derin, daha koyu siyah */
+    --panel-bg: rgba(10, 15, 30, 0.85); /* Daha şeffaf, cam hissi */
     --card-bg: rgba(255, 255, 255, 0.03); 
-    --border-color: rgba(255, 255, 255, 0.1); 
-    --text-main: #e2e8f0; 
+    --border-color: rgba(255, 255, 255, 0.08); 
+    --text-main: #f1f5f9; 
     --text-muted: #94a3b8; 
     --font-ui: 'Plus Jakarta Sans', sans-serif; 
     --font-tech: 'Orbitron', sans-serif; 
@@ -23,78 +23,145 @@ body {
     font-family: var(--font-ui); 
     overflow-x: hidden; 
     font-size: 14px; 
+    line-height: 1.5;
 }
 
-/* 2. LANDING PAGE STYLES (KURUMSAL) - ÇOK ÖNEMLİ */
+/* 2. LANDING PAGE - MODERN TASARIM */
 #landing-page { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     overflow-y: auto; background: var(--deep-space); z-index: 2000; 
-    display: block; /* Başlangıçta görünür olsun */
+    display: block;
+    /* Hareketli Arka Plan Efekti */
+    background: radial-gradient(circle at 50% 50%, #0f172a 0%, #02040a 100%);
 }
 
-/* Navbar (Landing) */
+/* Arka Plan Izgarası (Teknolojik His) */
+#landing-page::before {
+    content: "";
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Navbar (Landing) - Minimalist */
 .lp-header { 
     position: fixed; top: 0; width: 100%; padding: 15px 5%; 
     display: flex; justify-content: space-between; align-items: center; 
-    background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(10px); 
-    z-index: 2002; border-bottom: 1px solid var(--border-color); 
+    background: rgba(2, 4, 10, 0.8); backdrop-filter: blur(12px); 
+    z-index: 2002; border-bottom: 1px solid rgba(255,255,255,0.05); 
 }
-.lp-brand { font-family: var(--font-tech); font-size: 1.5rem; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 10px; }
-.lp-brand img { height: 40px; width: auto; /* Logo boyutunu sabitledik */ }
 
-.lp-menu-wrapper { display: flex; align-items: center; gap: 20px; }
-.lp-nav { display: flex; gap: 25px; align-items: center; }
-.lp-nav a { color: #ccc; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
-.lp-nav a:hover { color: var(--neon-cyan); }
+.lp-brand { 
+    font-family: var(--font-tech); font-size: 1.2rem; font-weight: 800; color: #fff; 
+    display: flex; align-items: center; gap: 12px; letter-spacing: 1px;
+}
+.lp-brand img { height: 32px; width: auto; filter: drop-shadow(0 0 5px rgba(0,242,255,0.5)); }
+
+.lp-menu-wrapper { display: flex; align-items: center; gap: 25px; }
+.lp-nav { display: flex; gap: 30px; align-items: center; }
+.lp-nav a { 
+    color: #a1a1aa; text-decoration: none; font-weight: 500; font-size: 0.9rem; 
+    transition: 0.3s; text-transform: uppercase; letter-spacing: 0.5px; 
+}
+.lp-nav a:hover { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,242,255,0.6); }
 
 .lp-btn-login { 
-    background: transparent; border: 1px solid var(--neon-cyan); 
-    padding: 8px 25px; border-radius: 4px; color: var(--neon-cyan); 
-    font-weight: bold; cursor: pointer; transition: 0.3s; font-family: var(--font-tech);
+    background: rgba(0, 242, 255, 0.1); border: 1px solid var(--neon-cyan); 
+    padding: 10px 30px; border-radius: 50px; color: var(--neon-cyan); 
+    font-weight: 700; cursor: pointer; transition: 0.3s; font-family: var(--font-tech); font-size: 0.85rem;
 }
-.lp-btn-login:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px rgba(0,242,255,0.4); }
+.lp-btn-login:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0,242,255,0.5); }
 
-.lang-dropdown { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #555; padding: 5px; border-radius: 4px; cursor: pointer; }
+.lang-dropdown { 
+    background: transparent; color: #ccc; border: none; 
+    font-size: 0.9rem; cursor: pointer; font-weight: 600; 
+}
+.lang-dropdown:focus { outline: none; color: #fff; }
 
-/* Hero Section */
+/* Hero Section - Orantılı ve Şık */
 .lp-hero { 
-    height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; 
-    background: url('https://images.unsplash.com/photo-1559827291-72ee739d0d9a?q=80&w=2874&auto=format&fit=crop'); 
-    background-size: cover; background-position: center; 
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; 
+    padding: 120px 20px 60px 20px; /* Üstten boşluk bırakarak navbara girmesini engelledik */
     position: relative;
-    padding-top: 60px;
 }
-.hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(5,10,20,0.7), rgba(5,10,20,0.9)); }
-.hero-content { position: relative; z-index: 2; max-width: 900px; padding: 20px; }
-.hero-logo { max-width: 180px; height: auto; margin-bottom: 20px; filter: drop-shadow(0 0 30px rgba(0,242,255,0.4)); }
-.lp-hero h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 15px; line-height: 1.1; text-shadow: 0 0 30px rgba(0,242,255,0.4); font-family: var(--font-tech); }
-.lp-hero p { font-size: 1.3rem; color: #cbd5e1; margin-bottom: 40px; font-weight: 300; letter-spacing: 1px; }
+
+.hero-content { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; }
+
+/* Logo Animasyonu */
+.hero-logo { 
+    width: 100px; height: auto; margin-bottom: 30px; 
+    filter: drop-shadow(0 0 40px rgba(0,242,255,0.3)); 
+    animation: float 6s ease-in-out infinite; /* Süzülme efekti */
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+
+.lp-hero h1 { 
+    font-size: clamp(2.2rem, 5vw, 4rem); /* Responsive Yazı Boyutu */
+    margin-bottom: 20px; line-height: 1.1; 
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: var(--font-tech); letter-spacing: -1px;
+}
+
+.lp-hero p { 
+    font-size: clamp(1rem, 2vw, 1.25rem); color: #94a3b8; margin-bottom: 50px; 
+    font-weight: 300; max-width: 600px; margin-left: auto; margin-right: auto;
+}
 
 .hero-actions { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.btn-primary, .btn-secondary { padding: 15px 40px; font-size: 1rem; font-weight: 700; font-family: var(--font-tech); cursor: pointer; transition: 0.3s; border-radius: 4px; border: none; }
-.btn-primary { background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan); }
-.btn-primary:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px rgba(0,242,255,0.6); }
-.btn-secondary { background: var(--neon-purple); color: #fff; }
-.btn-secondary:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(188, 19, 254, 0.4); }
+.btn-primary { 
+    background: var(--neon-cyan); border: none; color: #000; 
+    padding: 16px 40px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); 
+    cursor: pointer; transition: 0.3s; border-radius: 4px; clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+}
+.btn-primary:hover { box-shadow: 0 0 40px rgba(0,242,255,0.4); transform: scale(1.05); }
 
-/* Landing Sections */
-.lp-section { padding: 100px 10%; border-bottom: 1px solid var(--border-color); }
-.lp-section.alt-bg { background: rgba(255,255,255,0.02); }
-.sec-title { font-family: var(--font-tech); font-size: 2.2rem; margin-bottom: 40px; text-align: center; color: var(--neon-gold); letter-spacing: 2px; }
+.btn-secondary { 
+    background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; 
+    padding: 16px 40px; font-size: 1rem; font-weight: 600; font-family: var(--font-tech); 
+    cursor: pointer; transition: 0.3s; border-radius: 4px; 
+}
+.btn-secondary:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+/* Landing Sections - Ferahlatılmış */
+.lp-section { padding: 100px 5%; border-top: 1px solid rgba(255,255,255,0.03); }
+.lp-section.alt-bg { background: linear-gradient(180deg, transparent, rgba(0,242,255,0.02), transparent); }
+
+.sec-title { 
+    font-family: var(--font-tech); font-size: 2rem; margin-bottom: 50px; text-align: center; 
+    color: #fff; letter-spacing: 3px; position: relative; display: inline-block; width: 100%;
+}
+.sec-title::after {
+    content: ""; display: block; width: 60px; height: 3px; background: var(--neon-cyan); 
+    margin: 15px auto 0; box-shadow: 0 0 10px var(--neon-cyan);
+}
+
 .sec-content { max-width: 1100px; margin: 0 auto; text-align: center; color: #cbd5e1; line-height: 1.8; font-size: 1.1rem; }
 
-.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 50px; }
-.f-card { background: rgba(255,255,255,0.03); padding: 40px; border-radius: 8px; border: 1px solid var(--border-color); transition: 0.3s; }
-.f-card:hover { transform: translateY(-10px); border-color: var(--neon-cyan); }
-.f-card i { font-size: 3rem; color: var(--neon-cyan); margin-bottom: 20px; }
-.f-card h3 { margin-bottom: 15px; color: #fff; font-family: var(--font-tech); }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 60px; }
+.f-card { 
+    background: rgba(255,255,255,0.02); padding: 40px; border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.05); transition: 0.4s; 
+    display: flex; flex-direction: column; align-items: center;
+}
+.f-card:hover { transform: translateY(-10px); border-color: var(--neon-cyan); box-shadow: 0 10px 40px rgba(0,242,255,0.1); }
+.f-card i { font-size: 3rem; color: var(--neon-cyan); margin-bottom: 25px; text-shadow: 0 0 20px rgba(0,242,255,0.4); }
+.f-card h3 { margin-bottom: 15px; color: #fff; font-family: var(--font-tech); font-size: 1.2rem; }
 .f-card p { font-size: 0.95rem; color: #94a3b8; }
 
-.contact-box { display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 20px; font-size: 1.2rem; }
-.c-item { display: flex; align-items: center; gap: 15px; color: #e2e8f0; }
-.c-item i { color: var(--neon-purple); }
-.footer { text-align: center; padding-top: 60px; color: #555; font-size: 0.8rem; letter-spacing: 1px; }
+.contact-box { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 40px; }
+.c-item { display: flex; align-items: center; gap: 15px; color: #e2e8f0; font-size: 1.1rem; background: rgba(255,255,255,0.03); padding: 15px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.05); }
+.c-item i { color: var(--neon-gold); }
 
+.footer { text-align: center; padding: 60px 0 20px; color: #555; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 50px; }
 
 /* ========================================= */
 /* 3. MAIN APP STYLES (TERMİNAL)             */
@@ -104,9 +171,9 @@ body {
 /* Navbar (App) */
 #mainNav { position: fixed; top: 0; width: 100%; z-index: 1000; background: rgba(5, 10, 20, 0.98); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
 .brand { display: flex; align-items: center; cursor: pointer; gap: 10px; font-family: var(--font-tech); font-size: 1.2rem; font-weight: 900; color: #fff; }
-.brand img { height: 35px; }
+.brand img { height: 32px; }
 .nav-links { display: flex; gap: 20px; align-items: center; }
-.nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+.nav-item { color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
 .nav-item:hover, .nav-item.active { color: var(--neon-cyan); border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); }
 .lang-dropdown-small { background: #334155; color: #fff; border: none; padding: 5px; border-radius: 4px; font-size: 0.8rem; margin-left: 10px; }
 .live-ticker { font-family: var(--font-tech); font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 15px; }
@@ -117,21 +184,21 @@ body {
 .dash-grid { display: grid; grid-template-columns: 350px 1fr 400px; gap: 15px; padding: 15px; height: calc(100vh - 70px); }
 
 /* Panels */
-.panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); }
-.map-panel { padding: 0; border: 1px solid var(--neon-cyan); } /* Harita panelini vurgula */
-.p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.9rem; font-weight: bold; display:flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
-.p-body { padding: 15px; overflow-y: auto; flex: 1; }
+.panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.map-panel { padding: 0; border: 1px solid rgba(0, 242, 255, 0.3); } 
+.p-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-family: var(--font-tech); color: var(--neon-cyan); font-size: 0.85rem; font-weight: bold; display:flex; justify-content: space-between; align-items: center; letter-spacing: 1px; background: rgba(0,0,0,0.2); }
+.p-body { padding: 20px; overflow-y: auto; flex: 1; }
 
 /* Inputs & Buttons */
 .input-group { margin-bottom: 15px; }
-.input-group label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 5px; font-weight: 700; letter-spacing: 0.5px; }
-.input-group input, .input-group select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 3px; font-family: var(--font-ui); font-size: 0.9rem; transition: 0.3s; }
-.input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; }
-.btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 15px; font-size: 1rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 4px; width: 100%; margin-top: 10px; transition: 0.3s; }
-.btn-action:hover { box-shadow: 0 0 20px rgba(0,242,255,0.4); }
+.input-group label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.5px; }
+.input-group input, .input-group select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; padding: 12px; border-radius: 4px; font-family: var(--font-ui); font-size: 0.9rem; transition: 0.3s; }
+.input-group input:focus, .input-group select:focus { border-color: var(--neon-cyan); outline: none; background: rgba(0, 242, 255, 0.05); }
+.btn-action { background: linear-gradient(90deg, var(--neon-cyan), #00aaff); border: none; color: #000; padding: 15px; font-size: 0.95rem; font-weight: 800; font-family: var(--font-tech); cursor: pointer; border-radius: 4px; width: 100%; margin-top: 15px; transition: 0.3s; }
+.btn-action:hover { box-shadow: 0 0 20px rgba(0,242,255,0.4); transform: translateY(-2px); }
 
 /* Cargo List */
-.cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 8px; cursor: pointer; border-radius: 3px; border-left: 3px solid transparent; transition: 0.2s; }
+.cargo-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 15px; margin-bottom: 10px; cursor: pointer; border-radius: 4px; border-left: 3px solid transparent; transition: 0.2s; }
 .cargo-item:hover, .cargo-item.active { background: rgba(0,242,255,0.05); border-left-color: var(--neon-cyan); }
 .ci-top { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; font-size: 0.95rem; }
 .ci-bot { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; }
@@ -164,7 +231,7 @@ body {
 .chat-btn:hover { transform: scale(1.1); }
 .chat-window { display: none; position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: rgba(10, 15, 25, 0.98); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 2500; flex-direction: column; backdrop-filter: blur(15px); box-shadow: 0 0 50px rgba(0,0,0,0.7); }
 .chat-window.expanded { width: 600px; height: 700px; max-width: 90vw; max-height: 80vh; }
-.chat-header { padding: 15px; background: rgba(0,242,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); font-family: var(--font-tech); color: var(--neon-cyan); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.chat-header { padding: 15px; background: rgba(0,242,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); font-family: var(--font-tech); color: var(--neon-cyan); font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
 .chat-body { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5; }
 .chat-input-area { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
 .chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px; border-radius: 4px; outline: none; }
@@ -221,8 +288,11 @@ body {
     .panel { margin-bottom: 20px; height: auto; max-height: none; overflow: visible; }
     #map { height: 400px; }
     .view-section { padding-bottom: 100px; padding-top: 60px; }
-    .lp-header { padding: 15px; flex-wrap: wrap; }
-    .lp-nav { display: none; } /* Basit mobil menü (ileride hamburger yapılabilir) */
+    
+    .lp-header { padding: 15px; background: rgba(5,10,20,0.95); }
+    .lp-nav { 
+        display: none; /* Mobilde linkleri gizle (hamburger menü yapılabilir ama şimdilik sade tutuyoruz) */
+    }
     .lp-menu-wrapper { gap: 10px; }
     .lp-hero h1 { font-size: 2.5rem; }
     .lp-section { padding: 60px 5%; }
@@ -232,7 +302,7 @@ body {
 }
 
 @media (max-width: 480px) {
-    .lp-brand { font-size: 1.2rem; }
+    .lp-brand { font-size: 1.1rem; }
     .lp-btn-login { padding: 6px 15px; font-size: 0.8rem; }
     .hero-actions { flex-direction: column; width: 100%; }
     .btn-primary, .btn-secondary { width: 100%; margin: 0; }
