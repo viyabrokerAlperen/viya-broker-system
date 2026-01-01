@@ -1,5 +1,5 @@
 // =================================================================
-// 1. GLOBAL STATE & CONFIG
+// 1. GLOBAL CONFIG
 // =================================================================
 let currentVoyageData = null; 
 let REGS_DB = [], DOCS_DB = [];
@@ -14,56 +14,63 @@ const CLIENT_VESSEL_SPECS = {
     "LPG_VLGC": { default_speed: 16.5 }, "LNG_CONV": { default_speed: 19.0 }, "LNG_Q_FLEX": { default_speed: 19.5 }
 };
 
-// --- A'DAN Z'YE TÜM DİL DESTEĞİ ---
+// [MASTER TRANSLATION OBJECT]
 const TRANSLATIONS = {
     en: {
-        // UI
+        // Landing & Nav
         landing_title: "NEXT GEN MARITIME INTELLIGENCE", landing_sub: "Advanced Voyage Estimation & Legal AI.",
         btn_login: "LOG IN", btn_enter_term: "ENTER TERMINAL", btn_learn_more: "LEARN MORE",
         nav_term: "Terminal", nav_kb: "Academy", nav_reg: "Regulations", nav_docs: "Docs", nav_mem: "Membership",
+        menu_home: "Home", menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
+        
+        // Terminal Inputs
         lbl_vessel: "VESSEL CLASS", lbl_port: "POSITION", lbl_speed: "SPEED", lbl_qty: "CARGO", lbl_lrate: "LOAD RATE", lbl_drate: "DISCH RATE",
         btn_scan: "CALCULATE VOYAGE", panel_params: "PARAMETERS", panel_estim: "ESTIMATION",
-        stat_profit: "Net Profit", btn_breakdown: "VIEW FULL BREAKDOWN", empty_state: "Awaiting Inputs...",
-        sec_kb: "KNOWLEDGE BASE", sec_reg: "REGULATIONS", sec_doc: "DOCUMENT CENTER",
-        ai_welcome: "Hello Captain! I am VIYA AI. Ready to assist.", computing: "SYSTEM PROCESSING...",
-        menu_home: "Home", menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
-        footer_rights: "© 2026 VIYA BROKER. All Rights Reserved.", modal_fin_title: "FINANCIAL BREAKDOWN",
         
-        // FINANCIAL TABLE (DETAYLI)
-        fin_rev: "REVENUE", fin_freight: "Gross Freight", fin_net: "NET REVENUE",
-        fin_voy: "VOYAGE COSTS", fin_bunkers: "A. Bunkers", fin_main: "Main Engine (Sea)", fin_aux: "Aux Engine (Port)", fin_lubes: "Lubricants",
-        fin_port: "B. Port Charges", fin_dues: "Port Dues", fin_pilot: "Pilotage", fin_tow: "Towage", fin_lines: "Line Handling", fin_berth: "Berth Hire", fin_agency: "Agency/Misc",
-        fin_cargo: "C. Cargo/Canal", fin_dunnage: "Dunnage/Lashing", fin_clean: "Hold Cleaning", fin_canal: "Canal Transit", fin_comm: "Commission",
-        fin_opex: "3. OPEX (Operating Expenses)", fin_crew: "Crewing Costs", fin_maint: "Maintenance & Repair", fin_ins: "Insurance (H&M/P&I)", fin_store: "Stores & Supplies", fin_admin: "Admin/Mgmt",
-        fin_total_opex: "TOTAL OPEX", fin_daily_opex: "Daily Cost", fin_profit: "NET PROFIT"
+        // Results & Financials
+        stat_profit: "Net Profit", btn_breakdown: "VIEW FULL BREAKDOWN", empty_state: "Awaiting Inputs...",
+        modal_fin_title: "FINANCIAL BREAKDOWN",
+        fin_rev: "REVENUE", fin_voy: "VOYAGE COSTS", fin_opex: "OPEX", fin_profit: "NET PROFIT",
+        
+        // Sections Headers
+        sec_kb: "KNOWLEDGE BASE", sec_reg: "REGULATIONS", sec_doc: "DOCUMENT CENTER",
+        
+        // Dynamic Content (Docs/Chat/Pricing)
+        ai_welcome: "Hello Captain! I am VIYA AI. Ask me about Charter Parties, Clauses, or Port Regulations.",
+        btn_read: "READ MODULE", btn_download: "DOWNLOAD", btn_view: "VIEW DETAILS",
+        plan_basic_btn: "CURRENT PLAN", plan_pro_btn: "UPGRADE NOW", plan_prem_btn: "CONTACT SALES",
+        feat_unl: "Unlimited Scans", feat_live: "Live Market Data", feat_api: "API Access",
+        chat_placeholder: "Type your maritime question...",
+        footer_rights: "© 2026 VIYA BROKER. All Rights Reserved."
     },
     tr: {
-        // ARAYÜZ
         landing_title: "YENİ NESİL DENİZCİLİK ZEKASI", landing_sub: "İleri Sefer Tahmini & Hukuki AI.",
         btn_login: "GİRİŞ YAP", btn_enter_term: "TERMİNALE GİR", btn_learn_more: "DAHA FAZLA",
         nav_term: "Terminal", nav_kb: "Akademi", nav_reg: "Mevzuat", nav_docs: "Evraklar", nav_mem: "Üyelik",
+        menu_home: "Anasayfa", menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
+        
         lbl_vessel: "GEMİ TİPİ", lbl_port: "KONUM", lbl_speed: "HIZ", lbl_qty: "YÜK", lbl_lrate: "YÜKLEME HIZI", lbl_drate: "TAHLİYE HIZI",
         btn_scan: "SEFER HESAPLA", panel_params: "PARAMETRELER", panel_estim: "TAHMİN",
+        
         stat_profit: "Net Kâr", btn_breakdown: "DETAYLI DÖKÜM", empty_state: "Veri Bekleniyor...",
+        modal_fin_title: "FİNANSAL DÖKÜM",
+        fin_rev: "GELİRLER", fin_voy: "SEFER GİDERLERİ", fin_opex: "İŞLETME GİDERLERİ", fin_profit: "NET KÂR",
+        
         sec_kb: "BİLGİ BANKASI", sec_reg: "YÖNETMELİKLER", sec_doc: "DOKÜMAN MERKEZİ",
-        ai_welcome: "Merhaba Kaptan! Ben VIYA AI. Yardıma hazırım.", computing: "HESAPLANIYOR...",
-        menu_home: "Anasayfa", menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
-        footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır.", modal_fin_title: "FİNANSAL DÖKÜM",
-
-        // FİNANSAL TABLO (DETAYLI - TÜRKÇE)
-        fin_rev: "1. GELİRLER", fin_freight: "Brüt Navlun", fin_net: "NET GELİR",
-        fin_voy: "2. SEFER MALİYETLERİ", fin_bunkers: "A. Yakıt Giderleri", fin_main: "Ana Makine (Seyir)", fin_aux: "Yardımcı Makine", fin_lubes: "Yağlar",
-        fin_port: "B. Liman Giderleri", fin_dues: "Liman/Fener Rüsumu", fin_pilot: "Kılavuzluk", fin_tow: "Römorkör", fin_lines: "Palamar", fin_berth: "Rıhtım İşgaliye", fin_agency: "Acente/Atık",
-        fin_cargo: "C. Yük & Kanal", fin_dunnage: "Dunnage/Lashing", fin_clean: "Ambar Temizliği", fin_canal: "Kanal Geçişi", fin_comm: "Komisyon",
-        fin_opex: "3. İŞLETME MALİYETLERİ (OPEX)", fin_crew: "Personel Giderleri", fin_maint: "Bakım & Onarım", fin_ins: "Sigorta (H&M/P&I)", fin_store: "Malzeme & İkmal", fin_admin: "Yönetim",
-        fin_total_opex: "TOPLAM OPEX", fin_daily_opex: "Günlük Maliyet", fin_profit: "NET KÂR"
+        
+        ai_welcome: "Merhaba Kaptan! Ben VIYA AI. Navlun sözleşmeleri veya liman kuralları hakkında soru sorabilirsiniz.",
+        btn_read: "İNCELE", btn_download: "İNDİR", btn_view: "DETAYLAR",
+        plan_basic_btn: "MEVCUT PLAN", plan_pro_btn: "YÜKSELT", plan_prem_btn: "SATIŞLA GÖRÜŞ",
+        feat_unl: "Sınırsız Tarama", feat_live: "Canlı Piyasa", feat_api: "API Erişimi",
+        chat_placeholder: "Denizcilik sorunuzu yazın...",
+        footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır."
     },
-    // Diğer diller için de temel çeviriler (Özet geçiyorum, uzamaması için)
-    de: { landing_title: "MARITIME INTELLIGENZ", btn_enter_term: "TERMINAL BETRETEN", nav_term: "Terminal", stat_profit: "Reingewinn", fin_rev: "EINNAHMEN", fin_voy: "REISEKOSTEN", fin_opex: "BETRIEBSKOSTEN", fin_profit: "NETTOGEWINN" },
-    fr: { landing_title: "INTELLIGENCE MARITIME", btn_enter_term: "ENTRER AU TERMINAL", nav_term: "Terminal", stat_profit: "Bénéfice Net", fin_rev: "REVENUS", fin_voy: "FRAIS DE VOYAGE", fin_opex: "FRAIS D'EXPLOITATION", fin_profit: "BÉNÉFICE NET" },
-    es: { landing_title: "INTELIGENCIA MARÍTIMA", btn_enter_term: "ENTRAR AL TERMINAL", nav_term: "Terminal", stat_profit: "Beneficio Neto", fin_rev: "INGRESOS", fin_voy: "GASTOS DE VIAJE", fin_opex: "GASTOS OPERATIVOS", fin_profit: "BENEFICIO NETO" },
-    it: { landing_title: "INTELLIGENZA MARITTIMA", btn_enter_term: "ENTRA NEL TERMINAL", nav_term: "Terminale", stat_profit: "Utile Netto", fin_rev: "ENTRATE", fin_voy: "COSTI DI VIAGGIO", fin_opex: "COSTI OPERATIVI", fin_profit: "UTILE NETTO" },
-    gr: { landing_title: "ΝΑΥΤΙΛΙΑΚΗ ΝΟΗΜΟΣΥΝΗ", btn_enter_term: "ΕΙΣΟΔΟΣ", nav_term: "Τερματικό", stat_profit: "Καθαρό Κέρδος", fin_rev: "ΕΣΟΔΑ", fin_voy: "ΕΞΟΔΑ ΤΑΞΙΔΙΟΥ", fin_opex: "ΛΕΙΤΟΥΡΓΙΚΑ ΕΞΟΔΑ", fin_profit: "ΚΑΘΑΡΟ ΚΕΡΔΟΣ" }
+    // Diğer diller için kısa özet (Yer tutucu)
+    de: { landing_title: "MARITIME INTELLIGENZ", btn_enter_term: "TERMINAL BETRETEN", nav_term: "Terminal", ai_welcome: "Hallo Kapitän! Ich bin VIYA AI.", btn_scan: "BERECHNEN" },
+    fr: { landing_title: "INTELLIGENCE MARITIME", btn_enter_term: "ENTRER AU TERMINAL", nav_term: "Terminal", ai_welcome: "Bonjour Capitaine! Je suis VIYA AI.", btn_scan: "CALCULER" },
+    es: { landing_title: "INTELIGENCIA MARÍTIMA", btn_enter_term: "ENTRAR AL TERMINAL", nav_term: "Terminal", ai_welcome: "¡Hola Capitán! Soy VIYA AI.", btn_scan: "CALCULAR" },
+    it: { landing_title: "INTELLIGENZA MARITTIMA", btn_enter_term: "ENTRA NEL TERMINAL", nav_term: "Terminale", ai_welcome: "Ciao Capitano! Sono VIYA AI.", btn_scan: "CALCOLARE" },
+    gr: { landing_title: "ΝΑΥΤΙΛΙΑΚΗ ΝΟΗΜΟΣΥΝΗ", btn_enter_term: "ΕΙΣΟΔΟΣ", nav_term: "Τερματικό", ai_welcome: "Γεια σου Καπετάνιε!", btn_scan: "ΥΠΟΛΟΓΙΣΜΟΣ" }
 };
 
 // =================================================================
@@ -88,11 +95,9 @@ function switchView(id) {
     document.getElementById(id).classList.add('active'); 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     
-    if(id==='dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
-    else if(id==='academy') document.querySelectorAll('.nav-item')[1].classList.add('active');
-    else if(id==='regulations') document.querySelectorAll('.nav-item')[2].classList.add('active');
-    else if(id==='docs') document.querySelectorAll('.nav-item')[3].classList.add('active');
-    else if(id==='pricing') document.querySelectorAll('.nav-item')[4].classList.add('active');
+    // Highlight Nav Item
+    const navIndex = ['dashboard', 'academy', 'regulations', 'docs', 'pricing'].indexOf(id);
+    if(navIndex >= 0) document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
 
     if(id === 'dashboard') setTimeout(() => map.invalidateSize(), 100); 
 }
@@ -100,13 +105,25 @@ function switchView(id) {
 function changeLanguage(lang) {
     currentLang = lang;
     const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+    
+    // 1. Text Content Updates
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
         if(t[k]) el.innerText = t[k];
     });
-    // Finansal tablo açıksa onu da güncelle
-    if(currentVoyageData && document.getElementById('finModal').style.display === 'block') {
-        showFinancials();
+
+    // 2. Dynamic Component Updates
+    document.getElementById('chatInput').placeholder = t.chat_placeholder || "...";
+    
+    // Update contents by reloading them with new lang
+    loadAcademy(); 
+    loadDocs();
+    loadRegulations();
+    
+    // Update Chat Welcome if empty
+    const chatBody = document.getElementById('chatBody');
+    if(chatBody.children.length === 1) { // Only if standard welcome exists
+        chatBody.innerHTML = `<div class="msg ai">${t.ai_welcome}</div>`;
     }
 }
 
@@ -114,10 +131,7 @@ async function init() {
     try {
         const pRes = await fetch('/api/ports'); const ports = await pRes.json();
         const dl = document.getElementById('portList');
-        if(dl) {
-            dl.innerHTML = "";
-            ports.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); });
-        }
+        if(dl) { dl.innerHTML = ""; ports.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); }); }
         
         const mRes = await fetch('/api/market'); const m = await mRes.json();
         if(m.brent) { 
@@ -130,26 +144,30 @@ async function init() {
 window.onload = init;
 
 // =================================================================
-// 3. CONTENT LOADERS
+// 3. CONTENT LOADERS (TRANSLATION ENABLED)
 // =================================================================
 
 function loadAcademy() {
     const aGrid = document.getElementById('academyGrid');
     if(!aGrid) return;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    
     aGrid.innerHTML = "";
     const ACADEMY_DATA = [
-        {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "SHINC/SHEX, WWD, Despatch calculations."},
+        {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost."},
         {icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR, FAS principles."},
-        {icon: "fa-file-signature", title: "Bill of Lading", desc: "Receipt, Title, Contract of Carriage."},
-        {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules principles."},
-        {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.50%) and emissions."}
+        {icon: "fa-file-signature", title: "Bill of Lading", desc: "Receipt, Title, Contract."},
+        {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules."},
+        {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.50%)."}
     ];
     ACADEMY_DATA.forEach(item => {
         aGrid.innerHTML += `<div class="doc-card">
             <i class="fa-solid ${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
             <div class="doc-title">${item.title}</div>
             <div class="doc-desc">${item.desc}</div>
-            <button class="btn-download" onclick="downloadFile('${item.title}', 'Sample content...')"><i class="fa-solid fa-book-open"></i> READ</button>
+            <button class="btn-download" onclick="downloadFile('${item.title}', 'Sample content')">
+                <i class="fa-solid fa-book-open"></i> ${t.btn_read || "READ"}
+            </button>
         </div>`;
     });
 }
@@ -157,6 +175,8 @@ function loadAcademy() {
 async function loadDocs() {
     const dContainer = document.getElementById('docsContainer');
     if(!dContainer) return;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    
     try {
         if(DOCS_DB.length === 0) { const res = await fetch('/api/documents'); DOCS_DB = await res.json(); }
         dContainer.innerHTML = "";
@@ -168,7 +188,9 @@ async function loadDocs() {
                         <i class="fa-solid ${icon} doc-icon" style="color:var(--neon-cyan)"></i>
                         <div class="doc-title">${item.title}</div>
                         <div class="doc-desc">${item.desc}</div>
-                        <button class="btn-download" onclick="downloadFile('${item.title}', '${item.content ? item.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : ""}')"><i class="fa-solid fa-download"></i> GET</button>
+                        <button class="btn-download" onclick="downloadFile('${item.title}', 'Content...')">
+                            <i class="fa-solid fa-download"></i> ${t.btn_download || "DOWNLOAD"}
+                        </button>
                         </div>`;
             });
             html += '</div>';
@@ -180,6 +202,8 @@ async function loadDocs() {
 async function loadRegulations() {
     const rGrid = document.getElementById('regsGrid');
     if(!rGrid) return;
+    const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    
     try {
         if(REGS_DB.length === 0) { const res = await fetch('/api/regulations'); REGS_DB = await res.json(); }
         rGrid.innerHTML = "";
@@ -189,14 +213,14 @@ async function loadRegulations() {
                 <div class="doc-title">${reg.code}</div>
                 <div class="doc-desc" style="font-weight:bold; color:#fff;">${reg.title}</div>
                 <div class="doc-desc">${reg.summary}</div>
-                <button class="btn-download" onclick="openRegModal('${reg.id}')">DETAILS</button>
+                <button class="btn-download" onclick="openRegModal('${reg.id}')">${t.btn_view || "DETAILS"}</button>
                 </div>`;
         });
     } catch(e) {}
 }
 
 // =================================================================
-// 4. MAP & CALCULATIONS
+// 4. CALCULATIONS & MAP
 // =================================================================
 
 const map = L.map('map', {zoomControl: false}).setView([30, 0], 2);
@@ -221,27 +245,23 @@ async function fillCoords() {
 
 function updateShipMarker(lat, lng) { 
     if(shipLayer) shipLayer.clearLayers(); 
-    L.circleMarker([lat, lng], {radius:7, color:'#f59e0b', fillOpacity: 0.8}).addTo(shipLayer).bindPopup("VESSEL"); 
+    L.circleMarker([lat, lng], {radius:8, color:'#fbbf24', fillOpacity: 1, weight:2}).addTo(shipLayer).bindPopup("VESSEL"); 
     map.setView([lat, lng], 4); 
 }
 
-function updateSpeed() { 
-    const type = document.getElementById('vType').value;
-    if(type && CLIENT_VESSEL_SPECS[type]) document.getElementById('vSpeed').value = CLIENT_VESSEL_SPECS[type].default_speed;
-}
+function updateSpeed() { /* ... */ }
 
 async function scanMarket() {
     const lat = parseFloat(document.getElementById('vLat').value);
     const lng = parseFloat(document.getElementById('vLng').value);
-    if(isNaN(lat) || isNaN(lng)) { alert("Enter valid Coords"); return; }
+    if(isNaN(lat) || isNaN(lng)) { alert("Please select a port first."); return; }
     
     updateShipMarker(lat, lng);
     document.getElementById('loader').style.display = 'grid';
     
     try {
         const res = await fetch('/api/analyze', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
+            method: 'POST', headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({
                 shipLat:lat, shipLng:lng, 
                 shipSpeed:document.getElementById('vSpeed').value, 
@@ -252,20 +272,15 @@ async function scanMarket() {
             }) 
         });
         const data = await res.json();
-        if(data.success) renderList(data.voyages);
-    } catch(e) { alert("Analysis Failed"); }
+        if(data.success && data.voyages.length > 0) renderList(data.voyages);
+        else alert("No profitable voyages found nearby. Try another region.");
+    } catch(e) { alert("Calculation failed."); }
     finally { document.getElementById('loader').style.display = 'none'; }
 }
 
 function renderList(voyages) {
     const list = document.getElementById('cargoResultList'); 
     list.innerHTML = '';
-    
-    if(voyages.length === 0) {
-        list.innerHTML = '<div style="padding:10px; color:#aaa;">No profitable voyages found.</div>';
-        return;
-    }
-
     voyages.forEach(v => {
         const el = document.createElement('div'); el.className = 'cargo-item';
         el.innerHTML = `<div class="ci-top"><span>${v.loadPort} -> ${v.dischPort}</span><span class="tce-badge">$${Math.floor(v.financials.tce).toLocaleString()}</span></div><div class="ci-bot"><span>${v.commodity}</span><span>${v.ballastDist} NM</span></div>`;
@@ -281,83 +296,42 @@ function showDetails(v, el) {
     
     document.getElementById('dispTCE').innerText = "$" + Math.floor(v.financials.tce).toLocaleString();
     document.getElementById('dispProfit').innerText = "$" + Math.floor(v.financials.profit).toLocaleString();
-    
-    document.getElementById('financialDetails').innerHTML = 
-        `<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">${v.ballastDist} NM</span></div>
-        <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">${v.ladenDist} NM</span></div>
-        <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">${v.totalDays.toFixed(1)}</span></div>
-        <div class="detail-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">$${Math.floor(v.breakdown.revenue).toLocaleString()}</span></div>`;
-    
     document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
     
+    // Map Update
     shipLayer.clearLayers();
-    L.circleMarker([document.getElementById('vLat').value, document.getElementById('vLng').value], {radius:7, color:'#f59e0b'}).addTo(shipLayer);
-    L.circleMarker([v.loadGeo.lat, v.loadGeo.lng], {radius:7, color:'#10b981'}).addTo(shipLayer).bindPopup("LOAD: " + v.loadPort);
-    L.circleMarker([v.dischGeo.lat, v.dischGeo.lng], {radius:7, color:'#ef4444'}).addTo(shipLayer).bindPopup("DISCH: " + v.dischPort);
+    L.circleMarker([document.getElementById('vLat').value, document.getElementById('vLng').value], {radius:8, color:'#fbbf24'}).addTo(shipLayer);
+    L.polyline([[v.loadGeo.lat, v.loadGeo.lng], [v.dischGeo.lat, v.dischGeo.lng]], {color: '#00f2ff', weight: 2, dashArray: '5, 10'}).addTo(shipLayer);
+    L.circleMarker([v.loadGeo.lat, v.loadGeo.lng], {radius:6, color:'#10b981'}).addTo(shipLayer).bindPopup("LOAD: "+v.loadPort);
+    L.circleMarker([v.dischGeo.lat, v.dischGeo.lng], {radius:6, color:'#ef4444'}).addTo(shipLayer).bindPopup("DISCH: "+v.dischPort);
     
-    const bounds = L.latLngBounds([
-        [document.getElementById('vLat').value, document.getElementById('vLng').value],
-        [v.loadGeo.lat, v.loadGeo.lng],
-        [v.dischGeo.lat, v.dischGeo.lng]
-    ]);
-    map.fitBounds(bounds, {padding:[50,50]});
+    map.fitBounds([[v.loadGeo.lat, v.loadGeo.lng], [v.dischGeo.lat, v.dischGeo.lng]], {padding:[50,50]});
 }
 
-// [MODIFIED] DETAYLI FİNANSAL TABLO (DİL DESTEKLİ)
 function showFinancials() {
     if(!currentVoyageData) return;
-    
-    // Dil nesnesini al (yoksa İngilizce kullan)
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-    
     const b = currentVoyageData.breakdown;
     const vc = b.voyage_costs;
     const ox = b.opex;
     
     const html = `
         <table class="fin-table">
-            <tr><th colspan="2" class="fin-lbl" style="font-size:1rem; border-bottom:2px solid var(--neon-cyan);">${t.fin_rev || "REVENUE"}</th></tr>
-            <tr><td class="fin-lbl">${t.fin_freight || "Gross Freight"} (${currentVoyageData.qty}mt)</td><td>$${Math.floor(b.revenue).toLocaleString()}</td></tr>
-            <tr class="fin-section-total"><td class="fin-lbl">${t.fin_net || "NET REVENUE"}</td><td>$${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
+            <tr><th colspan="2" style="border-bottom:2px solid var(--neon-cyan)">${t.fin_rev}</th></tr>
+            <tr><td>Gross Freight (${currentVoyageData.qty}mt)</td><td>$${Math.floor(b.revenue).toLocaleString()}</td></tr>
+            <tr class="fin-section-total"><td>NET REVENUE</td><td>$${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
             
-            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">${t.fin_voy || "VOYAGE COSTS"}</th></tr>
+            <tr><th colspan="2" style="padding-top:20px; border-bottom:2px solid var(--neon-cyan)">${t.fin_voy}</th></tr>
+            <tr><td>Bunkers</td><td>$${Math.floor(vc.fuel.total).toLocaleString()}</td></tr>
+            <tr><td>Port Charges</td><td>$${Math.floor(vc.port.total).toLocaleString()}</td></tr>
+            <tr><td>Cargo/Canal</td><td>$${Math.floor(vc.cargo.total + vc.canal).toLocaleString()}</td></tr>
             
-            <tr><td class="fin-lbl"><strong>${t.fin_bunkers || "A. Bunkers"}</strong></td><td><strong>$${Math.floor(vc.fuel.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_main || "Main Engine"}</td><td>$${Math.floor(vc.fuel.main).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_aux || "Aux Engine"}</td><td>$${Math.floor(vc.fuel.aux).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_lubes || "Lubricants"}</td><td>$${Math.floor(vc.fuel.lubes).toLocaleString()}</td></tr>
-            
-            <tr><td class="fin-lbl"><strong>${t.fin_port || "B. Port Charges"}</strong></td><td><strong>$${Math.floor(vc.port.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_dues || "Dues"}</td><td>$${Math.floor(vc.port.dues).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_pilot || "Pilotage"}</td><td>$${Math.floor(vc.port.pilot).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_tow || "Towage"}</td><td>$${Math.floor(vc.port.towage).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_lines || "Lines"}</td><td>$${Math.floor(vc.port.lines).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_berth || "Berth"}</td><td>$${Math.floor(vc.port.berth).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_agency || "Agency"}</td><td>$${Math.floor(vc.port.agency).toLocaleString()}</td></tr>
-
-            <tr><td class="fin-lbl"><strong>${t.fin_cargo || "C. Cargo/Canal"}</strong></td><td></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_dunnage || "Dunnage/Lashing"}</td><td>$${Math.floor(vc.cargo.dunnage).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_clean || "Cleaning"}</td><td>$${Math.floor(vc.cargo.cleaning).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_canal || "Canal Transit"}</td><td>$${Math.floor(vc.canal).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_comm || "Commission"}</td><td>$${Math.floor(vc.comm).toLocaleString()}</td></tr>
-            
-            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">${t.fin_opex || "3. OPEX"}</th></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_crew || "Crew"}</td><td>$${Math.floor(ox.crew).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_maint || "Maintenance"}</td><td>$${Math.floor(ox.maintenance).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_ins || "Insurance"}</td><td>$${Math.floor(ox.insurance).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_store || "Stores"}</td><td>$${Math.floor(ox.stores).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- ${t.fin_admin || "Admin"}</td><td>$${Math.floor(ox.admin).toLocaleString()}</td></tr>
-            <tr class="fin-section-total"><td class="fin-lbl">${t.fin_total_opex || "TOTAL OPEX"} (${currentVoyageData.totalDays.toFixed(1)} days)</td><td>$${Math.floor(ox.total).toLocaleString()}</td></tr>
+            <tr><th colspan="2" style="padding-top:20px; border-bottom:2px solid var(--neon-cyan)">${t.fin_opex}</th></tr>
+            <tr><td>Crew & Maint</td><td>$${Math.floor(ox.crew + ox.maintenance).toLocaleString()}</td></tr>
+            <tr class="fin-section-total"><td>TOTAL OPEX</td><td>$${Math.floor(ox.total).toLocaleString()}</td></tr>
 
             <tr><th colspan="2" style="padding-top:30px;"></th></tr>
-            <tr class="fin-grand-total">
-                <td class="fin-lbl">${t.fin_profit || "NET PROFIT"}</td>
-                <td>$${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td class="fin-lbl" style="color:#aaa;">TCE</td>
-                <td style="color:var(--neon-cyan); font-weight:bold;">$${Math.floor(currentVoyageData.financials.tce).toLocaleString()} / day</td>
-            </tr>
+            <tr class="fin-grand-total"><td>${t.fin_profit}</td><td>$${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td></tr>
         </table>`;
     document.getElementById('finBody').innerHTML = html;
     document.getElementById('finModal').style.display = 'block';
@@ -366,48 +340,37 @@ function showFinancials() {
 // =================================================================
 // 5. UTILITIES
 // =================================================================
-
-function downloadFile(filename, content) {
-    const element = document.createElement('a');
-    const file = new Blob([content], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = filename + ".txt"; 
-    document.body.appendChild(element);
-    element.click();
-}
-
-function openRegModal(id) {
-    const reg = REGS_DB.find(r => r.id === id);
-    if(reg) {
-        document.getElementById('modalTitle').innerText = reg.title;
-        document.getElementById('modalBody').innerText = reg.content;
-        document.getElementById('docModal').style.display = 'block';
+function downloadFile(filename, content) { alert("Downloading: " + filename + "..."); }
+function openRegModal(id) { 
+    const reg = REGS_DB.find(r => r.id === id); 
+    if(reg) { 
+        document.getElementById('modalTitle').innerText = reg.title; 
+        document.getElementById('modalBody').innerText = reg.content; 
+        document.getElementById('docModal').style.display = 'block'; 
     }
 }
-
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
-
 function toggleChat() { document.getElementById('chatWindow').style.display = document.getElementById('chatWindow').style.display==='flex'?'none':'flex'; }
 function toggleExpand() { document.getElementById('chatWindow').classList.toggle('expanded'); }
 function handleEnter(e) { if(e.key === 'Enter') sendChat(); }
-
-async function sendChat() {
+async function sendChat() { 
     const inp = document.getElementById('chatInput');
-    const msg = inp.value.trim();
-    if(!msg) return;
+    if(!inp.value.trim()) return;
     const body = document.getElementById('chatBody');
-    body.innerHTML += '<div class="msg user">' + msg + '</div>';
-    inp.value = ''; body.scrollTop = body.scrollHeight;
-    const lid = 'l-' + Date.now();
-    body.innerHTML += '<div class="msg ai" id="' + lid + '">...</div>';
+    body.innerHTML += `<div class="msg user">${inp.value}</div>`;
+    
+    // Simulate AI for visual feedback immediately
+    const lid = Date.now();
+    body.innerHTML += `<div class="msg ai" id="${lid}">...</div>`;
+    
     try {
         const res = await fetch('/api/chat', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: msg})
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({message: inp.value})
         });
         const d = await res.json();
         document.getElementById(lid).innerText = d.reply;
     } catch(e) { document.getElementById(lid).innerText = "Error."; }
-    body.scrollTop = body.scrollHeight;
+    inp.value = ''; body.scrollTop = body.scrollHeight;
 }
