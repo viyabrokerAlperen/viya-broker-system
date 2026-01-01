@@ -24,30 +24,30 @@
     </div>
 
     <div id="landing-page">
-        <header class="lp-header">
-            <div class="lp-brand">
-                <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA Logo">
-                VIYA BROKER
-            </div>
-            <div class="lp-menu-wrapper">
-                <nav class="lp-nav">
-                    <a href="#hero" data-i18n="menu_home">Home</a>
-                    <a href="#about" data-i18n="menu_about">About Us</a>
-                    <a href="#mission" data-i18n="menu_mission">Mission</a>
-                    <a href="#contact" data-i18n="menu_contact">Contact</a>
-                </nav>
-                <select id="langSelectLanding" onchange="changeLanguage(this.value)" class="lang-dropdown">
-                    <option value="en">🇬🇧 English</option>
-                    <option value="tr">🇹🇷 Türkçe</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="it">🇮🇹 Italiano</option>
-                    <option value="gr">🇬🇷 Ελληνικά</option>
-                </select>
-                <button class="lp-btn-login" onclick="enterSystem()" data-i18n="btn_login">LOG IN</button>
-            </div>
-        </header>
+       <header class="lp-header">
+    <div class="lp-brand">
+        <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="Logo">
+        VIYA BROKER
+    </div>
+    <div class="lp-menu-wrapper">
+        <nav class="lp-nav">
+            <a href="#hero">Home</a>
+            <a href="#about">About Us</a>
+            <a href="#mission">Mission</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <select id="langSelectLanding" onchange="changeLanguage(this.value)" class="lang-dropdown">
+            <option value="en">🇬🇧</option>
+            <option value="tr">🇹🇷</option>
+            <option value="de">🇩🇪</option>
+            <option value="fr">🇫🇷</option>
+            <option value="es">🇪🇸</option>
+            <option value="it">🇮🇹</option>
+            <option value="gr">🇬🇷</option>
+        </select>
+        <button class="lp-btn-login" onclick="enterSystem()">LOG IN</button>
+    </div>
+</header>
 
         <section id="hero" class="lp-hero">
             <div class="hero-overlay"></div>
