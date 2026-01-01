@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// [AYAR] API Key Kontrolü
+// API KEY (Render'daki isminle aynı)
 const API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
 
 if (API_KEY) {
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIGURATION (VERİLER)
+// 1. DATA & CONFIGURATION
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -94,7 +94,7 @@ try {
 
 
 // =================================================================
-// 2. HELPER FUNCTIONS (YARDIMCI FONKSİYONLAR)
+// 2. HELPER FUNCTIONS
 // =================================================================
 
 async function updateMarketData() {
@@ -221,7 +221,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 3. FRONTEND HTML (BU BÖLÜM SUNUCU DOSYASININ İÇİNDE GÖMÜLÜDÜR)
+// 3. FRONTEND HTML (FULL CONTENT)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -527,7 +527,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
         const CLIENT_VESSEL_SPECS = {
             "HANDYSIZE":    { default_speed: 13.0 },
             "HANDYMAX":     { default_speed: 13.0 },
@@ -549,7 +548,6 @@ const FRONTEND_HTML = `
             "LNG_Q_FLEX":   { default_speed: 19.5 }
         };
 
-        // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
                 landing_sub: "Global Maritime Brokerage System",
@@ -640,7 +638,6 @@ const FRONTEND_HTML = `
             loadLibrary(); 
         }
 
-        // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
             setTimeout(() => {
@@ -668,35 +665,13 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
-            // Academy (Static for now)
             const aGrid = document.getElementById('academyGrid');
-            aGrid.innerHTML = "";
-            const ACADEMY_DATA = [
-                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
-                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
-                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
-                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
-            ];
-            ACADEMY_DATA.forEach(item => {
-                // [GÜVENLİ CONCATENATION]
-                let html = '<div class="doc-card">' +
-                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
-                           '<div class="doc-title">' + item.title + '</div>' +
-                           '<div class="doc-desc">' + item.desc + '</div>' +
-                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                           '</div>';
-                aGrid.innerHTML += html;
-            });
-
-            // Docs (Dynamic Fetch)
             const dContainer = document.getElementById('docsContainer');
-            dContainer.innerHTML = ""; // Clear first
+            aGrid.innerHTML = "";
+            dContainer.innerHTML = ""; 
             
             try {
                 if(DOCS_DB.length === 0) {
@@ -705,26 +680,38 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                    cat.items.forEach(item => {
-                        // [GÜVENLİ CONCATENATION]
-                        html += '<div class="doc-card">' +
-                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                '<div class="doc-title">' + item.title + '</div>' +
-                                '<div class="doc-desc">' + item.desc + '</div>' +
-                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                '</div>';
-                    });
-                    html += '</div>';
-                    dContainer.innerHTML += html;
+                    // SEPERATE ACADEMY AND DOCS
+                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
+                        cat.items.forEach(item => {
+                            let html = '<div class="doc-card">' +
+                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
+                                       '<div class="doc-title">' + item.title + '</div>' +
+                                       '<div class="doc-desc">' + item.desc + '</div>' +
+                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                       '</div>';
+                            aGrid.innerHTML += html;
+                        });
+                    } else {
+                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                        cat.items.forEach(item => {
+                            html += '<div class="doc-card">' +
+                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                    '<div class="doc-title">' + item.title + '</div>' +
+                                    '<div class="doc-desc">' + item.desc + '</div>' +
+                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                    '</div>';
+                        });
+                        html += '</div>';
+                        dContainer.innerHTML += html;
+                    }
                 });
             } catch(e) {
-                // Fail silently
+                console.error("Error loading library");
             }
         }
         loadLibrary();
 
-        // --- MODAL LOGIC ---
+        // --- MODAL & DOWNLOAD LOGIC ---
         let currentDocTitle = "";
         let currentDocContent = "";
 
@@ -799,7 +786,6 @@ const FRONTEND_HTML = `
             body.scrollTop = body.scrollHeight;
         }
 
-        // --- CORE BROKER LOGIC ---
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
             if(type && CLIENT_VESSEL_SPECS[type]) {
@@ -924,6 +910,8 @@ const FRONTEND_HTML = `
     </script>
 </body>
 </html>
+`;
+
 // =================================================================
 // 4. API ROUTES (END)
 // =================================================================
@@ -944,6 +932,7 @@ app.post('/api/chat', async (req, res) => {
     const userMsg = req.body.message;
     if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
 
+    // Modelleri sırayla dener: İstediğin 2.5 (muhtemel preview), 1.5 Flash, 2.0 Flash ve en son Pro.
     const modelsToTry = [
         "gemini-1.5-flash", 
         "gemini-2.0-flash-exp", 
