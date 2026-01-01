@@ -73,8 +73,10 @@ const CARGOES = {
     ]
 };
 
+// Market verileri (Fallback için varsayılan değerler)
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
+// Liman verilerini yükle
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -85,6 +87,7 @@ try {
     console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
 } catch (e) { console.error("❌ ERROR: ports.json missing."); }
 
+// Dökümanları yükle
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
@@ -92,8 +95,9 @@ try {
     console.log(`✅ DOCUMENTS: Library loaded successfully.`);
 } catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
 
+
 // =================================================================
-// 2. HELPER FUNCTIONS
+// 2. HELPER FUNCTIONS (BACKEND LOGIC)
 // =================================================================
 
 async function updateMarketData() {
@@ -322,7 +326,8 @@ const FRONTEND_HTML = `
         /* CHAT WIDGET STYLES */
         .chat-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--neon-cyan); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1500; box-shadow: 0 0 20px rgba(0,242,255,0.4); transition: 0.3s; font-size: 24px; color: #000; }
         .chat-btn:hover { transform: scale(1.1); }
-        .chat-window { display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; background: rgba(10, 15, 25, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 1500; flex-direction: column; backdrop-filter: blur(10px); }
+        .chat-window { display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; background: rgba(10, 15, 25, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; z-index: 1500; flex-direction: column; backdrop-filter: blur(10px); transition: 0.3s ease-in-out; }
+        .chat-window.expanded { width: 600px; height: 700px; max-width: 90vw; max-height: 80vh; }
         .chat-header { padding: 15px; background: rgba(0,242,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); font-family: var(--font-tech); color: var(--neon-cyan); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; }
         .chat-input-area { padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
@@ -357,7 +362,10 @@ const FRONTEND_HTML = `
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
             <span><i class="fa-solid fa-brain" style="margin-right:8px;"></i>VIYA AI</span>
-            <span style="cursor:pointer;" onclick="toggleChat()">&times;</span>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span style="cursor:pointer;" onclick="toggleExpand()"><i class="fa-solid fa-expand"></i></span>
+                <span style="cursor:pointer;" onclick="toggleChat()">&times;</span>
+            </div>
         </div>
         <div class="chat-body" id="chatBody">
             <div class="msg ai">Hello Captain! I am VIYA AI. I can assist you with Charter Parties, Market Rates, or Operational questions.</div>
@@ -522,7 +530,6 @@ const FRONTEND_HTML = `
     <datalist id="portList"></datalist>
 
     <script>
-        // --- CLIENT-SIDE VESSEL SPECS (Same as Backend) ---
         const CLIENT_VESSEL_SPECS = {
             "HANDYSIZE":    { default_speed: 13.0 },
             "HANDYMAX":     { default_speed: 13.0 },
@@ -544,7 +551,6 @@ const FRONTEND_HTML = `
             "LNG_Q_FLEX":   { default_speed: 19.5 }
         };
 
-        // --- TRANSLATION ENGINE ---
         const TRANSLATIONS = {
             en: {
                 landing_sub: "Global Maritime Brokerage System",
@@ -635,7 +641,6 @@ const FRONTEND_HTML = `
             loadLibrary(); 
         }
 
-        // --- UI LOGIC ---
         function enterSystem() {
             document.getElementById('landing-view').style.opacity = '0';
             setTimeout(() => {
@@ -663,35 +668,13 @@ const FRONTEND_HTML = `
             if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
-        // --- CONTENT GENERATION WITH REAL DATA (FETCHED) ---
         let DOCS_DB = [];
 
         async function loadLibrary() {
-            // Academy (Static for now)
             const aGrid = document.getElementById('academyGrid');
-            aGrid.innerHTML = "";
-            const ACADEMY_DATA = [
-                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
-                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
-                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
-                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
-                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
-                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
-            ];
-            ACADEMY_DATA.forEach(item => {
-                // [GÜVENLİ CONCATENATION]
-                let html = '<div class="doc-card">' +
-                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
-                           '<div class="doc-title">' + item.title + '</div>' +
-                           '<div class="doc-desc">' + item.desc + '</div>' +
-                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                           '</div>';
-                aGrid.innerHTML += html;
-            });
-
-            // Docs (Dynamic Fetch)
             const dContainer = document.getElementById('docsContainer');
-            dContainer.innerHTML = ""; // Clear first
+            aGrid.innerHTML = "";
+            dContainer.innerHTML = ""; 
             
             try {
                 if(DOCS_DB.length === 0) {
@@ -700,26 +683,38 @@ const FRONTEND_HTML = `
                 }
 
                 DOCS_DB.forEach(cat => {
-                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                    cat.items.forEach(item => {
-                        // [GÜVENLİ CONCATENATION]
-                        html += '<div class="doc-card">' +
-                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                '<div class="doc-title">' + item.title + '</div>' +
-                                '<div class="doc-desc">' + item.desc + '</div>' +
-                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                '</div>';
-                    });
-                    html += '</div>';
-                    dContainer.innerHTML += html;
+                    // SEPERATE ACADEMY AND DOCS
+                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
+                        cat.items.forEach(item => {
+                            let html = '<div class="doc-card">' +
+                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
+                                       '<div class="doc-title">' + item.title + '</div>' +
+                                       '<div class="doc-desc">' + item.desc + '</div>' +
+                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                       '</div>';
+                            aGrid.innerHTML += html;
+                        });
+                    } else {
+                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                        cat.items.forEach(item => {
+                            html += '<div class="doc-card">' +
+                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                    '<div class="doc-title">' + item.title + '</div>' +
+                                    '<div class="doc-desc">' + item.desc + '</div>' +
+                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                    '</div>';
+                        });
+                        html += '</div>';
+                        dContainer.innerHTML += html;
+                    }
                 });
             } catch(e) {
-                // Fail silently
+                console.error("Error loading library");
             }
         }
         loadLibrary();
 
-        // --- MODAL LOGIC ---
+        // --- MODAL & DOWNLOAD LOGIC ---
         let currentDocTitle = "";
         let currentDocContent = "";
 
@@ -759,6 +754,10 @@ const FRONTEND_HTML = `
             w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
         }
 
+        function toggleExpand() {
+            document.getElementById('chatWindow').classList.toggle('expanded');
+        }
+
         function handleEnter(e) {
             if (e.key === 'Enter') sendChat();
         }
@@ -790,7 +789,6 @@ const FRONTEND_HTML = `
             body.scrollTop = body.scrollHeight;
         }
 
-        // --- CORE BROKER LOGIC ---
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
             if(type && CLIENT_VESSEL_SPECS[type]) {
@@ -807,6 +805,7 @@ const FRONTEND_HTML = `
             return Math.round(R * c * 1.15); 
         }
 
+        // --- RESTORED: UPDATE MARKET DATA ON INIT ---
         async function init() {
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
@@ -915,107 +914,3 @@ const FRONTEND_HTML = `
     </script>
 </body>
 </html>
-`;
-
-// =================================================================
-// 4. API ROUTES (END)
-// =================================================================
-
-app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
-
-app.get('/api/market', async (req, res) => { 
-    await updateMarketData(); 
-    res.json(MARKET); 
-});
-
-app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; res.json(p || {}); });
-
-app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
-
-app.post('/api/chat', async (req, res) => {
-    const userMsg = req.body.message;
-    if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
-
-    // Modelleri sırayla dener: İstediğin 2.5 (muhtemel preview), 1.5 Flash, 2.0 Flash ve en son Pro.
-    const modelsToTry = [
-        "gemini-1.5-flash",        // Senin istediğin (Google Studio'daki güncel Flash)
-        "gemini-2.0-flash-exp",    // Yeni deneysel 2.0 Flash
-        "gemini-pro"               // En eski ve sağlam kale
-    ];
-
-    for (const model of modelsToTry) {
-        try {
-            console.log(`Trying AI Model: ${model}...`);
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `You are VIYA AI, an elite Maritime Expert. You possess the combined knowledge of a Master Mariner (Captain), a Shipbroker, a Maritime Lawyer, and a Shipowner. Your tone is professional, authoritative yet polite, and highly knowledgeable. 
-
-                            IMPORTANT INSTRUCTIONS:
-                            1. LANGUAGE: If the user speaks Turkish, YOU MUST ANSWER IN TURKISH. If they speak English, answer in English. Adapt to the user's language instantly.
-                            2. PERSONA: Act like a seasoned Captain ("Efendi Kaptan"). Be helpful but firm on regulations.
-                            3. CONTEXT: Current Market Data: Brent Oil $${MARKET.brent}, VLSFO $${MARKET.vlsfo}, MGO $${MARKET.mgo}. Use this if relevant.
-
-                            User asks: "${userMsg}"`
-                        }]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-
-            // Eğer hata yoksa ve cevap varsa döndür
-            if (!data.error && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return res.json({ reply: data.candidates[0].content.parts[0].text });
-            } else if (data.error) {
-                console.warn(`Model ${model} failed:`, data.error.message);
-            }
-        } catch (e) {
-            console.warn(`Network error with model ${model}`);
-        }
-    }
-
-    // Hiçbiri çalışmazsa
-    res.json({ reply: "AI Communication Error: All models failed. Please check Google API status." });
-});
-
-app.post('/api/analyze', async (req, res) => {
-    await updateMarketData();
-    const { shipLat, shipLng, shipSpeed, vType, cargoQty, loadRate, dischRate } = req.body;
-    
-    if(!shipLat || !shipLng) return res.json({success: false, error: "Missing coordinates"});
-    const specs = VESSEL_SPECS[vType] || VESSEL_SPECS["SUPRAMAX"]; // Fallback
-    const suggestions = [];
-    const allPorts = Object.keys(PORT_DB);
-    const sortedPorts = allPorts.map(pName => { return { name: pName, geo: PORT_DB[pName], dist: getDistance(shipLat, shipLng, PORT_DB[pName].lat, PORT_DB[pName].lng) }; }).sort((a,b) => a.dist - b.dist);
-    const candidates = sortedPorts.slice(0, 30);
-    for(let i=0; i<5; i++) {
-        const loadCand = candidates[Math.floor(Math.random() * candidates.length)];
-        const dischName = allPorts[Math.floor(Math.random() * allPorts.length)];
-        const dischGeo = PORT_DB[dischName];
-        if(loadCand.name === dischName) continue;
-        
-        const calc = calculateFullVoyage(shipLat, shipLng, loadCand.name, loadCand.geo, dischName, dischGeo, specs, MARKET, shipSpeed, cargoQty, loadRate, dischRate);
-        
-        if(calc.financials.profit > -20000) {
-            suggestions.push({
-                loadPort: loadCand.name, dischPort: dischName, loadGeo: loadCand.geo, dischGeo: dischGeo,
-                commodity: calc.cargo.name, qty: calc.qty,
-                ballastDist: calc.ballastDist, ballastDays: calc.ballastDays,
-                ladenDist: calc.ladenDist, ladenDays: calc.ladenDays,
-                totalDays: calc.totalDays, usedSpeed: calc.usedSpeed,
-                financials: calc.financials, 
-                aiAnalysis: generateAnalysis(calc, specs) // Pass specs for OPEX comparison
-            });
-        }
-    }
-    suggestions.sort((a,b) => b.financials.tce - a.financials.tce);
-    res.json({success: true, voyages: suggestions});
-});
-
-app.listen(port, () => console.log(`VIYA BROKER V91 (THE UNBROKEN) running on port ${port}`));
-// Serve the frontend for root requests
-app.get('/', (req, res) => res.send(FRONTEND_HTML));
