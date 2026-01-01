@@ -1,6 +1,0 @@
-[
-  { "id": "REG-01", "code": "SOLAS", "title": "Safety of Life at Sea", "summary": "Minimum safety standards for construction, equipment and operation.", "content": "SOLAS covers Chap V (Navigation), Chap IX (ISM Code), Chap XI-2 (ISPS Code)." },
-  { "id": "REG-02", "code": "MARPOL", "title": "Prevention of Pollution", "summary": "Preventing pollution by oil, sewage, garbage and air emissions.", "content": "Annex I (Oil), Annex IV (Sewage), Annex V (Garbage), Annex VI (Air Pollution/Sulphur Cap 0.5%)." },
-  { "id": "REG-03", "code": "STCW", "title": "Training Standards", "summary": "Qualification standards for masters, officers and watch personnel.", "content": "Mandates rest hours: Min 10 hours in 24h period; 77 hours in 7-day period." },
-  { "id": "REG-04", "code": "MLC 2006", "title": "Maritime Labour Convention", "summary": "Seafarers' Bill of Rights.", "content": "Covers employment agreements, wages, hours of work/rest, and medical care." }
-]
