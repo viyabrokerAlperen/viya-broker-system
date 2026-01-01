@@ -1,3 +1,5 @@
+// utils/calculations.js
+
 export const VESSEL_SPECS = {
     "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex_details: { crew: 2200, victualling: 250, maintenance: 600, insurance: 350, stores: 250, admin: 400 } },
     "HANDYMAX":     { type: "BULK", dwt: 45000, default_speed: 13.0, sea_cons: 24, port_cons: 3.0, opex_details: { crew: 2300, victualling: 260, maintenance: 650, insurance: 400, stores: 280, admin: 450 } },
@@ -21,26 +23,13 @@ export const VESSEL_SPECS = {
 
 export const CARGOES = {
     "BULK": [
-        {name: "Grain", rate: 32, handling: 2.5, stowing: 1.0},
-        {name: "Coal", rate: 24, handling: 2.0, stowing: 0.8},
-        {name: "Iron Ore", rate: 19, handling: 1.8, stowing: 0.5},
-        {name: "Steel Products", rate: 45, handling: 4.5, stowing: 2.5},
-        {name: "Fertilizer", rate: 29, handling: 3.0, stowing: 1.2},
-        {name: "Scrap", rate: 35, handling: 3.5, stowing: 1.5},
-        {name: "Bauxite", rate: 21, handling: 1.9, stowing: 0.6}
+        {name: "Grain", rate: 32, stowing: 1.0}, {name: "Coal", rate: 24, stowing: 0.8}, 
+        {name: "Iron Ore", rate: 19, stowing: 0.5}, {name: "Fertilizer", rate: 29, stowing: 1.2}
     ],
     "TANKER": [
-        {name: "Crude Oil", rate: 28, handling: 0.8, stowing: 0},
-        {name: "Diesel/Gasoil", rate: 35, handling: 1.0, stowing: 0},
-        {name: "Naphtha", rate: 31, handling: 1.2, stowing: 0},
-        {name: "Jet Fuel", rate: 38, handling: 1.1, stowing: 0},
-        {name: "Vegoil", rate: 42, handling: 1.5, stowing: 0}
+        {name: "Crude Oil", rate: 28}, {name: "Diesel", rate: 35}, {name: "Jet Fuel", rate: 38}
     ],
-    "GAS": [
-        {name: "LNG", rate: 65, handling: 2.0, stowing: 0},
-        {name: "LPG (Propane)", rate: 55, handling: 2.2, stowing: 0},
-        {name: "Ammonia", rate: 58, handling: 2.5, stowing: 0}
-    ]
+    "GAS": [{name: "LNG", rate: 65}, {name: "LPG", rate: 55}]
 };
 
 export function getDistance(lat1, lon1, lat2, lon2) {
@@ -53,78 +42,106 @@ export function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
-    const speed = shipSpeed || specs.default_speed;
+    // 1. TEMEL DEĞİŞKENLER
+    const speed = shipSpeed || 13.5;
     const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
+    const totalDist = ballastDist + ladenDist;
     
+    // Yük Seçimi
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
     let qty = userQty || Math.floor(specs.dwt * 0.95);
 
+    // Süreler
     const ballastDays = ballastDist / (speed * 24);
     const ladenDays = ladenDist / (speed * 24);
-    const loadDays = (qty / (userLoadRate || 15000)) + 1; 
+    const seaDays = ballastDays + ladenDays;
+    const loadDays = (qty / (userLoadRate || 15000)) + 1; // +1 Turn time
     const dischDays = (qty / (userDischRate || 10000)) + 1;
     const portDays = Math.ceil(loadDays + dischDays);
-    const totalDays = ballastDays + ladenDays + portDays;
+    const totalDays = seaDays + portDays;
 
-    // A. BUNKER
-    const costMainEngine = (ballastDays + ladenDays) * specs.sea_cons * market.vlsfo;
-    const costAuxEngine = portDays * specs.port_cons * market.mgo; 
-    const costLubricants = totalDays * 400;
-    const totalFuelCost = costMainEngine + costAuxEngine + costLubricants;
+    // --- DETAYLI GİDER HESAPLAMASI ---
 
-    // B. PORT CHARGES
-    const grt = specs.dwt * 0.65; 
-    const duesLoad = grt * 1.1; 
-    const duesDisch = grt * 1.1;
-    const pilotage = 3500 * 2 * 2; 
-    const towage = 2500 * 2 * 2 * 2;
-    const lineHandling = 1000 * 2 * 2;
-    const berthHire = portDays * 1500;
-    const wasteFees = 2000;
-    const agencyFees = 3000 * 2; 
-    const totalPortCosts = duesLoad + duesDisch + pilotage + towage + lineHandling + berthHire + wasteFees + agencyFees;
+    // A. YAKIT (BUNKERS)
+    // Ana Makine: Seyirde VLSFO
+    const costMainFuel = seaDays * specs.sea_cons * market.vlsfo;
+    // Yardımcı Makine (Jeneratör): Limanda MGO
+    const costAuxFuel = portDays * specs.port_cons * market.mgo; 
+    // Yağlar (Lubricants): Günlük ortalama $400 (Gemi boyuna göre değişir ama sabit alalım)
+    const costLubes = totalDays * 400; 
+    const totalBunkers = costMainFuel + costAuxFuel + costLubes;
 
-    // C. CARGO
-    const stevedoring = 0; 
-    const dunnageLashing = qty * (cargo.stowing || 0.5); 
-    const holdCleaning = 4000; 
-    const totalCargoCosts = dunnageLashing + holdCleaning + stevedoring;
+    // B. LİMAN GİDERLERİ (PORT CHARGES) - 2 Liman (Yükleme + Tahliye)
+    const grt = specs.grt;
+    // Liman Rüsumu (Dues): GRT başına tahmini $1.2 x 2 Liman
+    const costPortDues = (grt * 1.2) * 2;
+    // Kılavuzluk (Pilotage): Giriş/Çıkış x 2 Liman (Ortalama $2500 sefer başı)
+    const costPilotage = (2500 * 2) * 2;
+    // Römorkör (Towage): 2 Römorkör x Giriş/Çıkış x 2 Liman (Ortalama $2000 römorkör başı)
+    const costTowage = (2000 * 2 * 2) * 2;
+    // Palamar (Line Handling): Ortalama $800 x 2 Liman
+    const costLines = 800 * 2 * 2;
+    // Rıhtım İşgaliye (Berth Hire): Günlük $1000 x Port Days
+    const costBerth = portDays * 1000;
+    // Atık/Acente/Misc
+    const costAgency = 2500 * 2;
+    const costWaste = 1500;
+    
+    const totalPortCosts = costPortDues + costPilotage + costTowage + costLines + costBerth + costAgency + costWaste;
 
-    // D. CANAL
+    // C. YÜK & KANAL
+    const costStevedoring = 0; // Genelde FIO (Free In/Out) olur, kiracı öder. Owner için 0 varsayıyoruz.
+    const costDunnage = qty * 0.15; // Lashing malzemesi
+    const costCleaning = 3000; // Ambar yıkama
     let costCanal = 0;
-    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 250000;
+    // Kanal kontrolü (Basit coğrafi kontrol)
+    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal = 180000; // Süveyş Tahmini
+    const totalCargoCanal = costStevedoring + costDunnage + costCleaning + costCanal;
 
-    // E. OPEX
-    const od = specs.opex_details || { crew: 2500, victualling: 300, maintenance: 800, insurance: 600, stores: 400, admin: 500 };
-    const dailyOpexTotal = Object.values(od).reduce((a, b) => a + b, 0);
-    const totalOpexCost = dailyOpexTotal * totalDays;
+    // D. OPEX (İŞLETME MALİYETLERİ) - Günlük Dağılım
+    // Sektör Ortalaması Dağılım: Crew %45, Maint %20, Ins %12, Stores %13, Admin %10
+    const opex = specs.opex_daily;
+    const costCrew = (opex * 0.45) * totalDays;
+    const costMaint = (opex * 0.20) * totalDays;
+    const costIns = (opex * 0.12) * totalDays; // H&M + P&I
+    const costStores = (opex * 0.13) * totalDays; // Kumanya, Malzeme
+    const costAdmin = (opex * 0.10) * totalDays;
+    const totalOpex = opex * totalDays;
 
-    // REVENUE
+    // GELİR TABLOSU
     const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.0375; 
+    const commission = grossRevenue * 0.0375; // %3.75 Broker/Address
+    const totalExpenses = totalBunkers + totalPortCosts + totalCargoCanal + commission + totalOpex;
     
-    const totalVoyageCosts = totalFuelCost + totalPortCosts + totalCargoCosts + costCanal + commission;
-    const totalCostsAll = totalVoyageCosts + totalOpexCost;
-    
-    const netProfit = grossRevenue - totalCostsAll;
-    const tce = (grossRevenue - totalVoyageCosts) / totalDays;
+    const netProfit = grossRevenue - totalExpenses;
+    const tce = (grossRevenue - (totalBunkers + totalPortCosts + totalCargoCanal + commission)) / totalDays;
 
+    // PAKETLEME (Frontend'e gidecek detaylı veri)
     return { 
-        ballastDist, ladenDist, totalDays,
-        cargo, qty, 
+        ballastDist, ladenDist, totalDays, cargo, qty, 
         breakdown: {
             revenue: grossRevenue,
             voyage_costs: {
-                fuel: { main: costMainEngine, aux: costAuxEngine, lubes: costLubricants, total: totalFuelCost },
-                port: { dues: duesLoad + duesDisch, pilot: pilotage, towage: towage, lines: lineHandling, berth: berthHire, agency: agencyFees, waste: wasteFees, total: totalPortCosts },
-                cargo: { lashing: dunnageLashing, cleaning: holdCleaning, total: totalCargoCosts },
-                canal: costCanal, comm: commission, total: totalVoyageCosts
+                fuel: { main: costMainFuel, aux: costAuxFuel, lubes: costLubes, total: totalBunkers },
+                port: { dues: costPortDues, pilot: costPilotage, towage: costTowage, lines: costLines, berth: costBerth, agency: costAgency, total: totalPortCosts },
+                cargo: { dunnage: costDunnage, cleaning: costCleaning, total: costStevedoring + costDunnage + costCleaning },
+                canal: costCanal,
+                comm: commission,
+                total: totalBunkers + totalPortCosts + totalCargoCanal + commission
             },
-            opex: { daily: dailyOpexTotal, total: totalOpexCost, details: od },
-            total_expenses: totalCostsAll
+            opex: {
+                crew: costCrew,
+                maintenance: costMaint,
+                insurance: costIns,
+                stores: costStores,
+                admin: costAdmin,
+                daily: opex,
+                total: totalOpex
+            },
+            total_expenses: totalExpenses
         },
         financials: { profit: netProfit, tce },
         loadPort: loadPortName, dischPort: dischPortName, loadGeo, dischGeo, usedSpeed: speed
@@ -132,26 +149,18 @@ export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dis
 }
 
 export function generateAnalysis(v, specs) {
-    const dailyOpex = Object.values(specs.opex_details).reduce((a, b) => a + b, 0);
-    const breakEvenTCE = dailyOpex;
-    
+    const breakEven = specs.opex_daily;
+    const ratio = (v.financials.tce / breakEven).toFixed(2);
     let sentiment = "NEUTRAL";
     let color = "#94a3b8";
-    
-    if (v.financials.tce > breakEvenTCE * 2.5) {
-        sentiment = "EXCEPTIONAL"; color = "#10b981";
-    } else if (v.financials.tce > breakEvenTCE * 1.5) {
-        sentiment = "STRONG"; color = "#34d399";
-    } else if (v.financials.tce > breakEvenTCE) {
-        sentiment = "MODERATE"; color = "#f59e0b";
-    } else {
-        sentiment = "LOSS MAKING"; color = "#ef4444";
-    }
 
-    return `<div style="color:${color}; font-weight:bold; font-size:1.1rem; margin-bottom:5px;">MARKET SENTIMENT: ${sentiment}</div>
+    if (v.financials.tce > breakEven * 2.0) { sentiment = "STRONG BUY"; color = "#10b981"; }
+    else if (v.financials.tce > breakEven) { sentiment = "MODERATE"; color = "#f59e0b"; }
+    else { sentiment = "LOSS MAKING"; color = "#ef4444"; }
+
+    return `<div style="color:${color}; font-weight:900; font-size:1.1rem; margin-bottom:5px;">MARKET: ${sentiment}</div>
             <div style="font-size:0.85rem; color:#cbd5e1;">
-            • Break-even TCE (OPEX): <strong>$${dailyOpex.toLocaleString()}</strong><br>
-            • Voyage TCE: <strong>$${Math.floor(v.financials.tce).toLocaleString()}</strong><br>
-            • Coverage: <strong>${(v.financials.tce/dailyOpex).toFixed(2)}x</strong> OPEX
+            Coverage: <strong>${ratio}x</strong> OPEX<br>
+            Break-even: <strong>$${breakEven}</strong>/day
             </div>`;
 }
