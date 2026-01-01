@@ -19,43 +19,55 @@ const CLIENT_VESSEL_SPECS = {
 const TRANSLATIONS = {
     en: {
         landing_title: "NEXT GEN MARITIME INTELLIGENCE", landing_sub: "Advanced Voyage Estimation & Legal AI.",
-        btn_login: "LOGIN TO TERMINAL", btn_register: "BECOME A MEMBER",
+        btn_login: "LOG IN", btn_enter_term: "ENTER TERMINAL", btn_learn_more: "LEARN MORE",
         nav_term: "Terminal", nav_kb: "Academy", nav_reg: "Regulations", nav_docs: "Docs", nav_mem: "Membership",
         lbl_vessel: "VESSEL CLASS", lbl_port: "POSITION", lbl_speed: "SPEED", lbl_qty: "CARGO", lbl_lrate: "LOAD RATE", lbl_drate: "DISCH RATE",
         btn_scan: "CALCULATE VOYAGE", panel_params: "PARAMETERS", panel_estim: "ESTIMATION",
         stat_profit: "Net Profit", btn_breakdown: "VIEW FULL BREAKDOWN", empty_state: "Awaiting Inputs...",
         sec_kb: "KNOWLEDGE BASE", sec_reg: "REGULATIONS", sec_doc: "DOCUMENT CENTER",
         ai_welcome: "Hello Captain! I am VIYA AI. Ready to assist.", computing: "SYSTEM PROCESSING...",
-        menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
-        footer_rights: "© 2026 VIYA BROKER. All Rights Reserved."
+        menu_home: "Home", menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
+        footer_rights: "© 2026 VIYA BROKER. All Rights Reserved.", modal_fin_title: "FINANCIAL BREAKDOWN"
     },
     tr: {
         landing_title: "YENİ NESİL DENİZCİLİK ZEKASI", landing_sub: "İleri Sefer Tahmini & Hukuki AI.",
-        btn_login: "TERMİNALE GİRİŞ", btn_register: "ÜYE OL",
+        btn_login: "GİRİŞ YAP", btn_enter_term: "TERMİNALE GİR", btn_learn_more: "DAHA FAZLA",
         nav_term: "Terminal", nav_kb: "Akademi", nav_reg: "Mevzuat", nav_docs: "Evraklar", nav_mem: "Üyelik",
         lbl_vessel: "GEMİ TİPİ", lbl_port: "KONUM", lbl_speed: "HIZ", lbl_qty: "YÜK", lbl_lrate: "YÜKLEME HIZI", lbl_drate: "TAHLİYE HIZI",
         btn_scan: "SEFER HESAPLA", panel_params: "PARAMETRELER", panel_estim: "TAHMİN",
         stat_profit: "Net Kâr", btn_breakdown: "DETAYLI DÖKÜM", empty_state: "Veri Bekleniyor...",
         sec_kb: "BİLGİ BANKASI", sec_reg: "YÖNETMELİKLER", sec_doc: "DOKÜMAN MERKEZİ",
         ai_welcome: "Merhaba Kaptan! Ben VIYA AI. Yardıma hazırım.", computing: "HESAPLANIYOR...",
-        menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
-        footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır."
+        menu_home: "Anasayfa", menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
+        footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır.", modal_fin_title: "FİNANSAL DÖKÜM"
     },
-    de: { landing_title: "MARITIME INTELLIGENZ", btn_login: "TERMINAL BETRETEN", nav_term: "Terminal", stat_profit: "Reingewinn", empty_state: "Warten...", btn_scan: "BERECHNEN" },
-    fr: { landing_title: "INTELLIGENCE MARITIME", btn_login: "ENTRER AU TERMINAL", nav_term: "Terminal", stat_profit: "Bénéfice Net", empty_state: "Attente...", btn_scan: "CALCULER" },
-    es: { landing_title: "INTELIGENCIA MARÍTIMA", btn_login: "ENTRAR AL TERMINAL", nav_term: "Terminal", stat_profit: "Beneficio Neto", empty_state: "Esperando...", btn_scan: "CALCULAR" },
-    it: { landing_title: "INTELLIGENZA MARITTIMA", btn_login: "ENTRA NEL TERMINAL", nav_term: "Terminale", stat_profit: "Utile Netto", empty_state: "In Attesa...", btn_scan: "CALCOLARE" },
-    gr: { landing_title: "ΝΑΥΤΙΛΙΑΚΗ ΝΟΗΜΟΣΥΝΗ", btn_login: "ΕΙΣΟΔΟΣ", nav_term: "Τερματικό", stat_profit: "Καθαρό Κέρδος", empty_state: "Αναμονή...", btn_scan: "ΥΠΟΛΟΓΙΣΜΟΣ" }
+    de: { landing_title: "MARITIME INTELLIGENZ", btn_enter_term: "TERMINAL BETRETEN", nav_term: "Terminal", stat_profit: "Reingewinn", empty_state: "Warten...", btn_scan: "BERECHNEN" },
+    fr: { landing_title: "INTELLIGENCE MARITIME", btn_enter_term: "ENTRER AU TERMINAL", nav_term: "Terminal", stat_profit: "Bénéfice Net", empty_state: "Attente...", btn_scan: "CALCULER" },
+    es: { landing_title: "INTELIGENCIA MARÍTIMA", btn_enter_term: "ENTRAR AL TERMINAL", nav_term: "Terminal", stat_profit: "Beneficio Neto", empty_state: "Esperando...", btn_scan: "CALCULAR" },
+    it: { landing_title: "INTELLIGENZA MARITTIMA", btn_enter_term: "ENTRA NEL TERMINAL", nav_term: "Terminale", stat_profit: "Utile Netto", empty_state: "In Attesa...", btn_scan: "CALCOLARE" },
+    gr: { landing_title: "ΝΑΥΤΙΛΙΑΚΗ ΝΟΗΜΟΣΥΝΗ", btn_enter_term: "ΕΙΣΟΔΟΣ", nav_term: "Τερματικό", stat_profit: "Καθαρό Κέρδος", empty_state: "Αναμονή...", btn_scan: "ΥΠΟΛΟΓΙΣΜΟΣ" }
 };
 
 // =================================================================
-// 2. INITIALIZATION & UI LOGIC
+// 2. INITIALIZATION & UI LOGIC (DÜZELTİLDİ)
 // =================================================================
 
 function enterSystem() { 
-    document.getElementById('landing-view').style.display = 'none'; 
-    document.getElementById('app-container').style.display = 'block';
-    map.invalidateSize(); 
+    // [FIX]: ID'ler yeni HTML yapısına uygun hale getirildi.
+    const landing = document.getElementById('landing-page');
+    const app = document.getElementById('app-container');
+
+    if(landing && app) {
+        landing.style.opacity = '0';
+        landing.style.transition = 'opacity 0.5s ease';
+        
+        setTimeout(() => {
+            landing.style.display = 'none'; 
+            app.style.display = 'block';
+            // Harita boyutunu düzelt (Görünür olunca bozulmasın diye)
+            if(map) map.invalidateSize(); 
+        }, 500);
+    }
 }
 
 function switchView(id) { 
@@ -89,7 +101,11 @@ async function init() {
     try {
         const pRes = await fetch('/api/ports'); const ports = await pRes.json();
         const dl = document.getElementById('portList');
-        ports.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); });
+        if(dl) {
+            dl.innerHTML = ""; // Temizle
+            ports.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); });
+        }
+        
         const mRes = await fetch('/api/market'); const m = await mRes.json();
         if(m.brent) { 
             document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2); 
@@ -98,9 +114,10 @@ async function init() {
         loadAcademy();
         loadDocs();
         loadRegulations();
-    } catch(e) {}
+    } catch(e) { console.log("Data load partial fail"); }
 }
-init();
+// [ÖNEMLİ] Sayfa tamamen yüklenince init çalışsın
+window.onload = init;
 
 // =================================================================
 // 3. CONTENT LOADERS (DOCS & REGS)
@@ -108,6 +125,7 @@ init();
 
 function loadAcademy() {
     const aGrid = document.getElementById('academyGrid');
+    if(!aGrid) return;
     aGrid.innerHTML = "";
     // Statik Akademi Verileri (Hızlı erişim için)
     const ACADEMY_DATA = [
@@ -129,6 +147,7 @@ function loadAcademy() {
 
 async function loadDocs() {
     const dContainer = document.getElementById('docsContainer');
+    if(!dContainer) return;
     try {
         if(DOCS_DB.length === 0) { const res = await fetch('/api/documents'); DOCS_DB = await res.json(); }
         dContainer.innerHTML = "";
@@ -140,7 +159,7 @@ async function loadDocs() {
                         <i class="fa-solid ${icon} doc-icon" style="color:var(--neon-cyan)"></i>
                         <div class="doc-title">${item.title}</div>
                         <div class="doc-desc">${item.desc}</div>
-                        <button class="btn-download" onclick="downloadFile('${item.title}', '${item.content.replace(/'/g, "\\'").replace(/\n/g, "\\n")}')"><i class="fa-solid fa-download"></i> DOWNLOAD</button>
+                        <button class="btn-download" onclick="downloadFile('${item.title}', '${item.content ? item.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : ""}')"><i class="fa-solid fa-download"></i> DOWNLOAD</button>
                         </div>`;
             });
             html += '</div>';
@@ -151,6 +170,7 @@ async function loadDocs() {
 
 async function loadRegulations() {
     const rGrid = document.getElementById('regsGrid');
+    if(!rGrid) return;
     try {
         if(REGS_DB.length === 0) { const res = await fetch('/api/regulations'); REGS_DB = await res.json(); }
         rGrid.innerHTML = "";
@@ -174,7 +194,7 @@ async function loadRegulations() {
 const map = L.map('map', {zoomControl: false}).setView([30, 0], 2);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
     maxZoom: 10, 
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    attribution: '&copy; OpenStreetMap &copy; CARTO'
 }).addTo(map);
 let shipLayer = L.layerGroup().addTo(map);
 
@@ -231,11 +251,17 @@ async function scanMarket() {
 }
 
 function renderList(voyages) {
-    const list = document.getElementById('cargoResultList'); list.innerHTML = ''; list.style.display = 'block';
-    if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
+    const list = document.getElementById('cargoResultList'); 
+    list.innerHTML = '';
+    
+    if(voyages.length === 0) {
+        list.innerHTML = '<div style="padding:10px; color:#aaa;">No profitable voyages found.</div>';
+        return;
+    }
+
     voyages.forEach(v => {
         const el = document.createElement('div'); el.className = 'cargo-item';
-        el.innerHTML = `<div class="ci-top"><span>${v.loadPort} -> ${v.dischPort}</span><span class="tce-badge">$${Math.floor(v.financials.tce).toLocaleString()}/day</span></div><div class="ci-bot"><span>${v.commodity}</span><span>Bal: ${v.ballastDist} NM</span></div>`;
+        el.innerHTML = `<div class="ci-top"><span>${v.loadPort} -> ${v.dischPort}</span><span class="tce-badge">$${Math.floor(v.financials.tce).toLocaleString()}</span></div><div class="ci-bot"><span>${v.commodity}</span><span>${v.ballastDist} NM</span></div>`;
         el.onclick = () => showDetails(v, el); list.appendChild(el);
     });
     showDetails(voyages[0], list.children[0]);
@@ -253,16 +279,22 @@ function showDetails(v, el) {
         `<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">${v.ballastDist} NM</span></div>
         <div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">${v.ladenDist} NM</span></div>
         <div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">${v.totalDays.toFixed(1)}</span></div>
-        <div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$${Math.floor(v.breakdown.revenue).toLocaleString()}</span></div>
-        <div class="detail-row"><span class="d-lbl">Total Expenses</span> <span class="d-val neg">-$${Math.floor(v.breakdown.total_expenses).toLocaleString()}</span></div>`;
+        <div class="detail-row"><span class="d-lbl">Revenue</span> <span class="d-val pos">$${Math.floor(v.breakdown.revenue).toLocaleString()}</span></div>`;
     
     document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
     
     shipLayer.clearLayers();
     L.circleMarker([document.getElementById('vLat').value, document.getElementById('vLng').value], {radius:7, color:'#f59e0b'}).addTo(shipLayer);
-    L.circleMarker([v.loadGeo.lat, v.loadGeo.lng], {radius:7, color:'#10b981'}).addTo(shipLayer).bindPopup("LOAD");
-    L.circleMarker([v.dischGeo.lat, v.dischGeo.lng], {radius:7, color:'#ef4444'}).addTo(shipLayer).bindPopup("DISCH");
-    map.fitBounds([[document.getElementById('vLat').value, document.getElementById('vLng').value], [v.loadGeo.lat, v.loadGeo.lng], [v.dischGeo.lat, v.dischGeo.lng]], {padding:[50,50]});
+    L.circleMarker([v.loadGeo.lat, v.loadGeo.lng], {radius:7, color:'#10b981'}).addTo(shipLayer).bindPopup("LOAD: " + v.loadPort);
+    L.circleMarker([v.dischGeo.lat, v.dischGeo.lng], {radius:7, color:'#ef4444'}).addTo(shipLayer).bindPopup("DISCH: " + v.dischPort);
+    
+    // Haritayı sığdır
+    const bounds = L.latLngBounds([
+        [document.getElementById('vLat').value, document.getElementById('vLng').value],
+        [v.loadGeo.lat, v.loadGeo.lng],
+        [v.dischGeo.lat, v.dischGeo.lng]
+    ]);
+    map.fitBounds(bounds, {padding:[50,50]});
 }
 
 // [GÜNCELLENMİŞ] FİNANSAL TABLO (DETAYLI)
@@ -276,44 +308,22 @@ function showFinancials() {
         <table class="fin-table">
             <tr><th colspan="2" class="fin-lbl" style="font-size:1rem; border-bottom:2px solid var(--neon-cyan);">1. REVENUE (GELİR)</th></tr>
             <tr><td class="fin-lbl">Gross Freight (${currentVoyageData.qty}mt)</td><td>$${Math.floor(b.revenue).toLocaleString()}</td></tr>
-            <tr class="fin-section-total"><td class="fin-lbl">NET REVENUE (After Comm)</td><td>$${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
+            <tr class="fin-section-total"><td class="fin-lbl">NET REVENUE</td><td>$${Math.floor(b.revenue - vc.comm).toLocaleString()}</td></tr>
             
-            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">2. VOYAGE COSTS (SEFER GİDERLERİ)</th></tr>
-            <tr><td class="fin-lbl"><strong>A. Bunkers (Yakıt)</strong></td><td><strong>$${Math.floor(vc.fuel.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Main Engine (Seyir)</td><td>$${Math.floor(vc.fuel.main).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Aux Engine (Liman)</td><td>$${Math.floor(vc.fuel.aux).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Lubricants (Yağ)</td><td>$${Math.floor(vc.fuel.lubes).toLocaleString()}</td></tr>
-            
-            <tr><td class="fin-lbl"><strong>B. Port Charges (Liman)</strong></td><td><strong>$${Math.floor(vc.port.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Dues (Rüsum)</td><td>$${Math.floor(vc.port.dues).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Pilotage (Kılavuz)</td><td>$${Math.floor(vc.port.pilot).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Towage (Römorkör)</td><td>$${Math.floor(vc.port.towage).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Agency & Misc</td><td>$${Math.floor(vc.port.agency + vc.port.waste).toLocaleString()}</td></tr>
-
-            <tr><td class="fin-lbl"><strong>C. Cargo Handling</strong></td><td><strong>$${Math.floor(vc.cargo.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Hold Cleaning / Lashing</td><td>$${Math.floor(vc.cargo.total).toLocaleString()}</td></tr>
-
-            <tr><td class="fin-lbl"><strong>D. Others</strong></td><td></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Canal Transit</td><td>$${Math.floor(vc.canal).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Brokerage Comm</td><td>$${Math.floor(vc.comm).toLocaleString()}</td></tr>
-            
+            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">2. VOYAGE COSTS</th></tr>
+            <tr class="fin-sub-row"><td class="fin-lbl">Bunkers</td><td>$${Math.floor(vc.fuel.total).toLocaleString()}</td></tr>
+            <tr class="fin-sub-row"><td class="fin-lbl">Port Dues</td><td>$${Math.floor(vc.port.total).toLocaleString()}</td></tr>
+            <tr class="fin-sub-row"><td class="fin-lbl">Cargo/Canal</td><td>$${Math.floor(vc.cargo.total + vc.canal).toLocaleString()}</td></tr>
             <tr class="fin-section-total"><td class="fin-lbl">TOTAL VOYAGE COSTS</td><td>$${Math.floor(vc.total).toLocaleString()}</td></tr>
 
-            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">3. OPERATING EXPENSES (OPEX - GÜNLÜK)</th></tr>
-            <tr><td class="fin-lbl">Total OPEX (${currentVoyageData.totalDays.toFixed(1)} days)</td><td><strong>$${Math.floor(ox.total).toLocaleString()}</strong></td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Crewing (Personel)</td><td>$${Math.floor(ox.crew).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Insurance (H&M, P&I)</td><td>$${Math.floor(ox.insurance).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Maintenance & Stores</td><td>$${Math.floor(ox.maintenance + ox.stores).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td class="fin-lbl">- Victualling & Admin</td><td>$${Math.floor(ox.victualling + ox.admin).toLocaleString()}</td></tr>
+            <tr><th colspan="2" class="fin-lbl" style="padding-top:20px; font-size:1rem; border-bottom:2px solid var(--neon-cyan);">3. OPEX</th></tr>
+            <tr><td class="fin-lbl">Daily Running Cost</td><td>$${Math.floor(ox.daily).toLocaleString()} / day</td></tr>
+            <tr class="fin-section-total"><td class="fin-lbl">TOTAL OPEX</td><td>$${Math.floor(ox.total).toLocaleString()}</td></tr>
 
             <tr><th colspan="2" style="padding-top:30px;"></th></tr>
             <tr class="fin-grand-total">
-                <td class="fin-lbl">NET PROFIT (KÂR)</td>
+                <td class="fin-lbl">NET PROFIT</td>
                 <td>$${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td class="fin-lbl" style="color:#aaa;">TCE (Time Charter Equivalent)</td>
-                <td style="color:var(--neon-cyan); font-weight:bold;">$${Math.floor(currentVoyageData.financials.tce).toLocaleString()} / day</td>
             </tr>
         </table>`;
     document.getElementById('finBody').innerHTML = html;
@@ -324,12 +334,11 @@ function showFinancials() {
 // 5. UTILITIES (DOWNLOAD, MODALS, CHAT)
 // =================================================================
 
-// [YENİLİK] DOSYA İNDİRME SİMÜLASYONU
 function downloadFile(filename, content) {
     const element = document.createElement('a');
     const file = new Blob([content], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = filename + ".txt"; // Şimdilik .txt olarak indiriyor
+    element.download = filename + ".txt"; 
     document.body.appendChild(element);
     element.click();
 }
