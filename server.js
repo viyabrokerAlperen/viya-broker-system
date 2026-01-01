@@ -11,13 +11,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// API KEY (Render'daki isminle aynı)
+// [AYAR] API Key Kontrolü (Render uyumlu)
 const API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
 
 if (API_KEY) {
-    console.log("✅ AI SYSTEM: ONLINE (API Key Detected)");
+    console.log("✅ VIYA AI SYSTEM: ONLINE (Access Key Verified)");
 } else {
-    console.error("❌ AI SYSTEM: OFFLINE (GEMINI_API_KEY missing)");
+    console.error("❌ VIYA AI SYSTEM: OFFLINE (GEMINI_API_KEY Missing)");
 }
 
 app.use(cors());
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // =================================================================
-// 1. DATA & CONFIGURATION
+// 1. DATA & CONFIGURATION (VERİ VE AYARLAR)
 // =================================================================
 
 const VESSEL_SPECS = {
@@ -73,8 +73,10 @@ const CARGOES = {
     ]
 };
 
+// MARKET DATA
 let MARKET = { brent: 78.50, heatingOil: 2.35, vlsfo: 620, mgo: 850, lastUpdate: 0 };
 
+// PORT DATABASE LOADING
 let PORT_DB = {};
 try {
     const rawData = fs.readFileSync(path.join(__dirname, 'ports.json'));
@@ -82,49 +84,64 @@ try {
     for (const [key, val] of Object.entries(jsonData)) {
         PORT_DB[key.toUpperCase()] = { lat: parseFloat(val[1]), lng: parseFloat(val[0]) };
     }
-    console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} ports loaded.`);
-} catch (e) { console.error("❌ ERROR: ports.json missing."); }
+    console.log(`✅ DATABASE: ${Object.keys(PORT_DB).length} global ports loaded.`);
+} catch (e) { console.error("❌ ERROR: 'ports.json' database missing."); }
 
+// DOCUMENTS LIBRARY LOADING
 let DOCS_DATA = [];
 try {
     const docData = fs.readFileSync(path.join(__dirname, 'documents.json'));
     DOCS_DATA = JSON.parse(docData);
-    console.log(`✅ DOCUMENTS: Library loaded successfully.`);
-} catch (e) { console.error("⚠️ WARNING: documents.json missing."); }
+    console.log(`✅ DOCUMENTS: Knowledge base initialized.`);
+} catch (e) { console.error("⚠️ WARNING: 'documents.json' missing."); }
+
+// [YENİ] REGULATIONS DATABASE LOADING
+let REGS_DATA = [];
+let REGS_CONTEXT = ""; // Context string for AI
+try {
+    const regData = fs.readFileSync(path.join(__dirname, 'regulations.json'));
+    REGS_DATA = JSON.parse(regData);
+    // Create a summarized context string for the AI to "know" these regulations
+    REGS_CONTEXT = REGS_DATA.map(r => `[${r.code}] ${r.title}: ${r.summary}`).join(" | ");
+    console.log(`✅ REGULATIONS: ${REGS_DATA.length} maritime statutes loaded for AI context.`);
+} catch (e) { console.error("⚠️ WARNING: 'regulations.json' missing. AI legal mode limited."); }
 
 
 // =================================================================
-// 2. HELPER FUNCTIONS
+// 2. HELPER FUNCTIONS (BACKEND LOGIC)
 // =================================================================
 
 async function updateMarketData() {
+    // 15 minutes cache to prevent rate limiting
     if (Date.now() - MARKET.lastUpdate < 900000) return; 
     try {
         const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
         const resHO = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/HO=F?interval=1d&range=1d');
         const brentData = await res.json();
         const hoData = await resHO.json();
+        
         const brentPrice = brentData.chart.result[0].meta.regularMarketPrice;
         const hoPriceGal = hoData.chart.result[0].meta.regularMarketPrice;
+        
         if(brentPrice && hoPriceGal) {
             MARKET.brent = brentPrice;
-            MARKET.mgo = Math.round(hoPriceGal * 319); 
-            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75);
+            MARKET.mgo = Math.round(hoPriceGal * 319); // Approx conversion Gal to Metric Ton
+            MARKET.vlsfo = Math.round(MARKET.mgo * 0.75); // Standard industry spread
             MARKET.lastUpdate = Date.now();
-            console.log(`✅ LIVE MARKET: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
+            console.log(`✅ LIVE MARKET UPDATE: Brent $${brentPrice} | MGO $${MARKET.mgo} | VLSFO $${MARKET.vlsfo}`);
         }
     } catch(e) {
-        console.log("⚠️ Market update failed, using defaults.");
+        console.log("⚠️ Market data update failed (API Error). Using cached/default values.");
     }
 }
 
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
+    const R = 3440; // Nautical miles radius
     const dLat = (lat2 - lat1) * Math.PI/180;
     const dLon = (lon2 - lon1) * Math.PI/180;
     const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return Math.round(R * c * 1.15); 
+    return Math.round(R * c * 1.15); // Correction factor
 }
 
 function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
@@ -134,6 +151,7 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
     const ladenDays = ladenDist / (speed * 24);
     
+    // Smart Cargo Selection logic
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
@@ -144,7 +162,7 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const lRate = userLoadRate || cargo.loadRate;
     const dRate = userDischRate || cargo.dischRate;
 
-    const loadDays = (qty / lRate) + 1;
+    const loadDays = (qty / lRate) + 1; // +1 for turn time
     const dischDays = (qty / dRate) + 1;
     const portDays = Math.ceil(loadDays + dischDays);
 
@@ -155,16 +173,31 @@ function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortN
     const totalDays = ballastDays + ladenDays + portDays;
     
     let costCanal = 0;
+    // Simple logic for Suez check (very rough approximation for prototype)
     if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal += 200000;
     
     const costOpex = totalDays * specs.opex;
     const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.025; 
+    const commission = grossRevenue * 0.025; // Standard 2.5% comm
     const totalCost = costBallastFuel + costLadenFuel + costPortFuel + costPortDues + costCanal + costOpex + commission;
     const profit = grossRevenue - totalCost;
     const tce = profit / totalDays;
     
-    return { ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, cargo, qty, financials: { revenue: grossRevenue, cost_ballast_fuel: costBallastFuel, cost_laden_fuel: costLadenFuel + costPortFuel, cost_port_dues: costPortDues, cost_canal: costCanal, cost_opex: costOpex, cost_comm: commission, profit, tce } };
+    return { 
+        ballastDist, ballastDays, ladenDist, ladenDays, portDays, totalDays, usedSpeed: speed, 
+        cargo, qty, 
+        financials: { 
+            revenue: grossRevenue, 
+            cost_ballast_fuel: costBallastFuel, 
+            cost_laden_fuel: costLadenFuel + costPortFuel, 
+            cost_port_dues: costPortDues, 
+            cost_canal: costCanal, 
+            cost_opex: costOpex, 
+            cost_comm: commission, 
+            profit, 
+            tce 
+        } 
+    };
 }
 
 function generateAnalysis(v, specs) {
@@ -221,7 +254,7 @@ function generateAnalysis(v, specs) {
 }
 
 // =================================================================
-// 3. FRONTEND HTML (FULL CONTENT)
+// 3. FRONTEND HTML (EMBEDDED APPLICATION)
 // =================================================================
 const FRONTEND_HTML = `
 <!DOCTYPE html>
@@ -236,7 +269,7 @@ const FRONTEND_HTML = `
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --deep-space: #050a14; --panel-bg: rgba(10, 15, 25, 0.90); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.08); --text-main: #e2e8f0; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        :root { --neon-cyan: #00f2ff; --neon-purple: #bc13fe; --neon-gold: #fbbf24; --deep-space: #050a14; --panel-bg: rgba(10, 15, 25, 0.90); --card-bg: rgba(255, 255, 255, 0.03); --border-color: rgba(255, 255, 255, 0.08); --text-main: #e2e8f0; --text-muted: #94a3b8; --font-ui: 'Plus Jakarta Sans', sans-serif; --font-tech: 'Orbitron', sans-serif; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body { background-color: var(--deep-space); color: var(--text-main); font-family: var(--font-ui); overflow-x: hidden; font-size:13px; }
         
@@ -311,6 +344,29 @@ const FRONTEND_HTML = `
         .btn-download { background: transparent; border: 1px solid #334155; color: #94a3b8; width: 100%; padding: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-weight: 600; }
         .btn-download:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
 
+        .pricing-container { display: flex; justify-content: center; gap: 30px; padding-top: 50px; flex-wrap: wrap; }
+        .price-card { background: var(--panel-bg); border: 1px solid var(--border-color); width: 320px; padding: 40px; text-align: center; position: relative; transition: 0.3s; }
+        .price-card:hover { transform: scale(1.05); }
+        
+        /* PREMIUM GOLD STYLING */
+        .price-card.premium { border: 2px solid var(--neon-gold); box-shadow: 0 0 50px rgba(251, 191, 36, 0.15); }
+        .price-card.premium .plan-name { color: var(--neon-gold); }
+        .price-card.premium .btn-plan { background: var(--neon-gold); color: #000; }
+        .price-card.premium .plan-features i { color: var(--neon-gold); }
+        
+        .price-card.pro { border: 2px solid var(--neon-cyan); box-shadow: 0 0 50px rgba(0, 242, 255, 0.15); }
+
+        .plan-name { font-family: var(--font-tech); font-size: 1.4rem; color: #94a3b8; margin-bottom: 10px; letter-spacing: 2px; }
+        .plan-price { font-size: 3.5rem; color: #fff; font-weight: 700; margin-bottom: 30px; }
+        .plan-price span { font-size: 1rem; color: #555; font-weight: 400; }
+        .plan-features { list-style: none; padding: 0; text-align: left; margin-bottom: 30px; color: #cbd5e1; font-size: 0.9rem; }
+        .plan-features li { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+        .plan-features i { color: var(--success); }
+        .btn-plan { width: 100%; padding: 15px; font-weight: 800; border: none; cursor: pointer; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .btn-plan.pro { background: var(--neon-cyan); color: #000; }
+        .btn-plan.basic { background: #334155; color: #fff; }
+        .btn-plan:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
         /* MODAL STYLES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         .modal-content { background-color: #0f172a; margin: 5% auto; padding: 0; border: 1px solid var(--neon-cyan); width: 70%; max-width: 900px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,242,255,0.2); animation: fadeIn 0.4s; }
@@ -365,7 +421,7 @@ const FRONTEND_HTML = `
             </div>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="msg ai">Hello Captain! I am VIYA AI. I can assist you with Charter Parties, Market Rates, or Operational questions.</div>
+            <div class="msg ai">Hello Captain! I am VIYA AI. I can assist you with Regulations (SOLAS, MARPOL), Charter Parties, or Market Rates.</div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" class="chat-input" placeholder="Ask anything..." onkeypress="handleEnter(event)">
@@ -387,6 +443,7 @@ const FRONTEND_HTML = `
         <div class="nav-links">
             <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
             <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
+            <div class="nav-item" onclick="switchView('regulations')" data-i18n="nav_reg">Regulations</div>
             <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Document Center</div>
             <div class="nav-item" onclick="switchView('pricing')" data-i18n="nav_mem">Membership</div>
             <div class="lang-switch" onclick="toggleLanguage()">EN | TR</div>
@@ -435,15 +492,7 @@ const FRONTEND_HTML = `
                     <div class="input-group"><label data-i18n="lbl_port">QUICK POSITION (PORT)</label><input type="text" id="refPort" list="portList" placeholder="Enter port name..." onchange="fillCoords()"></div>
                     <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
                     <div class="input-group"><label data-i18n="lbl_speed">OPERATIONAL SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
-                    
                     <div class="input-group"><label data-i18n="lbl_qty">CARGO QTY (TONS)</label><input type="number" id="vQty" placeholder="e.g. 50000" value="50000"></div>
-                    <div class="input-group">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                            <div><label data-i18n="lbl_lrate">LOAD RATE (MT/DAY)</label><input type="number" id="vLoadRate" value="15000"></div>
-                            <div><label data-i18n="lbl_drate">DISCH RATE (MT/DAY)</label><input type="number" id="vDischRate" value="10000"></div>
-                        </div>
-                    </div>
-
                     <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">SCAN MARKET OPPORTUNITIES</button>
                     <div id="cargoResultList" class="cargo-list" style="margin-top:20px; display:none;"></div>
                 </div>
@@ -479,6 +528,14 @@ const FRONTEND_HTML = `
         </div>
     </div>
 
+    <div id="regulations" class="view-section">
+        <div class="library-section">
+            <div class="section-title">MARITIME REGULATIONS (IMO & ILO)</div>
+            <div class="section-desc">Global compliance framework: SOLAS, MARPOL, STCW, MLC 2006.</div>
+            <div class="docs-grid" id="regsGrid"></div>
+        </div>
+    </div>
+
     <div id="docs" class="view-section">
         <div class="library-section">
             <div class="section-title" data-i18n="sec_doc">DOCUMENT CENTER</div>
@@ -495,29 +552,29 @@ const FRONTEND_HTML = `
                 <ul class="plan-features">
                     <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_dist">Distance Calculator</span></li>
                     <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_scans">3 Daily Scans</span></li>
-                    <li><i class="fa-solid fa-xmark" style="color:#555"></i> Financial Analysis</li>
+                    <li><i class="fa-solid fa-xmark" style="color:#555"></i> AI Regulations Access</li>
                 </ul>
                 <button class="btn-plan basic" data-i18n="btn_curr">CURRENT PLAN</button>
             </div>
             <div class="price-card pro">
                 <div class="plan-name" style="color:var(--neon-cyan)">BROKER PRO</div>
-                <div class="plan-price">$49 <span>/mo</span></div>
+                <div class="plan-price">$199 <span>/mo</span></div>
                 <ul class="plan-features">
                     <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_unl">Unlimited Scans</span></li>
                     <li><i class="fa-solid fa-check"></i> Real-Time TCE & Profit</li>
                     <li><i class="fa-solid fa-check"></i> Live Market Data</li>
-                    <li><i class="fa-solid fa-check"></i> Document Access</li>
+                    <li><i class="fa-solid fa-check"></i> Regulation Library</li>
                 </ul>
                 <button class="btn-plan pro" data-i18n="btn_upg">UPGRADE NOW</button>
             </div>
-            <div class="price-card">
-                <div class="plan-name">OWNER</div>
-                <div class="plan-price">$199 <span>/mo</span></div>
+            <div class="price-card premium">
+                <div class="plan-name">FLEET OWNER</div>
+                <div class="plan-price">$999 <span>/mo</span></div>
                 <ul class="plan-features">
                     <li><i class="fa-solid fa-check"></i> <span data-i18n="feat_all">All Pro Features</span></li>
-                    <li><i class="fa-solid fa-check"></i> API Access</li>
-                    <li><i class="fa-solid fa-check"></i> Custom Reports</li>
-                    <li><i class="fa-solid fa-check"></i> Dedicated Consultant</li>
+                    <li><i class="fa-solid fa-check"></i> Custom API Access</li>
+                    <li><i class="fa-solid fa-check"></i> 24/7 Dedicated Legal AI</li>
+                    <li><i class="fa-solid fa-check"></i> Fleet Management Tools</li>
                 </ul>
                 <button class="btn-plan basic" data-i18n="btn_contact">CONTACT SALES</button>
             </div>
@@ -550,74 +607,26 @@ const FRONTEND_HTML = `
 
         const TRANSLATIONS = {
             en: {
-                landing_sub: "Global Maritime Brokerage System",
-                enter_btn: "ENTER TERMINAL",
-                nav_term: "Terminal",
-                nav_kb: "Knowledge Base",
-                nav_docs: "Document Center",
-                nav_mem: "Membership",
-                panel_vessel: "VESSEL PARAMETERS",
-                panel_estim: "VOYAGE ESTIMATION",
-                lbl_vessel: "VESSEL CLASS & TYPE",
-                lbl_port: "QUICK POSITION (PORT)",
-                lbl_speed: "OPERATIONAL SPEED (KTS)",
-                lbl_qty: "CARGO QTY (TONS)",
-                lbl_lrate: "LOAD RATE (MT/DAY)",
-                lbl_drate: "DISCH RATE (MT/DAY)",
-                btn_scan: "SCAN MARKET OPPORTUNITIES",
-                map_vessel: "Vessel",
-                map_load: "Load Port",
-                map_disch: "Discharge",
-                stat_profit: "Net Profit",
-                empty_state: "Waiting for vessel position data...",
-                sec_kb: "KNOWLEDGE BASE",
-                desc_kb: "Essential maritime commercial and legal concepts for modern brokers.",
-                sec_doc: "DOCUMENT CENTER",
-                desc_doc: "Industry standard Charter Parties, Riders and Operational Forms.",
-                feat_dist: "Distance Calculator",
-                feat_scans: "3 Daily Scans",
-                feat_unl: "Unlimited Scans",
-                feat_all: "All Pro Features",
-                btn_curr: "CURRENT PLAN",
-                btn_upg: "UPGRADE NOW",
-                btn_contact: "CONTACT SALES",
-                computing: "COMPUTING...",
-                read_btn: "READ"
+                nav_term: "Terminal", nav_kb: "Knowledge Base", nav_reg: "Regulations", nav_docs: "Document Center", nav_mem: "Membership",
+                btn_scan: "SCAN MARKET OPPORTUNITIES", read_btn: "READ", lbl_vessel: "VESSEL CLASS & TYPE", lbl_port: "QUICK POSITION (PORT)", 
+                lbl_speed: "OPERATIONAL SPEED (KTS)", lbl_qty: "CARGO QTY (TONS)", lbl_lrate: "LOAD RATE (MT/DAY)", lbl_drate: "DISCH RATE (MT/DAY)",
+                panel_vessel: "VESSEL PARAMETERS", panel_estim: "VOYAGE ESTIMATION", map_vessel: "Vessel", map_load: "Load Port", map_disch: "Discharge",
+                stat_profit: "Net Profit", empty_state: "Waiting for vessel position data...",
+                sec_kb: "KNOWLEDGE BASE", desc_kb: "Essential maritime commercial and legal concepts for modern brokers.", 
+                sec_doc: "DOCUMENT CENTER", desc_doc: "Industry standard Charter Parties, Riders and Operational Forms.",
+                feat_dist: "Distance Calculator", feat_scans: "3 Daily Scans", feat_unl: "Unlimited Scans", feat_all: "All Pro Features",
+                btn_curr: "CURRENT PLAN", btn_upg: "UPGRADE NOW", btn_contact: "CONTACT SALES", computing: "COMPUTING..."
             },
             tr: {
-                landing_sub: "Küresel Denizcilik Brokerlik Sistemi",
-                enter_btn: "TERMİNALE GİR",
-                nav_term: "Terminal",
-                nav_kb: "Bilgi Bankası",
-                nav_docs: "Doküman Merkezi",
-                nav_mem: "Üyelik",
-                panel_vessel: "GEMİ PARAMETRELERİ",
-                panel_estim: "SEFER TAHMİNİ",
-                lbl_vessel: "GEMİ SINIFI & TİPİ",
-                lbl_port: "HIZLI KONUM (LİMAN)",
-                lbl_speed: "OPERASYONEL HIZ (KTS)",
-                lbl_qty: "YÜK MİKTARI (TON)",
-                lbl_lrate: "YÜKLEME HIZI (TON/GÜN)",
-                lbl_drate: "TAHLİYE HIZI (TON/GÜN)",
-                btn_scan: "PİYASAYI TARAT",
-                map_vessel: "Gemi",
-                map_load: "Yükleme Limanı",
-                map_disch: "Tahliye Limanı",
-                stat_profit: "Net Kâr",
-                empty_state: "Gemi konum verisi bekleniyor...",
-                sec_kb: "BİLGİ BANKASI",
-                desc_kb: "Modern brokerler için temel ticari ve hukuki kavramlar.",
-                sec_doc: "DOKÜMAN MERKEZİ",
-                desc_doc: "Endüstri standardı Charter Party, Ek Maddeler ve Operasyonel Formlar.",
-                feat_dist: "Mesafe Hesaplayıcı",
-                feat_scans: "Günlük 3 Tarama",
-                feat_unl: "Sınırsız Tarama",
-                feat_all: "Tüm Pro Özellikler",
-                btn_curr: "MEVCUT PLAN",
-                btn_upg: "YÜKSELT",
-                btn_contact: "SATIŞLA GÖRÜŞ",
-                computing: "HESAPLANIYOR...",
-                read_btn: "İNCELE"
+                nav_term: "Terminal", nav_kb: "Bilgi Bankası", nav_reg: "Mevzuat", nav_docs: "Doküman Merkezi", nav_mem: "Üyelik",
+                btn_scan: "PİYASAYI TARAT", read_btn: "İNCELE", lbl_vessel: "GEMİ SINIFI & TİPİ", lbl_port: "HIZLI KONUM (LİMAN)", 
+                lbl_speed: "OPERASYONEL HIZ (KTS)", lbl_qty: "YÜK MİKTARI (TON)", lbl_lrate: "YÜKLEME HIZI (TON/GÜN)", lbl_drate: "TAHLİYE HIZI (TON/GÜN)",
+                panel_vessel: "GEMİ PARAMETRELERİ", panel_estim: "SEFER TAHMİNİ", map_vessel: "Gemi", map_load: "Yükleme", map_disch: "Tahliye",
+                stat_profit: "Net Kâr", empty_state: "Gemi konum verisi bekleniyor...",
+                sec_kb: "BİLGİ BANKASI", desc_kb: "Modern brokerler için temel ticari ve hukuki kavramlar.", 
+                sec_doc: "DOKÜMAN MERKEZİ", desc_doc: "Endüstri standardı Charter Party, Ek Maddeler ve Operasyonel Formlar.",
+                feat_dist: "Mesafe Hesaplayıcı", feat_scans: "Günlük 3 Tarama", feat_unl: "Sınırsız Tarama", feat_all: "Tüm Pro Özellikler",
+                btn_curr: "MEVCUT PLAN", btn_upg: "YÜKSELT", btn_contact: "SATIŞLA GÖRÜŞ", computing: "HESAPLANIYOR..."
             }
         };
 
@@ -636,6 +645,22 @@ const FRONTEND_HTML = `
                 }
             });
             loadLibrary(); 
+            loadRegulations();
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Basic nav highlighting logic (can be improved)
+            if(viewId === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(viewId === 'academy') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(viewId === 'regulations') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            if(viewId === 'docs') document.querySelectorAll('.nav-item')[3].classList.add('active');
+            if(viewId === 'pricing') document.querySelectorAll('.nav-item')[4].classList.add('active');
+
+            if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
         }
 
         function enterSystem() {
@@ -654,211 +679,172 @@ const FRONTEND_HTML = `
             }
         });
 
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(viewId === 'dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
-            if(viewId === 'academy') document.querySelectorAll('.nav-item')[1].classList.add('active');
-            if(viewId === 'docs') document.querySelectorAll('.nav-item')[2].classList.add('active');
-            if(viewId === 'pricing') document.querySelectorAll('.nav-item')[3].classList.add('active');
-            if(viewId === 'dashboard') setTimeout(() => map.invalidateSize(), 100);
-        }
-
-        let DOCS_DB = [];
+        // FETCHERS
+        let DOCS_DB = [], REGS_DB = [];
 
         async function loadLibrary() {
             const aGrid = document.getElementById('academyGrid');
-            const dContainer = document.getElementById('docsContainer');
             aGrid.innerHTML = "";
-            dContainer.innerHTML = ""; 
-            
+            const ACADEMY_DATA = [
+                {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "Calculating time saved/lost. Key concepts: SHINC, SHEX, WWD."},
+                {icon: "fa-globe", title: "INCOTERMS 2020", desc: "Responsibility transfer points: FOB vs CIF vs CFR."},
+                {icon: "fa-file-signature", title: "Bill of Lading", desc: "Functions of B/L: Receipt, Title, Contract of Carriage."},
+                {icon: "fa-anchor", title: "General Average", desc: "York-Antwerp Rules and shared loss principles."},
+                {icon: "fa-hand-holding-dollar", title: "Maritime Lien", desc: "Claims against the vessel vs the owner."},
+                {icon: "fa-smog", title: "ECA Regulations", desc: "Sulphur caps (0.1% vs 0.5%) and scrubber usage."}
+            ];
+            ACADEMY_DATA.forEach(item => {
+                let html = '<div class="doc-card">' +
+                           '<i class="fa-solid ' + item.icon + ' doc-icon" style="color:var(--neon-purple)"></i>' +
+                           '<div class="doc-title">' + item.title + '</div>' +
+                           '<div class="doc-desc">' + item.desc + '</div>' +
+                           '<button class="btn-download">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                           '</div>';
+                aGrid.innerHTML += html;
+            });
+
+            const dContainer = document.getElementById('docsContainer');
+            dContainer.innerHTML = "";
             try {
                 if(DOCS_DB.length === 0) {
                      const res = await fetch('/api/documents');
                      DOCS_DB = await res.json();
                 }
-
                 DOCS_DB.forEach(cat => {
-                    // SEPERATE ACADEMY AND DOCS
-                    if (cat.category.includes('KNOWLEDGE') || cat.category.includes('ACADEMY')) {
-                        cat.items.forEach(item => {
-                            let html = '<div class="doc-card">' +
-                                       '<i class="fa-solid fa-graduation-cap doc-icon" style="color:var(--neon-purple)"></i>' +
-                                       '<div class="doc-title">' + item.title + '</div>' +
-                                       '<div class="doc-desc">' + item.desc + '</div>' +
-                                       '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                       '</div>';
-                            aGrid.innerHTML += html;
-                        });
-                    } else {
-                        let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
-                        cat.items.forEach(item => {
-                            html += '<div class="doc-card">' +
-                                    '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
-                                    '<div class="doc-title">' + item.title + '</div>' +
-                                    '<div class="doc-desc">' + item.desc + '</div>' +
-                                    '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
-                                    '</div>';
-                        });
-                        html += '</div>';
-                        dContainer.innerHTML += html;
-                    }
+                    let html = '<div class="category-header">' + cat.category + '</div><div class="docs-grid">';
+                    cat.items.forEach(item => {
+                        html += '<div class="doc-card">' +
+                                '<i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>' +
+                                '<div class="doc-title">' + item.title + '</div>' +
+                                '<div class="doc-desc">' + item.desc + '</div>' +
+                                '<button class="btn-download" onclick="openDoc(\\'' + item.id + '\\')">' + TRANSLATIONS[currentLang].read_btn + '</button>' +
+                                '</div>';
+                    });
+                    html += '</div>';
+                    dContainer.innerHTML += html;
                 });
-            } catch(e) {
-                console.error("Error loading library");
-            }
+            } catch(e) {}
         }
         loadLibrary();
 
-        // --- MODAL & DOWNLOAD LOGIC ---
-        let currentDocTitle = "";
-        let currentDocContent = "";
+        async function loadRegulations() {
+            const rGrid = document.getElementById('regsGrid');
+            rGrid.innerHTML = "";
+            try {
+                if(REGS_DB.length === 0) { const res = await fetch('/api/regulations'); REGS_DB = await res.json(); }
+                REGS_DB.forEach(reg => {
+                    rGrid.innerHTML += '<div class="doc-card">' +
+                        '<i class="fa-solid fa-gavel doc-icon" style="color:var(--neon-gold)"></i>' +
+                        '<div class="doc-title">' + reg.code + '</div>' +
+                        '<div class="doc-desc" style="font-weight:bold; color:#fff;">' + reg.title + '</div>' +
+                        '<div class="doc-desc">' + reg.summary + '</div>' +
+                        '<button class="btn-download" onclick="openReg(\\'' + reg.id + '\\')">VIEW STATUTE</button>' +
+                        '</div>';
+                });
+            } catch(e){}
+        }
+        loadRegulations();
 
+        // MODAL
         function openDoc(id) {
             const doc = DOCS_DB.flatMap(c => c.items).find(i => i.id === id);
-            if(doc) {
-                currentDocTitle = doc.title;
-                currentDocContent = doc.content;
-                document.getElementById('modalTitle').innerText = doc.title;
-                document.getElementById('modalBody').innerText = doc.content; 
-                document.getElementById('docModal').style.display = "block";
-            }
+            if(doc) showModal(doc.title, doc.content);
         }
-
-        function downloadCurrentDoc() {
-            const element = document.createElement('a');
-            const file = new Blob([currentDocContent], {type: 'text/plain;charset=utf-8'});
-            element.href = URL.createObjectURL(file);
-            element.download = currentDocTitle + ".txt";
-            document.body.appendChild(element);
-            element.click();
+        function openReg(id) {
+            const reg = REGS_DB.find(r => r.id === id);
+            if(reg) showModal(reg.title + " (" + reg.code + ")", reg.content);
         }
-
-        function closeModal() {
-            document.getElementById('docModal').style.display = "none";
+        function showModal(title, content) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = content;
+            document.getElementById('docModal').style.display = 'block';
         }
+        function closeModal() { document.getElementById('docModal').style.display = 'none'; }
+        function downloadCurrentDoc() { alert("Simulated Download Started..."); }
+        window.onclick = function(event) { if (event.target == document.getElementById('docModal')) closeModal(); }
 
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('docModal')) {
-                closeModal();
-            }
+        // CHAT & CORE LOGIC (Same as V94)
+        function toggleChat() { 
+            const w = document.getElementById('chatWindow'); 
+            w.style.display = w.style.display === 'flex' ? 'none' : 'flex'; 
         }
-
-        // --- AI CHAT LOGIC ---
-        function toggleChat() {
-            const w = document.getElementById('chatWindow');
-            w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function toggleExpand() {
-            document.getElementById('chatWindow').classList.toggle('expanded');
-        }
-
-        function handleEnter(e) {
-            if (e.key === 'Enter') sendChat();
-        }
-
+        function toggleExpand() { document.getElementById('chatWindow').classList.toggle('expanded'); }
+        function handleEnter(e) { if(e.key === 'Enter') sendChat(); }
+        
         async function sendChat() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
+            const inp = document.getElementById('chatInput');
+            const msg = inp.value.trim();
             if(!msg) return;
-
             const body = document.getElementById('chatBody');
             body.innerHTML += '<div class="msg user">' + msg + '</div>';
-            input.value = '';
-            body.scrollTop = body.scrollHeight;
-
-            const loadingId = 'loading-' + Date.now();
-            body.innerHTML += '<div class="msg ai" id="' + loadingId + '">...</div>';
-
+            inp.value = ''; body.scrollTop = body.scrollHeight;
+            const lid = 'l-' + Date.now();
+            body.innerHTML += '<div class="msg ai" id="' + lid + '">...</div>';
             try {
                 const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({message: msg})
                 });
-                const data = await res.json();
-                document.getElementById(loadingId).innerText = data.reply;
-            } catch(e) {
-                document.getElementById(loadingId).innerText = "Communication error.";
-            }
+                const d = await res.json();
+                document.getElementById(lid).innerText = d.reply;
+            } catch(e) { document.getElementById(lid).innerText = "Error."; }
             body.scrollTop = body.scrollHeight;
         }
 
         function updateSpeed() { 
             const type = document.getElementById('vType').value;
-            if(type && CLIENT_VESSEL_SPECS[type]) {
-                document.getElementById('vSpeed').value = CLIENT_VESSEL_SPECS[type].default_speed;
-            }
-        }
-
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 3440;
-            const dLat = (lat2 - lat1) * Math.PI/180;
-            const dLon = (lon2 - lon1) * Math.PI/180;
-            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return Math.round(R * c * 1.15); 
+            if(type && CLIENT_VESSEL_SPECS[type]) document.getElementById('vSpeed').value = CLIENT_VESSEL_SPECS[type].default_speed;
         }
 
         async function init() {
             try {
                 const pRes = await fetch('/api/ports'); const ports = await pRes.json();
-                const dl = document.getElementById('portList'); ports.forEach(p => { const opt = document.createElement('option'); opt.value = p; dl.appendChild(opt); });
-                
-                // MARKET DATA FETCH
-                const mRes = await fetch('/api/market'); 
-                const m = await mRes.json();
+                const dl = document.getElementById('portList');
+                ports.forEach(p => { const o = document.createElement('option'); o.value = p; dl.appendChild(o); });
+                const mRes = await fetch('/api/market'); const m = await mRes.json();
                 if(m.brent) {
-                     document.getElementById('oilPrice').innerText = "$" + m.brent.toFixed(2);
-                     document.getElementById('hoPrice').innerText = "$" + m.mgo.toFixed(0);
-                     document.getElementById('vlsfoPrice').innerText = "$" + m.vlsfo.toFixed(0);
+                    document.getElementById('oilPrice').innerText = "$"+m.brent.toFixed(2);
+                    document.getElementById('hoPrice').innerText = "$"+m.mgo.toFixed(0);
+                    document.getElementById('vlsfoPrice').innerText = "$"+m.vlsfo.toFixed(0);
                 }
             } catch(e) {}
         }
         init();
 
-        async function fillCoords() { 
-             const pName = document.getElementById('refPort').value.toUpperCase(); 
-             if(!pName) return; 
-             try{ 
-                 const res = await fetch('/api/port-coords?port='+pName); 
-                 const d = await res.json(); 
-                 if(d.lat){ 
-                     document.getElementById('vLat').value=d.lat; 
-                     document.getElementById('vLng').value=d.lng; 
-                     updateShipMarker(d.lat, d.lng); 
-                 }
-             } catch(e){} 
+        async function fillCoords() {
+            const p = document.getElementById('refPort').value.toUpperCase();
+            if(!p) return;
+            try {
+                const res = await fetch('/api/port-coords?port='+p);
+                const d = await res.json();
+                if(d.lat) {
+                    document.getElementById('vLat').value = d.lat;
+                    document.getElementById('vLng').value = d.lng;
+                    updateShipMarker(d.lat, d.lng);
+                }
+            } catch(e){}
         }
 
         const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([30, 0], 2);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10 }).addTo(map);
         const layerGroup = L.layerGroup().addTo(map);
         let shipMarker = null;
-
         function updateShipMarker(lat, lng) { if(shipMarker) map.removeLayer(shipMarker); shipMarker = L.circleMarker([lat, lng], {radius:7, color:'#fff', fillColor:'#f59e0b', fillOpacity:1}).addTo(map).bindPopup("VESSEL"); map.setView([lat, lng], 4); }
 
         async function scanMarket() {
-            const lat = parseFloat(document.getElementById('vLat').value);
-            const lng = parseFloat(document.getElementById('vLng').value);
-            const speed = parseFloat(document.getElementById('vSpeed').value);
-            const qty = parseFloat(document.getElementById('vQty').value);
-            const lRate = parseFloat(document.getElementById('vLoadRate').value);
-            const dRate = parseFloat(document.getElementById('vDischRate').value);
-
-            if(isNaN(lat) || isNaN(lng)) { alert("Enter valid Coords"); return; }
-            updateShipMarker(lat, lng);
+            const lat = document.getElementById('vLat').value;
+            const lng = document.getElementById('vLng').value;
+            if(!lat) { alert("Set Position"); return; }
             document.getElementById('loader').style.display = 'grid';
             try {
-                const res = await fetch('/api/analyze', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
+                const res = await fetch('/api/analyze', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        shipLat:lat, shipLng:lng, shipSpeed:speed, vType:document.getElementById('vType').value,
-                        cargoQty: qty, loadRate: lRate, dischRate: dRate 
-                    }) 
+                        shipLat:lat, shipLng:lng, 
+                        shipSpeed:document.getElementById('vSpeed').value, 
+                        vType:document.getElementById('vType').value, 
+                        cargoQty:document.getElementById('vQty').value
+                    })
                 });
                 const data = await res.json();
                 if(data.success) renderList(data.voyages);
@@ -871,8 +857,7 @@ const FRONTEND_HTML = `
             if(voyages.length === 0) { list.innerHTML = '<div style="padding:10px;">No cargoes found.</div>'; return; }
             voyages.forEach(v => {
                 const el = document.createElement('div'); el.className = 'cargo-item';
-                // [GÜVENLİ CONCATENATION]
-                el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + v.financials.tce.toLocaleString() + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
+                el.innerHTML = '<div class="ci-top"><span>' + v.loadPort + ' -> ' + v.dischPort + '</span><span class="tce-badge">$' + Math.floor(v.financials.tce) + '/day</span></div><div class="ci-bot"><span>' + v.commodity + '</span><span>Bal: ' + v.ballastDist + ' NM</span></div>';
                 el.onclick = () => showDetails(v, el); list.appendChild(el);
             });
             showDetails(voyages[0], list.children[0]);
@@ -882,21 +867,14 @@ const FRONTEND_HTML = `
             document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active')); el.classList.add('active');
             document.getElementById('emptyState').style.display = 'none'; document.getElementById('analysisPanel').style.display = 'block';
             const f = v.financials;
-            document.getElementById('dispTCE').innerText = "$" + f.tce.toLocaleString();
-            document.getElementById('dispProfit').innerText = "$" + f.profit.toLocaleString();
-            // [GÜVENLİ CONCATENATION]
+            document.getElementById('dispTCE').innerText = "$" + Math.floor(f.tce);
+            document.getElementById('dispProfit').innerText = "$" + Math.floor(f.profit);
             document.getElementById('financialDetails').innerHTML = 
                 '<div class="detail-row"><span class="d-lbl">Ballast</span> <span class="d-val neg">' + v.ballastDist + ' NM</span></div>' +
                 '<div class="detail-row"><span class="d-lbl">Laden</span> <span class="d-val">' + v.ladenDist + ' NM</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Speed</span> <span class="d-val">' + v.usedSpeed + ' kts</span></div>' +
                 '<div class="detail-row"><span class="d-lbl">Total Days</span> <span class="d-val">' + v.totalDays.toFixed(1) + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$' + f.revenue.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Ballast Cost</span> <span class="d-val neg">-$' + f.cost_ballast_fuel.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Laden Fuel</span> <span class="d-val neg">-$' + f.cost_laden_fuel.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Port/Canal</span> <span class="d-val neg">-$' + (f.cost_port_dues+f.cost_canal).toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">Comm (2.5%)</span> <span class="d-val neg">-$' + f.cost_comm.toLocaleString() + '</span></div>' +
-                '<div class="detail-row"><span class="d-lbl">OpEx</span> <span class="d-val neg">-$' + f.cost_opex.toLocaleString() + '</span></div>';
-            
+                '<div class="detail-row"><span class="d-lbl">Gross Revenue</span> <span class="d-val pos">$' + Math.floor(f.revenue) + '</span></div>' +
+                '<div class="detail-row"><span class="d-lbl">Total Costs</span> <span class="d-val neg">-$' + Math.floor(f.cost_ballast_fuel + f.cost_laden_fuel + f.cost_port_dues + f.cost_opex) + '</span></div>';
             document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
             layerGroup.clearLayers();
             const pos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
@@ -927,17 +905,13 @@ app.get('/api/port-coords', (req, res) => { const p = PORT_DB[req.query.port]; r
 
 app.get('/api/documents', (req, res) => { res.json(DOCS_DATA); });
 
-// [YENİ]: AKILLI AI MODEL SEÇİCİ & SİSTEM KİMLİĞİ GÜNCELLEMESİ
+app.get('/api/regulations', (req, res) => { res.json(REGS_DATA); });
+
 app.post('/api/chat', async (req, res) => {
     const userMsg = req.body.message;
     if (!API_KEY) return res.json({ reply: "AI System Offline (Missing API Key)." });
 
-    // Modelleri sırayla dener: İstediğin 2.5 (muhtemel preview), 1.5 Flash, 2.0 Flash ve en son Pro.
-    const modelsToTry = [
-        "gemini-1.5-flash", 
-        "gemini-2.0-flash-exp", 
-        "gemini-pro"
-    ];
+    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-pro"];
 
     for (const model of modelsToTry) {
         try {
@@ -948,16 +922,17 @@ app.post('/api/chat', async (req, res) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            // [GÜNCELLENMİŞ SİSTEM PROMPT]
                             text: `You are VIYA AI, an elite Maritime Expert Assistant. 
-                            Your name is "VIYA AI". You are professional, knowledgeable, authoritative yet helpful. You act as a combination of a Master Mariner, a Shipbroker, and a Maritime Lawyer.
+                            Your name is "VIYA AI". You are professional, knowledgeable, authoritative yet helpful.
+
+                            CONTEXT - REGULATIONS:
+                            ${REGS_CONTEXT}
 
                             CRITICAL INSTRUCTIONS:
                             1. IDENTITY: Never call yourself "Efendi Kaptan". You are "VIYA AI".
-                            2. LANGUAGE: If the user writes in Turkish, answer in Turkish. If in English, answer in English. Detect and adapt instantly.
+                            2. LANGUAGE: If user writes in Turkish, answer in Turkish. If English, answer in English.
                             3. TONE: Professional, concise, industry-standard terminology.
-                            4. CONTEXT: Current Market: Brent $${MARKET.brent}, VLSFO $${MARKET.vlsfo}.
-
+                            
                             User asks: "${userMsg}"`
                         }]
                     }]
@@ -1013,5 +988,5 @@ app.post('/api/analyze', async (req, res) => {
     res.json({success: true, voyages: suggestions});
 });
 
-app.listen(port, () => console.log(`VIYA BROKER V93 (THE CAPTAIN'S LOG) running on port ${port}`));
+app.listen(port, () => console.log(`VIYA BROKER V97 (THE TYCOON) running on port ${port}`));
 app.get('/', (req, res) => res.send(FRONTEND_HTML));
