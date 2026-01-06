@@ -1,17 +1,18 @@
 {
   "name": "viya-broker-system",
-  "version": "58.0.0",
+  "version": "59.0.0",
   "description": "Viya Broker - The Maritime Hub",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "@google/generative-ai": "^0.21.0", 
-    "dotenv": "^16.3.1"
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "engines": {
     "node": "18.x"
