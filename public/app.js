@@ -1,11 +1,11 @@
 // public/app.js
-// VIYA BROKER - COMMAND INTERFACE (V2.7 "ADMIRAL PATCHED")
+// VIYA BROKER - COMMAND INTERFACE (V2.8 "CAPTAIN'S LOG EDITION")
 
 // GLOBAL DEĞİŞKENLER
 let currentVoyageData = null; 
 let REGS_DB = [], DOCS_DB = [];
 let currentLang = 'en';
-let mapRouteLayer = null; // Rota çizgisi için katman
+let mapRouteLayer = null; 
 
 // Dil İsimleri (AI Chat İçin)
 const LANG_NAMES = {
@@ -13,7 +13,7 @@ const LANG_NAMES = {
     fr: "French", es: "Spanish", gr: "Greek"
 };
 
-// [FULL LOCALIZATION PACK - 7 LANGUAGES]
+// [FULL LOCALIZATION PACK]
 const TRANSLATIONS = {
     en: {
         landing_title: "NEXT GEN MARITIME INTELLIGENCE", landing_sub: "Advanced Voyage Estimation & Legal AI.",
@@ -56,7 +56,7 @@ const TRANSLATIONS = {
 };
 
 // =================================================================
-// 1. SYSTEM INITIALIZATION (Matrix Style)
+// 1. SYSTEM INITIALIZATION
 // =================================================================
 
 function enterSystem() { 
@@ -69,7 +69,6 @@ function enterSystem() {
             landing.style.display = 'none'; 
             app.style.display = 'block';
             if(map) map.invalidateSize(); 
-            // Gizli Efekt: Girişte Kaptan'a selam çak
             const welcomeMsg = TRANSLATIONS[currentLang]?.ai_welcome || "System Online";
             addChatMessage('ai', welcomeMsg);
         }, 800);
@@ -79,7 +78,6 @@ function enterSystem() {
 async function init() {
     console.log("⚓ VIYA SYSTEM INITIALIZING...");
     try {
-        // [YENİ EKLENDİ] Dashboard Rotalarını Yükle (Undefined Hatasını Çözen Yer)
         loadDashboardRoutes();
 
         // Limanları Yükle
@@ -95,7 +93,7 @@ async function init() {
             }); 
         }
         
-        // Market Verisini Yükle (Simülasyon veya Gerçek)
+        // Market Verisi
         const mRes = await fetch('/api/market'); 
         const m = await mRes.json();
         
@@ -105,16 +103,12 @@ async function init() {
         if(m.brent) { 
             if(oilEl) {
                 oilEl.innerText = "$" + m.brent.toFixed(2); 
-                // Eğer veri simülasyonsa belli et
                 if(m.source === 'SIMULATED') {
                     oilEl.style.color = '#f59e0b';
                     oilEl.title = "Simulated Data";
                 }
             }
             if(vlsfoEl) vlsfoEl.innerText = "$" + m.vlsfo; 
-        } else {
-            if(oilEl) oilEl.innerText = "N/A"; 
-            if(vlsfoEl) vlsfoEl.innerText = "N/A"; 
         }
 
         // İçerikleri Yükle
@@ -126,11 +120,10 @@ async function init() {
 }
 window.onload = init;
 
-// --- [YENİ FONKSİYON] DASHBOARD ROTALARINI ÇEKME ---
+// DASHBOARD ROTALARI
 async function loadDashboardRoutes() {
-    // HTML'de bu ID'ye sahip bir liste olmalı (genelde sağ panelde veya ana ekranda)
     const routeList = document.getElementById('route-list');
-    if(!routeList) return; // Eğer HTML'de yoksa hata verme, sessizce çık
+    if(!routeList) return; 
 
     routeList.innerHTML = '<div class="text-center text-cyan-400 p-2 text-xs">Veriler taranıyor...</div>';
 
@@ -139,10 +132,9 @@ async function loadDashboardRoutes() {
         if(!response.ok) throw new Error('API Hatası');
         
         const routes = await response.json();
-        routeList.innerHTML = ''; // Temizle
+        routeList.innerHTML = ''; 
 
         routes.forEach(route => {
-            // BURASI ÖNEMLİ: Server'dan gelen 'origin', 'destination', 'distance' anahtarlarını kullanıyoruz.
             const card = document.createElement('div');
             card.className = 'bg-slate-800/50 border border-slate-700 p-3 rounded mb-2 cursor-pointer hover:border-cyan-400/50 transition-all';
             
@@ -167,7 +159,6 @@ async function loadDashboardRoutes() {
         });
 
     } catch (error) {
-        console.log("Rota yükleme hatası:", error);
         routeList.innerHTML = '<div class="text-red-400 text-xs text-center">Bağlantı yok.</div>';
     }
 }
@@ -177,13 +168,11 @@ function switchView(id) {
     document.getElementById(id).classList.add('active'); 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     
-    // Basit Navigasyon Eşleşmesi
     const navMap = {'dashboard':0, 'academy':1, 'regulations':2, 'docs':3, 'pricing':4};
     if(navMap[id] !== undefined) {
         const items = document.querySelectorAll('.nav-item');
         if(items[navMap[id]]) items[navMap[id]].classList.add('active');
     }
-
     if(id === 'dashboard' && map) setTimeout(() => map.invalidateSize(), 100); 
 }
 
@@ -191,20 +180,15 @@ function changeLanguage(lang) {
     currentLang = lang;
     const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
     
-    // Statik Metinleri Güncelle
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
         if(t[k]) el.innerText = t[k];
     });
 
-    // Placeholder Güncelle
     const chatInput = document.getElementById('chatInput');
     if(chatInput) chatInput.placeholder = t.chat_placeholder || "...";
 
-    // İçerikleri Yenile
     loadAcademy(); loadDocs(); loadRegulations();
-    
-    // Eğer Finansal Tablo açıksa yenile
     if(currentVoyageData && document.getElementById('finModal').style.display === 'block') {
         showFinancials();
     }
@@ -214,7 +198,7 @@ function changeLanguage(lang) {
 // 2. MAP & VOYAGE ENGINE (The Brain)
 // =================================================================
 
-const map = L.map('map', {zoomControl: false}).setView([34, 26], 3); // Akdeniz odaklı başla
+const map = L.map('map', {zoomControl: false}).setView([34, 26], 3); 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
     maxZoom: 10, 
     attribution: 'VIYA MAPS' 
@@ -238,7 +222,7 @@ async function fillCoords() {
 
 function updateShipMarker(lat, lng) { 
     if(shipLayer) shipLayer.clearLayers(); 
-    // Gemi ikonu yerine havalı bir daire
+    // MAVİ: Gemi
     L.circleMarker([lat, lng], {
         radius: 8, 
         color: '#0ea5e9', // Sky Blue
@@ -250,7 +234,6 @@ function updateShipMarker(lat, lng) {
     map.setView([lat, lng], 5); 
 }
 
-// --- ANA HESAPLAMA FONKSİYONU ---
 async function scanMarket() {
     const lat = parseFloat(document.getElementById('vLat').value);
     const lng = parseFloat(document.getElementById('vLng').value);
@@ -262,7 +245,6 @@ async function scanMarket() {
 
     updateShipMarker(lat, lng);
     
-    // Loader'ı Göster
     const loader = document.getElementById('loader');
     if(loader) loader.style.display = 'grid';
 
@@ -305,10 +287,7 @@ function renderList(voyages) {
         const el = document.createElement('div'); 
         el.className = 'cargo-item';
         
-        // Kârlılığa göre renk ver
-        let profitClass = 'text-gray-400';
-        if(v.financials.profit > 0) profitClass = 'text-green-400';
-        else profitClass = 'text-red-400';
+        let profitClass = v.financials.profit > 0 ? 'text-green-400' : 'text-red-400';
 
         el.innerHTML = `
             <div class="ci-top">
@@ -322,8 +301,6 @@ function renderList(voyages) {
         `;
         el.onclick = () => showDetails(v, el); 
         list.appendChild(el);
-        
-        // İlk seferi otomatik seç
         if(index === 0) showDetails(v, el);
     });
 }
@@ -333,51 +310,62 @@ function showDetails(v, el) {
     document.querySelectorAll('.cargo-item').forEach(x => x.classList.remove('active')); 
     if(el) el.classList.add('active');
     
-    // Paneli Aç
     document.getElementById('emptyState').style.display = 'none'; 
     document.getElementById('analysisPanel').style.display = 'block';
     
-    // Değerleri Yaz
     document.getElementById('dispTCE').innerText = "$" + Math.floor(v.financials.tce).toLocaleString();
     
     const profitEl = document.getElementById('dispProfit');
     profitEl.innerText = "$" + Math.floor(v.financials.profit).toLocaleString();
     profitEl.style.color = v.financials.profit > 0 ? '#4ade80' : '#f87171';
 
-    // Detay Satırları
+    // --- DETAYLI MESAFE GÖSTERİMİ (YENİ) ---
+    // calculation.js'den gelen detaylı 'dist' objesini kullanıyoruz.
+    // Eğer dist bir obje değilse (eski sistem), basitçe göster.
+    let distDisplay = "";
+    if(v.dist && typeof v.dist === 'object') {
+         distDisplay = `
+         <div class="detail-row"><span class="d-lbl" style="color:#94a3b8">Ballast (To Load)</span> <span class="d-val text-cyan-400">${Math.floor(v.dist.ballast)} nm</span></div>
+         <div class="detail-row"><span class="d-lbl" style="color:#94a3b8">Laden (To Disch)</span> <span class="d-val text-cyan-400">${Math.floor(v.dist.laden)} nm</span></div>
+         <div class="detail-row"><span class="d-lbl font-bold">Total Distance</span> <span class="d-val font-bold text-white">${Math.floor(v.dist.total)} nm</span></div>
+         `;
+    } else {
+         distDisplay = `<div class="detail-row"><span class="d-lbl">Distance</span> <span class="d-val">${v.dist} nm</span></div>`;
+    }
+
     document.getElementById('financialDetails').innerHTML = `
         <div class="detail-row"><span class="d-lbl">Sea/Port Days</span> <span class="d-val">${v.duration.sea} / ${v.duration.port}</span></div>
         <div class="detail-row"><span class="d-lbl">Total Duration</span> <span class="d-val">${v.duration.total} days</span></div>
         <div class="detail-row"><span class="d-lbl">Break-Even</span> <span class="d-val">$${v.financials.breakEvenRate.toFixed(2)} / ton</span></div>
+        <hr style="border-color:#334155; margin:8px 0;">
+        ${distDisplay}
     `;
 
-    // AI Yorumunu Bas (Backend'den HTML geliyor)
     document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
 
-    // --- HARİTA GÜNCELLEME (GİZLİ YETENEK: ROTA ÇİZİMİ) ---
+    // --- HARİTA GÜNCELLEME (ROTA ÇİZGİSİ İPTAL, SADECE NOKTALAR) ---
     shipLayer.clearLayers();
-    if(mapRouteLayer) map.removeLayer(mapRouteLayer); // Eski çizgiyi sil
+    // Varsa eski çizgiyi temizle, yenisini EKLEME.
+    if(mapRouteLayer) { map.removeLayer(mapRouteLayer); mapRouteLayer = null; }
 
     const shipPos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
     const loadPos = [v.loadGeo?.lat || 0, v.loadGeo?.lng || 0];
     const dischPos = [v.dischGeo?.lat || 0, v.dischGeo?.lng || 0];
 
-    const routePoints = [shipPos, loadPos, dischPos];
+    // MAVİ: Gemi
+    L.circleMarker(shipPos, {radius:8, color:'#3b82f6', fillColor:'#3b82f6', fillOpacity:0.8})
+     .addTo(shipLayer).bindPopup("<b>SHIP POSITION</b>").openPopup();
     
-    mapRouteLayer = L.polyline(routePoints, {
-        color: '#10b981', // Emerald
-        weight: 3,
-        opacity: 0.7,
-        dashArray: '5, 10' // Kesikli çizgi
-    }).addTo(map);
-
-    // Noktalar
-    L.circleMarker(shipPos, {radius:6, color:'#3b82f6', fillOpacity:1}).addTo(shipLayer).bindPopup("SHIP");
-    L.circleMarker(loadPos, {radius:6, color:'#eab308', fillOpacity:1}).addTo(shipLayer).bindPopup("LOAD: " + v.params.loadPort);
-    L.circleMarker(dischPos, {radius:6, color:'#ef4444', fillOpacity:1}).addTo(shipLayer).bindPopup("DISCH: " + v.params.dischPort);
+    // SARI: Yükleme Limanı
+    L.circleMarker(loadPos, {radius:8, color:'#eab308', fillColor:'#eab308', fillOpacity:0.8})
+     .addTo(shipLayer).bindPopup(`<b>LOAD:</b> ${v.params.loadPort}`);
+    
+    // KIRMIZI: Tahliye Limanı
+    L.circleMarker(dischPos, {radius:8, color:'#ef4444', fillColor:'#ef4444', fillOpacity:0.8})
+     .addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
 
     // Haritayı Sığdır
-    const bounds = L.latLngBounds(routePoints);
+    const bounds = L.latLngBounds([shipPos, loadPos, dischPos]);
     map.fitBounds(bounds, {padding:[50,50]});
 }
 
@@ -385,7 +373,6 @@ function showFinancials() {
     if(!currentVoyageData) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const bd = currentVoyageData.breakdown;
-    
     const vc = bd.voyage_costs;
     const ox = bd.opex;
 
@@ -398,7 +385,6 @@ function showFinancials() {
                 <td>$${Math.floor(bd.revenue - vc.commission).toLocaleString()}</td></tr>
             
             <tr><th colspan="2" style="padding-top:20px; border-bottom:2px solid var(--neon-cyan)">${t.fin_voy}</th></tr>
-            
             <tr><td>${t.fin_bunkers} (Total)</td><td class="text-red-300">-$${Math.floor(vc.fuel.total).toLocaleString()}</td></tr>
             <tr class="fin-sub-row"><td>- ${t.fin_main}</td><td>-$${Math.floor(vc.fuel.main).toLocaleString()}</td></tr>
             <tr class="fin-sub-row"><td>- ${t.fin_aux}</td><td>-$${Math.floor(vc.fuel.aux).toLocaleString()}</td></tr>
@@ -430,7 +416,7 @@ function showFinancials() {
 }
 
 // =================================================================
-// 3. AI CHATBOT (Typewriter Effect)
+// 3. AI CHATBOT
 // =================================================================
 
 function toggleChat() { 
@@ -447,8 +433,6 @@ async function sendChat() {
     
     addChatMessage('user', msg);
     inp.value = ''; 
-    
-    // Geçici "Yazıyor..." mesajı
     const tempId = 'temp-' + Date.now();
     addChatMessage('ai', '<span class="typing-dot">...</span>', tempId);
 
@@ -461,8 +445,6 @@ async function sendChat() {
         });
         
         const d = await res.json();
-        
-        // Geçici mesajı sil ve gerçeğini yazdır (Typewriter efektiyle)
         const tempEl = document.getElementById(tempId);
         if(tempEl) tempEl.remove();
         
@@ -483,7 +465,6 @@ function addChatMessage(role, html, id=null) {
     body.scrollTop = body.scrollHeight;
 }
 
-// Gizli Yetenek: Daktilo Efekti
 function typeWriterEffect(text) {
     const body = document.getElementById('chatBody');
     const div = document.createElement('div');
@@ -491,11 +472,10 @@ function typeWriterEffect(text) {
     body.appendChild(div);
     
     let i = 0;
-    const speed = 15; // ms
+    const speed = 15; 
     
     function type() {
         if (i < text.length) {
-            // HTML taglerini atla
             if(text.charAt(i) === '<') {
                 const closeIdx = text.indexOf('>', i);
                 div.innerHTML += text.substring(i, closeIdx+1);
@@ -512,7 +492,7 @@ function typeWriterEffect(text) {
 }
 
 // =================================================================
-// 4. CONTENT LOADERS (Standard)
+// 4. CONTENT LOADERS (WITH BACKUP DATA)
 // =================================================================
 
 function openContentModal(title, content) {
@@ -527,10 +507,13 @@ function loadAcademy() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     aGrid.innerHTML = "";
     
+    // YEDEK VERİLER (API Boş Dönerse Bunlar Gözükecek)
     const ACADEMY_DATA = [
-        {icon: "fa-scale-balanced", title: "Laytime & Demurrage", desc: "SHINC/SHEX...", content: "Full explanation of Laytime..."},
-        {icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR...", content: "Full explanation of Incoterms..."}
+        {icon: "fa-scale-balanced", title: "Laytime Basics", desc: "SHINC vs SHEX explained.", content: "Laytime is the amount of time allowed..."},
+        {icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR risks.", content: "Incoterms define the responsibilities of buyers and sellers..."},
+        {icon: "fa-ship", title: "Charter Parties", desc: "Gencon 94 vs NYPE.", content: "A charter party is a maritime contract..."}
     ];
+
     ACADEMY_DATA.forEach(item => {
         aGrid.innerHTML += `<div class="doc-card">
             <i class="fa-solid ${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
@@ -545,47 +528,86 @@ async function loadDocs() {
     const dContainer = document.getElementById('docsContainer');
     if(!dContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    
+    // YEDEK DOKÜMAN LİSTESİ
+    const FALLBACK_DOCS = [
+        {
+            category: "Standard Contracts",
+            items: [
+                {title: "GENCON 94", desc: "Standard Voyage Charter", content: "PART I\n1. Shipbroker..."},
+                {title: "NYPE 2015", desc: "Time Charter Party", content: "Time Charter Agreement..."}
+            ]
+        },
+        {
+            category: "Bill of Ladings",
+            items: [
+                {title: "Congenbill 2016", desc: "To be used with Charter Parties", content: "Shipper..."}
+            ]
+        }
+    ];
+
+    let data = [];
     try {
-        if(DOCS_DB.length === 0) { const res = await fetch('/api/documents'); DOCS_DB = await res.json(); }
-        dContainer.innerHTML = "";
-        DOCS_DB.forEach(cat => {
-            let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
-            cat.items.forEach(item => {
-                let contentSafe = item.content ? item.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : "...";
-                html += `<div class="doc-card">
-                        <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
-                        <div class="doc-title">${item.title}</div>
-                        <div class="doc-desc">${item.desc}</div>
-                        <div style="display:flex; gap:10px; width:100%;">
-                            <button class="btn-download" onclick="openContentModal('${item.title}', '${contentSafe}')"><i class="fa-solid fa-eye"></i> ${t.btn_read}</button>
-                            <button class="btn-download" onclick="downloadFile('${item.title}', '${contentSafe}')"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                        </div>`;
-            });
-            html += '</div>';
-            dContainer.innerHTML += html;
+        const res = await fetch('/api/documents');
+        const json = await res.json();
+        if(json && json.length > 0) data = json;
+        else data = FALLBACK_DOCS;
+    } catch(e) {
+        data = FALLBACK_DOCS; // Hata olursa yedeği kullan
+    }
+
+    dContainer.innerHTML = "";
+    data.forEach(cat => {
+        let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
+        cat.items.forEach(item => {
+            let contentSafe = item.content ? item.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : "...";
+            html += `<div class="doc-card">
+                    <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
+                    <div class="doc-title">${item.title}</div>
+                    <div class="doc-desc">${item.desc}</div>
+                    <div style="display:flex; gap:10px; width:100%;">
+                        <button class="btn-download" onclick="openContentModal('${item.title}', '${contentSafe}')"><i class="fa-solid fa-eye"></i> ${t.btn_read}</button>
+                        <button class="btn-download" onclick="downloadFile('${item.title}', '${contentSafe}')"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                    </div>`;
         });
-    } catch(e) {}
+        html += '</div>';
+        dContainer.innerHTML += html;
+    });
 }
 
 async function loadRegulations() {
     const rGrid = document.getElementById('regsGrid');
     if(!rGrid) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+
+    // YEDEK MEVZUAT LİSTESİ
+    const FALLBACK_REGS = [
+        {code: "SOLAS", title: "Safety of Life at Sea", summary: "Minimum safety standards for construction, equipment...", content: "Chapter I..."},
+        {code: "MARPOL", title: "Marine Pollution", summary: "Prevention of pollution by ships (Oil, Chemicals, Sewage)...", content: "Annex I..."}
+    ];
+
+    let data = [];
     try {
-        if(REGS_DB.length === 0) { const res = await fetch('/api/regulations'); REGS_DB = await res.json(); }
-        rGrid.innerHTML = "";
-        REGS_DB.forEach(reg => {
-            let contentSafe = reg.content ? reg.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : "...";
-            rGrid.innerHTML += `<div class="doc-card">
-                <i class="fa-solid fa-gavel doc-icon" style="color:var(--neon-gold)"></i>
-                <div class="doc-title">${reg.code}</div>
-                <div class="doc-desc" style="font-weight:bold; color:#fff;">${reg.title}</div>
-                <div class="doc-desc">${reg.summary}</div>
-                <button class="btn-download" onclick="openContentModal('${reg.title}', '${contentSafe}')"><i class="fa-solid fa-book"></i> ${t.btn_view}</button>
-                </div>`;
-        });
-    } catch(e) {}
+        const res = await fetch('/api/regulations');
+        const json = await res.json();
+        if(json && json.length > 0) data = json;
+        else data = FALLBACK_REGS;
+    } catch(e) {
+        data = FALLBACK_REGS;
+    }
+
+    rGrid.innerHTML = "";
+    data.forEach(reg => {
+        let contentSafe = reg.content ? reg.content.replace(/'/g, "\\'").replace(/\n/g, "\\n") : "...";
+        rGrid.innerHTML += `<div class="doc-card">
+            <i class="fa-solid fa-gavel doc-icon" style="color:var(--neon-gold)"></i>
+            <div class="doc-title">${reg.code}</div>
+            <div class="doc-desc" style="font-weight:bold; color:#fff;">${reg.title}</div>
+            <div class="doc-desc">${reg.summary}</div>
+            <button class="btn-download" onclick="openContentModal('${reg.title}', '${contentSafe}')"><i class="fa-solid fa-book"></i> ${t.btn_view}</button>
+            </div>`;
+    });
 }
 
 // UTILS
