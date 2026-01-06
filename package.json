@@ -1,6 +1,6 @@
 {
   "name": "viya-broker-system",
-  "version": "60.0.0",
+  "version": "60.1.0",
   "description": "Viya Broker - The Maritime Hub (Professional Edition)",
   "main": "server.js",
   "type": "module",
@@ -16,6 +16,6 @@
     "cheerio": "^1.0.0-rc.12"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }
