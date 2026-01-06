@@ -90,7 +90,7 @@ app.post('/api/chat', async (req, res) => {
         const targetLang = language || "English";
         
         // Model ismini 'gemini-1.5-flash' olarak güncelledik, daha hızlı ve stabil.
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
         
         const payload = {
             contents: [{ 
@@ -168,3 +168,4 @@ app.post('/api/analyze', (req, res) => {
 });
 
 app.listen(port, () => console.log(`🚀 VIYA SYSTEM READY on port ${port}`));
+
