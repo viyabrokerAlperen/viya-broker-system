@@ -1,6 +1,5 @@
 // server.js
-// VIYA BROKER - PROFESSIONAL MARITIME SYSTEM (V5.0 - The Merge)
-// Vizyon: Kurumsal, Ciddi, Veri Odaklı Denizcilik Platformu
+// VIYA BROKER - PROFESSIONAL MARITIME SYSTEM (V5.1 - Fix)
 
 import express from 'express';
 import cors from 'cors';
@@ -9,8 +8,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
-import axios from 'axios';      // YENİ: Veri çekmek için
-import cheerio from 'cheerio';  // YENİ: Haberleri parçalamak için
+import axios from 'axios';
+import * as cheerio from 'cheerio'; // DÜZELTİLEN SATIR BURASI
 
 dotenv.config();
 
@@ -21,12 +20,10 @@ const app = express();
 const port = process.env.PORT || 10000;
 
 // --- API GÜVENLİK ---
-// Render ortamında process.env.GEMINI_API_KEY kullanılır.
 const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
 let genAI = null;
 
 if (API_KEY) {
-    // Model versiyonunu senin istediğin gibi 1.5 Flash (veya varsa 2.5) olarak ayarlıyoruz.
     genAI = new GoogleGenerativeAI(API_KEY);
     console.log(" ✅ [SYSTEM] AI Engine: ONLINE (Gemini Flash)");
 } else {
@@ -34,13 +31,13 @@ if (API_KEY) {
 }
 
 app.use(cors({
-    origin: '*', // Production'da burayı spesifik domainlerinle (viyabroker.com) değiştirebilirsin.
+    origin: '*',
     methods: ['GET', 'POST']
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- YEDEK VERİLER (ESKİ KODUN MİRASI KORUNDU) ---
+// --- YEDEK VERİLER (FALLBACK DATA) ---
 const FALLBACK_PORTS = [
     {name: "ISTANBUL", coordinates: [28.9784, 41.0082]},
     {name: "PIRAEUS", coordinates: [23.6469, 37.9429]},
@@ -72,7 +69,7 @@ const FALLBACK_REGS = [
     { code: "MARPOL", title: "Marine Pollution", summary: "Prevention of pollution by ships (Annex I-VI).", content: "Annex I - Regulations for the Prevention of Pollution by Oil..." }
 ];
 
-// --- DATA LOADERS (ESKİ MANTIK) ---
+// --- DATA LOADERS ---
 const loadJSON = (file, fallback) => {
     try { 
         const filePath = path.join(__dirname, 'data', file);
@@ -104,11 +101,9 @@ app.get('/api/port-coords', (req, res) => {
 app.get('/api/documents', (req, res) => res.json(loadJSON('documents.json', FALLBACK_DOCS)));
 app.get('/api/regulations', (req, res) => res.json(loadJSON('regulations.json', FALLBACK_REGS)));
 
-// --- MARKET ENDPOINT (ESKİ KODUN GELİŞMİŞ HALİ) ---
-// "Piyasa" sekmesinin boş kalmaması için Yahoo Finance + BDI eklemesi
+// --- MARKET ENDPOINT ---
 app.get('/api/market', async (req, res) => {
     try {
-        // Yahoo Finance'den Brent Petrol verisi (Senin orijinal kodun)
         const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F?interval=1d&range=1d');
         const data = await response.json();
         const brentPrice = data.chart.result[0].meta.regularMarketPrice;
@@ -116,9 +111,8 @@ app.get('/api/market', async (req, res) => {
         if (brentPrice) {
             res.json({
                 brent: brentPrice,
-                mgo: Math.round(brentPrice * 11.8), // Sektörel ortalama çarpan
+                mgo: Math.round(brentPrice * 11.8),
                 vlsfo: Math.round(brentPrice * 11.8 * 0.75),
-                // YENİ: Baltic Index Simülasyonu (Brokerlar bunu görmek ister)
                 bdi: 1450 + Math.floor(Math.random() * 50 - 25), 
                 source: "LIVE (Yahoo Finance)"
             });
@@ -126,7 +120,6 @@ app.get('/api/market', async (req, res) => {
             throw new Error("No data");
         }
     } catch (error) {
-        // Çekemezse gerçekçi simülasyon (Fallback)
         const simBrent = 74.50 + ((Math.random() * 2) - 1);
         res.json({ 
             brent: simBrent.toFixed(2), 
@@ -138,15 +131,9 @@ app.get('/api/market', async (req, res) => {
     }
 });
 
-// --- YENİ: NEWS SCRAPER (HABERLER SEKMESİ İÇİN) ---
-// Sitenin "boş süs" gibi durmaması için gerçek haber başlıklarını çekiyoruz.
+// --- NEWS SCRAPER (HABERLER) ---
 app.get('/api/news', async (req, res) => {
     try {
-        // Örnek: TradeWinds veya benzeri bir kaynaktan çekiyormuş gibi simüle edelim veya
-        // Basit bir RSS okuma mantığı kurabiliriz. Şimdilik sitenin yapısı bozulmasın diye
-        // en güvenli yöntem olan "Profesyonel Statik + Dinamik Tarih" yapısını kullanıyorum.
-        // İleride buraya 'axios.get(hedef_site)' kodunu açabiliriz.
-        
         const today = new Date().toLocaleDateString('tr-TR');
         const news = [
             { id: 1, title: "Baltic Dry Index'te Sert Yükseliş Beklentisi", source: "Viya Market Intel", date: today },
@@ -161,8 +148,7 @@ app.get('/api/news', async (req, res) => {
     }
 });
 
-// --- YENİ: VESSELS / OPEN POSITIONS (GEMİ ARA SEKMESİ İÇİN) ---
-// Brokerların "Boş site" dememesi için.
+// --- VESSELS / OPEN POSITIONS ---
 app.get('/api/vessels', (req, res) => {
     const vessels = [
         { id: 101, name: "MV VIYA PIONEER", type: "Handysize", dwt: 32000, built: 2012, status: "Open Marmara / Spot" },
@@ -172,7 +158,7 @@ app.get('/api/vessels', (req, res) => {
     res.json(vessels);
 });
 
-// --- DASHBOARD ROUTES (SENİN ESKİ ALGORİTMAN) ---
+// --- DASHBOARD ROUTES ---
 app.get('/api/routes', (req, res) => {
     const ports = Object.keys(PORT_DB);
     const routes = [];
@@ -197,11 +183,10 @@ app.get('/api/routes', (req, res) => {
     res.json(routes);
 });
 
-// --- ANALİZ ve AI (Professional Persona - SENİN KODUN) ---
+// --- ANALİZ ve AI ---
 app.post('/api/analyze', async (req, res) => {
     const { shipLat, shipLng, vType } = req.body;
     
-    // Basit Analiz Mantığı
     const suggestions = [];
     const ports = Object.keys(PORT_DB);
     
@@ -223,15 +208,12 @@ app.post('/api/analyze', async (req, res) => {
             dist: { total: ballast + laden, ballast: ballast, laden: laden },
             duration: { total: 25, sea: 20, port: 5 },
             financials: { tce: 15000 + (Math.random()*5000), profit: 50000 + (Math.random()*20000), breakEvenRate: 18 },
-            // Default profesyonel mesaj
             aiAnalysis: `<strong>Strategic Brief:</strong> Route from ${load} to ${disch} shows optimal TCE levels based on current market bunkers.`
         });
     }
     
-    // AI Devreye Girerse (Profesyonel Ton KORUNDU)
     if(genAI && suggestions.length > 0) {
         try {
-            // Model 1.5 Flash veya 2.5 (Hangisi aktifse)
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const prompt = `You are a Senior Maritime Shipbroker at Viya Broker. 
             Analyze a voyage from ${suggestions[0].params.loadPort} to ${suggestions[0].params.dischPort}. 
@@ -247,7 +229,7 @@ app.post('/api/analyze', async (req, res) => {
     res.json({ success: true, voyages: suggestions });
 });
 
-// --- CHAT ENDPOINT (SENİN PERSONA AYARLARIN) ---
+// --- CHAT ENDPOINT ---
 app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if(!genAI) return res.json({ reply: "Sistem: Yapay Zeka servisi şu an bakımda (Mock Mode). Lütfen API Key kontrolü yapınız." });
@@ -278,7 +260,6 @@ app.post('/api/chat', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`\n ⚓ VIYA BROKER SYSTEM (V5.0) ONLINE`);
+    console.log(`\n ⚓ VIYA BROKER SYSTEM (V5.1) ONLINE`);
     console.log(` 🚀 SERVER RUNNING ON PORT ${port}`);
-    console.log(` 🌐 MODE: ${process.env.NODE_ENV || 'Development'}\n`);
 });
