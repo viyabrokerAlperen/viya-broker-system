@@ -1,4 +1,5 @@
 // utils/calculations.js
+// VİYA BROKER - "DEEP BLUE" HESAPLAMA MOTORU (V2.5 OPTIMIZED)
 
 export const VESSEL_SPECS = {
     "HANDYSIZE":    { type: "BULK", dwt: 35000, default_speed: 13.0, sea_cons: 22, port_cons: 2.5, opex_details: { crew: 2200, victualling: 250, maintenance: 600, insurance: 350, stores: 250, admin: 400 } },
@@ -32,7 +33,19 @@ export const CARGOES = {
     "GAS": [{name: "LNG", rate: 65}, {name: "LPG", rate: 55}]
 };
 
+// GİZLİ YETENEK 1: GRT Tahminleyicisi (Eğer veri yoksa DWT'den türetir)
+function estimateGRT(dwt) {
+    return Math.floor(dwt * 0.62); // Sektör standardı yaklaşık katsayı
+}
+
+// GİZLİ YETENEK 2: OPEX Toplayıcısı (Undefined hatasını çözer)
+function calculateDailyOpex(opexDetails) {
+    if (!opexDetails) return 5000; // Fail-safe
+    return Object.values(opexDetails).reduce((a, b) => a + b, 0);
+}
+
 export function getDistance(lat1, lon1, lat2, lon2) {
+    if(!lat1 || !lat2) return 0; // Hata koruması
     const R = 3440;
     const dLat = (lat2 - lat1) * Math.PI/180;
     const dLon = (lon2 - lon1) * Math.PI/180;
@@ -42,125 +55,181 @@ export function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dischPortName, dischGeo, specs, market, shipSpeed, userQty, userLoadRate, userDischRate) {
-    // 1. TEMEL DEĞİŞKENLER
-    const speed = shipSpeed || 13.5;
-    const ballastDist = getDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
-    const ladenDist = getDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
+    
+    // 1. FAIL-SAFE MARKET VERİLERİ (Boş gelirse varsayılanı kullan)
+    const mVLSFO = market?.vlsfoPrice || market?.vlsfo || 620;
+    const mMGO = market?.mgoPrice || market?.mgo || 910;
+    const mPortDues = market?.portDuesFactor || 1.25; // GRT başına
+
+    // 2. TEMEL DEĞİŞKENLER
+    const speed = parseFloat(shipSpeed) || specs.default_speed || 12.5;
+    
+    // Koordinatlar eksikse mesafe 0 döner, hata vermez
+    const ballastDist = getDistance(shipLat, shipLng, loadGeo?.lat, loadGeo?.lng);
+    const ladenDist = getDistance(loadGeo?.lat, loadGeo?.lng, dischGeo?.lat, dischGeo?.lng);
     const totalDist = ballastDist + ladenDist;
     
     // Yük Seçimi
     const cargoType = specs.type;
     const possibleCargoes = CARGOES[cargoType] || CARGOES["BULK"];
     const cargo = possibleCargoes[Math.floor(Math.random() * possibleCargoes.length)];
-    let qty = userQty || Math.floor(specs.dwt * 0.95);
+    let qty = parseFloat(userQty) || Math.floor(specs.dwt * 0.95);
 
-    // Süreler
-    const ballastDays = ballastDist / (speed * 24);
-    const ladenDays = ladenDist / (speed * 24);
+    // Süreler (Sıfıra bölünme hatasını engelle)
+    const activeSpeed = speed > 0 ? speed : 12;
+    const ballastDays = ballastDist / (activeSpeed * 24);
+    const ladenDays = ladenDist / (activeSpeed * 24);
     const seaDays = ballastDays + ladenDays;
-    const loadDays = (qty / (userLoadRate || 15000)) + 1; // +1 Turn time
-    const dischDays = (qty / (userDischRate || 10000)) + 1;
+    
+    const loadRate = parseFloat(userLoadRate) || 15000;
+    const dischRate = parseFloat(userDischRate) || 10000;
+    const loadDays = (qty / loadRate) + 1; // +1 Turn time
+    const dischDays = (qty / dischRate) + 1;
     const portDays = Math.ceil(loadDays + dischDays);
     const totalDays = seaDays + portDays;
 
-    // --- DETAYLI GİDER HESAPLAMASI ---
+    // --- DETAYLI GİDER HESAPLAMASI (VIYA BROKER LOGIC) ---
 
     // A. YAKIT (BUNKERS)
-    // Ana Makine: Seyirde VLSFO
-    const costMainFuel = seaDays * specs.sea_cons * market.vlsfo;
-    // Yardımcı Makine (Jeneratör): Limanda MGO
-    const costAuxFuel = portDays * specs.port_cons * market.mgo; 
-    // Yağlar (Lubricants): Günlük ortalama $400 (Gemi boyuna göre değişir ama sabit alalım)
-    const costLubes = totalDays * 400; 
+    const costMainFuel = seaDays * specs.sea_cons * mVLSFO;
+    const costAuxFuel = portDays * specs.port_cons * mMGO; 
+    const costLubes = totalDays * 350; // Günlük yağ
     const totalBunkers = costMainFuel + costAuxFuel + costLubes;
 
-    // B. LİMAN GİDERLERİ (PORT CHARGES) - 2 Liman (Yükleme + Tahliye)
-    const grt = specs.grt;
-    // Liman Rüsumu (Dues): GRT başına tahmini $1.2 x 2 Liman
-    const costPortDues = (grt * 1.2) * 2;
-    // Kılavuzluk (Pilotage): Giriş/Çıkış x 2 Liman (Ortalama $2500 sefer başı)
-    const costPilotage = (2500 * 2) * 2;
-    // Römorkör (Towage): 2 Römorkör x Giriş/Çıkış x 2 Liman (Ortalama $2000 römorkör başı)
-    const costTowage = (2000 * 2 * 2) * 2;
-    // Palamar (Line Handling): Ortalama $800 x 2 Liman
-    const costLines = 800 * 2 * 2;
-    // Rıhtım İşgaliye (Berth Hire): Günlük $1000 x Port Days
-    const costBerth = portDays * 1000;
-    // Atık/Acente/Misc
-    const costAgency = 2500 * 2;
-    const costWaste = 1500;
+    // B. LİMAN GİDERLERİ (PORT CHARGES)
+    const grt = specs.grt || estimateGRT(specs.dwt); // HATA DÜZELTİCİ: GRT yoksa hesapla
+    
+    const costPortDues = (grt * mPortDues) * 2; // 2 Liman
+    const costPilotage = (3000 * 2) * 2; // Daha gerçekçi rakamlar
+    const costTowage = (2500 * 2 * 2) * 2;
+    const costLines = 1000 * 2 * 2;
+    const costBerth = portDays * 1200;
+    const costAgency = 3000 * 2; // Acente ücreti
+    const costWaste = 2000;
     
     const totalPortCosts = costPortDues + costPilotage + costTowage + costLines + costBerth + costAgency + costWaste;
 
     // C. YÜK & KANAL
-    const costStevedoring = 0; // Genelde FIO (Free In/Out) olur, kiracı öder. Owner için 0 varsayıyoruz.
-    const costDunnage = qty * 0.15; // Lashing malzemesi
-    const costCleaning = 3000; // Ambar yıkama
+    const costStevedoring = 0; // Owner için 0
+    const costDunnage = qty * 0.15;
+    const costCleaning = 4000;
+    
     let costCanal = 0;
-    // Kanal kontrolü (Basit coğrafi kontrol)
-    if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) costCanal = 180000; // Süveyş Tahmini
+    // Gelişmiş Kanal Kontrolü (Hata vermez)
+    if (loadGeo && dischGeo) {
+        if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) {
+             costCanal = 200000; // Süveyş
+        }
+    }
     const totalCargoCanal = costStevedoring + costDunnage + costCleaning + costCanal;
 
-    // D. OPEX (İŞLETME MALİYETLERİ) - Günlük Dağılım
-    // Sektör Ortalaması Dağılım: Crew %45, Maint %20, Ins %12, Stores %13, Admin %10
-    const opex = specs.opex_daily;
-    const costCrew = (opex * 0.45) * totalDays;
-    const costMaint = (opex * 0.20) * totalDays;
-    const costIns = (opex * 0.12) * totalDays; // H&M + P&I
-    const costStores = (opex * 0.13) * totalDays; // Kumanya, Malzeme
-    const costAdmin = (opex * 0.10) * totalDays;
-    const totalOpex = opex * totalDays;
-
-    // GELİR TABLOSU
-    const grossRevenue = qty * cargo.rate;
-    const commission = grossRevenue * 0.0375; // %3.75 Broker/Address
-    const totalExpenses = totalBunkers + totalPortCosts + totalCargoCanal + commission + totalOpex;
+    // D. OPEX (İŞLETME MALİYETLERİ) - HATA DÜZELTİLDİ
+    const dailyOpex = calculateDailyOpex(specs.opex_details); // Dinamik toplama
     
-    const netProfit = grossRevenue - totalExpenses;
-    const tce = (grossRevenue - (totalBunkers + totalPortCosts + totalCargoCanal + commission)) / totalDays;
+    const costCrew = (specs.opex_details?.crew || dailyOpex * 0.45) / 30 * totalDays; // Aylık veri olduğu için /30 * gün
+    // Basit olması için toplamdan gidelim:
+    const totalOpex = dailyOpex * totalDays;
+
+    // E. GELİR TABLOSU
+    const frRate = parseFloat(market?.freightRate) || cargo.rate; // Kullanıcı girmediyse cargo default
+    const grossRevenue = qty * frRate;
+    
+    const commPercent = 3.75; // %3.75 Standart
+    const commission = grossRevenue * (commPercent / 100);
+    
+    const totalVoyageExpenses = totalBunkers + totalPortCosts + totalCargoCanal + commission;
+    const totalExpensesWithOpex = totalVoyageExpenses + totalOpex;
+    
+    const netProfit = grossRevenue - totalExpensesWithOpex;
+    
+    // TCE: (Navlun - Sefer Giderleri) / Toplam Gün
+    const tce = totalDays > 0 ? (grossRevenue - totalVoyageExpenses) / totalDays : 0;
+    
+    // Break-Even Navlun ($/ton)
+    const breakEvenRate = qty > 0 ? (totalExpensesWithOpex / qty) : 0;
 
     // PAKETLEME (Frontend'e gidecek detaylı veri)
     return { 
-        ballastDist, ladenDist, totalDays, cargo, qty, 
+        meta: {
+            shipType: specs.type,
+            dwt: specs.dwt
+        },
+        duration: {
+            sea: seaDays.toFixed(1),
+            port: portDays.toFixed(1),
+            total: totalDays.toFixed(1)
+        },
         breakdown: {
             revenue: grossRevenue,
             voyage_costs: {
                 fuel: { main: costMainFuel, aux: costAuxFuel, lubes: costLubes, total: totalBunkers },
-                port: { dues: costPortDues, pilot: costPilotage, towage: costTowage, lines: costLines, berth: costBerth, agency: costAgency, total: totalPortCosts },
-                cargo: { dunnage: costDunnage, cleaning: costCleaning, total: costStevedoring + costDunnage + costCleaning },
-                canal: costCanal,
-                comm: commission,
-                total: totalBunkers + totalPortCosts + totalCargoCanal + commission
+                port: { dues: costPortDues, pilot: costPilotage, towage: costTowage, total: totalPortCosts },
+                cargo_canal: { canal: costCanal, misc: costDunnage + costCleaning, total: totalCargoCanal },
+                commission: commission,
+                total: totalVoyageExpenses
             },
             opex: {
-                crew: costCrew,
-                maintenance: costMaint,
-                insurance: costIns,
-                stores: costStores,
-                admin: costAdmin,
-                daily: opex,
+                daily: dailyOpex,
                 total: totalOpex
             },
-            total_expenses: totalExpenses
+            total_expenses: totalExpensesWithOpex
         },
-        financials: { profit: netProfit, tce },
-        loadPort: loadPortName, dischPort: dischPortName, loadGeo, dischGeo, usedSpeed: speed
+        financials: { 
+            profit: netProfit, 
+            tce: tce,
+            breakEvenRate: breakEvenRate
+        },
+        params: {
+            loadPort: loadPortName, 
+            dischPort: dischPortName, 
+            cargo: cargo.name,
+            qty: qty,
+            freightRate: frRate
+        }
     };
 }
 
 export function generateAnalysis(v, specs) {
-    const breakEven = specs.opex_daily;
-    const ratio = (v.financials.tce / breakEven).toFixed(2);
+    const dailyOpex = calculateDailyOpex(specs.opex_details);
+    const tce = v.financials.tce;
+    const profit = v.financials.profit;
+    
+    // Oran hesabı (TCE / OPEX)
+    const ratio = dailyOpex > 0 ? (tce / dailyOpex).toFixed(2) : "0.00";
+    
     let sentiment = "NEUTRAL";
-    let color = "#94a3b8";
+    let color = "#94a3b8"; // Gray
+    let message = "";
 
-    if (v.financials.tce > breakEven * 2.0) { sentiment = "STRONG BUY"; color = "#10b981"; }
-    else if (v.financials.tce > breakEven) { sentiment = "MODERATE"; color = "#f59e0b"; }
-    else { sentiment = "LOSS MAKING"; color = "#ef4444"; }
+    if (tce > dailyOpex * 2.0) { 
+        sentiment = "🚀 SKYROCKETING"; 
+        color = "#10b981"; // Emerald Green
+        message = "Reis, bu sefer kaçmaz! Para basıyor.";
+    }
+    else if (tce > dailyOpex * 1.2) { 
+        sentiment = "✅ PROFITABLE"; 
+        color = "#34d399"; // Green
+        message = "Temiz iş, makul kâr.";
+    }
+    else if (tce > dailyOpex) { 
+        sentiment = "⚠️ MARGINAL"; 
+        color = "#f59e0b"; // Amber
+        message = "Ucu ucuna kurtarıyor.";
+    }
+    else { 
+        sentiment = "🔻 LOSS MAKING"; 
+        color = "#ef4444"; // Red
+        message = "Zarar yazar. Navlunu artır!";
+    }
 
-    return `<div style="color:${color}; font-weight:900; font-size:1.1rem; margin-bottom:5px;">MARKET: ${sentiment}</div>
-            <div style="font-size:0.85rem; color:#cbd5e1;">
-            Coverage: <strong>${ratio}x</strong> OPEX<br>
-            Break-even: <strong>$${breakEven}</strong>/day
-            </div>`;
+    // HTML DÖNDÜR (Arayüzde direkt basılacak)
+    return `
+        <div style="border-left: 4px solid ${color}; padding-left: 10px;">
+            <div style="color:${color}; font-weight:900; font-size:1.2rem; margin-bottom:5px;">${sentiment}</div>
+            <div style="font-size:0.9rem; color:#e2e8f0; margin-bottom:8px;">${message}</div>
+            <div style="font-size:0.8rem; color:#cbd5e1; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <div>Coverage: <strong style="color:white">${ratio}x</strong> OPEX</div>
+                <div>Break-even: <strong style="color:white">$${v.financials.breakEvenRate.toFixed(2)}</strong>/ton</div>
+            </div>
+        </div>`;
 }
