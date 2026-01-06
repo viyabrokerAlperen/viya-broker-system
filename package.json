@@ -9,9 +9,19 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "@google/generative-ai": "^0.1.3",
+    "dotenv": "^16.3.1"
   },
   "engines": {
     "node": "18.x"
-  }
+  },
+  "keywords": [
+    "maritime",
+    "broker",
+    "ai",
+    "gemini"
+  ],
+  "author": "Viya Broker Team",
+  "license": "ISC"
 }
