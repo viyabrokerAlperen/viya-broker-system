@@ -1,5 +1,5 @@
 // public/app.js
-// VIYA BROKER - COMMAND INTERFACE (V2.5 "ADMIRAL" EDITION)
+// VIYA BROKER - COMMAND INTERFACE (V2.7 "ADMIRAL PATCHED")
 
 // GLOBAL DEĞİŞKENLER
 let currentVoyageData = null; 
@@ -53,7 +53,6 @@ const TRANSLATIONS = {
         footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır.",
         btn_read: "OKU", btn_download: "İNDİR", btn_view: "DETAYLAR"
     },
-    // Diğer diller varsayılan olarak İngilizce yapısına döner
 };
 
 // =================================================================
@@ -80,6 +79,9 @@ function enterSystem() {
 async function init() {
     console.log("⚓ VIYA SYSTEM INITIALIZING...");
     try {
+        // [YENİ EKLENDİ] Dashboard Rotalarını Yükle (Undefined Hatasını Çözen Yer)
+        loadDashboardRoutes();
+
         // Limanları Yükle
         const pRes = await fetch('/api/ports'); 
         const ports = await pRes.json();
@@ -101,17 +103,18 @@ async function init() {
         const vlsfoEl = document.getElementById('vlsfoPrice');
         
         if(m.brent) { 
-            oilEl.innerText = "$" + m.brent.toFixed(2); 
-            vlsfoEl.innerText = "$" + m.vlsfo; 
-            
-            // Eğer veri simülasyonsa belli et (Gizli özellik)
-            if(m.source === 'SIMULATED') {
-                oilEl.style.color = '#f59e0b'; // Sarı uyarısı
-                oilEl.title = "Simulated Data";
+            if(oilEl) {
+                oilEl.innerText = "$" + m.brent.toFixed(2); 
+                // Eğer veri simülasyonsa belli et
+                if(m.source === 'SIMULATED') {
+                    oilEl.style.color = '#f59e0b';
+                    oilEl.title = "Simulated Data";
+                }
             }
+            if(vlsfoEl) vlsfoEl.innerText = "$" + m.vlsfo; 
         } else {
-            oilEl.innerText = "N/A"; 
-            vlsfoEl.innerText = "N/A"; 
+            if(oilEl) oilEl.innerText = "N/A"; 
+            if(vlsfoEl) vlsfoEl.innerText = "N/A"; 
         }
 
         // İçerikleri Yükle
@@ -123,6 +126,52 @@ async function init() {
 }
 window.onload = init;
 
+// --- [YENİ FONKSİYON] DASHBOARD ROTALARINI ÇEKME ---
+async function loadDashboardRoutes() {
+    // HTML'de bu ID'ye sahip bir liste olmalı (genelde sağ panelde veya ana ekranda)
+    const routeList = document.getElementById('route-list');
+    if(!routeList) return; // Eğer HTML'de yoksa hata verme, sessizce çık
+
+    routeList.innerHTML = '<div class="text-center text-cyan-400 p-2 text-xs">Veriler taranıyor...</div>';
+
+    try {
+        const response = await fetch('/api/routes');
+        if(!response.ok) throw new Error('API Hatası');
+        
+        const routes = await response.json();
+        routeList.innerHTML = ''; // Temizle
+
+        routes.forEach(route => {
+            // BURASI ÖNEMLİ: Server'dan gelen 'origin', 'destination', 'distance' anahtarlarını kullanıyoruz.
+            const card = document.createElement('div');
+            card.className = 'bg-slate-800/50 border border-slate-700 p-3 rounded mb-2 cursor-pointer hover:border-cyan-400/50 transition-all';
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="text-[10px] text-gray-500 mb-1">${route.date || 'Tarih Yok'}</div>
+                        <div class="text-sm font-bold text-gray-200">
+                            ${route.origin} <span class="text-cyan-500">➜</span> ${route.destination}
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">${route.vessel_name || 'Spot'} • ${route.cargo}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-400 font-mono font-bold text-sm bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                            $${route.price ? route.price.toLocaleString() : '0'}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 font-mono">${route.distance} NM</div>
+                    </div>
+                </div>
+            `;
+            routeList.appendChild(card);
+        });
+
+    } catch (error) {
+        console.log("Rota yükleme hatası:", error);
+        routeList.innerHTML = '<div class="text-red-400 text-xs text-center">Bağlantı yok.</div>';
+    }
+}
+
 function switchView(id) { 
     document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active')); 
     document.getElementById(id).classList.add('active'); 
@@ -130,9 +179,12 @@ function switchView(id) {
     
     // Basit Navigasyon Eşleşmesi
     const navMap = {'dashboard':0, 'academy':1, 'regulations':2, 'docs':3, 'pricing':4};
-    if(navMap[id] !== undefined) document.querySelectorAll('.nav-item')[navMap[id]].classList.add('active');
+    if(navMap[id] !== undefined) {
+        const items = document.querySelectorAll('.nav-item');
+        if(items[navMap[id]]) items[navMap[id]].classList.add('active');
+    }
 
-    if(id === 'dashboard') setTimeout(() => map.invalidateSize(), 100); 
+    if(id === 'dashboard' && map) setTimeout(() => map.invalidateSize(), 100); 
 }
 
 function changeLanguage(lang) {
@@ -310,8 +362,6 @@ function showDetails(v, el) {
     const loadPos = [v.loadGeo?.lat || 0, v.loadGeo?.lng || 0];
     const dischPos = [v.dischGeo?.lat || 0, v.dischGeo?.lng || 0];
 
-    // Gemi -> Yükleme (Gri Çizgi - Balast)
-    // Yükleme -> Tahliye (Yeşil Çizgi - Yüklü)
     const routePoints = [shipPos, loadPos, dischPos];
     
     mapRouteLayer = L.polyline(routePoints, {
@@ -335,9 +385,6 @@ function showFinancials() {
     if(!currentVoyageData) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     const bd = currentVoyageData.breakdown;
-    
-    // Backend'deki yeni yapıya uygun eşleştirme
-    // breakdown: { revenue, voyage_costs: {fuel, port, cargo_canal, commission}, opex, total_expenses }
     
     const vc = bd.voyage_costs;
     const ox = bd.opex;
@@ -495,7 +542,6 @@ function loadAcademy() {
 }
 
 async function loadDocs() {
-    // Önceki fonksiyonun aynısı (Translation destekli)
     const dContainer = document.getElementById('docsContainer');
     if(!dContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
