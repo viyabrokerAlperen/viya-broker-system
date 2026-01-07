@@ -1,0 +1,7 @@
+[
+  { "id": 101, "name": "MV VIYA PIONEER", "type": "Handysize", "dwt": 32000, "built": 2012, "status": "Open Marmara / Spot", "flag": "Malta" },
+  { "id": 102, "name": "MV AEGEAN WIND", "type": "Supramax", "dwt": 58000, "built": 2015, "status": "Open W.Med / 15-20 Jan", "flag": "Marshall Is." },
+  { "id": 103, "name": "MV ATLANTIC ROSE", "type": "Panamax", "dwt": 75000, "built": 2010, "status": "Open Gib / Prompt", "flag": "Liberia" },
+  { "id": 104, "name": "MT BLACK PEARL", "type": "MR Tanker", "dwt": 50000, "built": 2018, "status": "Open Houston / 20-25 Jan", "flag": "Greece" },
+  { "id": 105, "name": "MV OCEAN GIANT", "type": "Capesize", "dwt": 180000, "built": 2020, "status": "Open China / Spot", "flag": "Panama" }
+]
