@@ -1,5 +1,6 @@
 // public/app.js
-// VIYA BROKER - COMMAND INTERFACE (V2.8 "CAPTAIN'S LOG EDITION")
+// VIYA BROKER - COMMAND INTERFACE (V12.5 "SMART MAP EDITION")
+// Changes: Added OpenSeaMap Layer & High Risk Areas. Removed buggy route lines.
 
 // GLOBAL DEĞİŞKENLER
 let currentVoyageData = null; 
@@ -21,7 +22,7 @@ const TRANSLATIONS = {
         nav_term: "Terminal", nav_kb: "Academy", nav_reg: "Regulations", nav_docs: "Docs", nav_mem: "Membership",
         menu_home: "Home", menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
         lbl_vessel: "VESSEL CLASS", lbl_port: "POSITION", lbl_speed: "SPEED", lbl_qty: "CARGO", lbl_lrate: "LOAD RATE", lbl_drate: "DISCH RATE",
-        btn_scan: "CALCULATE VOYAGE", panel_params: "PARAMETERS", panel_estim: "ESTIMATION",
+        btn_scan: "SCAN MARKET", panel_params: "PARAMETERS", panel_estim: "ESTIMATION",
         stat_profit: "Net Profit", btn_breakdown: "VIEW FULL BREAKDOWN", empty_state: "Awaiting Inputs...",
         modal_fin_title: "FINANCIAL BREAKDOWN",
         fin_rev: "REVENUE", fin_freight: "Gross Freight", fin_net: "NET REVENUE",
@@ -40,7 +41,7 @@ const TRANSLATIONS = {
         nav_term: "Terminal", nav_kb: "Akademi", nav_reg: "Mevzuat", nav_docs: "Evraklar", nav_mem: "Üyelik",
         menu_home: "Anasayfa", menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
         lbl_vessel: "GEMİ TİPİ", lbl_port: "KONUM", lbl_speed: "HIZ", lbl_qty: "YÜK", lbl_lrate: "YÜKLEME HIZI", lbl_drate: "TAHLİYE HIZI",
-        btn_scan: "SEFER HESAPLA", panel_params: "PARAMETRELER", panel_estim: "TAHMİN",
+        btn_scan: " PİYASAYI TARA", panel_params: "PARAMETRELER", panel_estim: "TAHMİN",
         stat_profit: "Net Kâr", btn_breakdown: "DETAYLI DÖKÜM", empty_state: "Veri Bekleniyor...",
         modal_fin_title: "FİNANSAL DÖKÜM",
         fin_rev: "GELİRLER", fin_freight: "Brüt Navlun", fin_net: "NET GELİR",
@@ -204,6 +205,33 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: 'VIYA MAPS' 
 }).addTo(map);
 
+// --- YENİ HARİTA KATMANLARI (SEAMARK & NO-GO) ---
+
+// 1. OpenSeaMap (Deniz İşaretleri, Şamandıralar)
+// Bu katman şeffaftır, ana haritanın üzerine gelir.
+L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: 'OpenSeaMap'
+}).addTo(map);
+
+// 2. High Risk Area (Korsan Bölgesi - Aden Körfezi/Somali)
+// Kırmızı taralı alan olarak gösterilir.
+const hraPolygon = L.polygon([
+    [12.5, 43.5], // Bab el Mandeb
+    [15.0, 55.0], // Arabian Sea
+    [5.0, 60.0],  // Indian Ocean
+    [-5.0, 50.0], // Seychelles yakını
+    [0.0, 40.0]   // Kenya açıkları
+], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.1,
+    weight: 1,
+    dashArray: '5, 10'
+}).addTo(map).bindPopup("HIGH RISK AREA (HRA) - Piracy Risk");
+
+// --- END MAP LAYERS ---
+
 let shipLayer = L.layerGroup().addTo(map);
 
 async function fillCoords() {
@@ -319,9 +347,6 @@ function showDetails(v, el) {
     profitEl.innerText = "$" + Math.floor(v.financials.profit).toLocaleString();
     profitEl.style.color = v.financials.profit > 0 ? '#4ade80' : '#f87171';
 
-    // --- DETAYLI MESAFE GÖSTERİMİ (YENİ) ---
-    // calculation.js'den gelen detaylı 'dist' objesini kullanıyoruz.
-    // Eğer dist bir obje değilse (eski sistem), basitçe göster.
     let distDisplay = "";
     if(v.dist && typeof v.dist === 'object') {
          distDisplay = `
@@ -343,28 +368,28 @@ function showDetails(v, el) {
 
     document.getElementById('aiOutput').innerHTML = v.aiAnalysis;
 
-    // --- HARİTA GÜNCELLEME (ROTA ÇİZGİSİ İPTAL, SADECE NOKTALAR) ---
+    // --- HARİTA GÜNCELLEME ---
     shipLayer.clearLayers();
-    // Varsa eski çizgiyi temizle, yenisini EKLEME.
-    if(mapRouteLayer) { map.removeLayer(mapRouteLayer); mapRouteLayer = null; }
-
+    
     const shipPos = [document.getElementById('vLat').value, document.getElementById('vLng').value];
     const loadPos = [v.loadGeo?.lat || 0, v.loadGeo?.lng || 0];
     const dischPos = [v.dischGeo?.lat || 0, v.dischGeo?.lng || 0];
 
     // MAVİ: Gemi
     L.circleMarker(shipPos, {radius:8, color:'#3b82f6', fillColor:'#3b82f6', fillOpacity:0.8})
-     .addTo(shipLayer).bindPopup("<b>SHIP POSITION</b>").openPopup();
+      .addTo(shipLayer).bindPopup("<b>SHIP POSITION</b>").openPopup();
     
     // SARI: Yükleme Limanı
     L.circleMarker(loadPos, {radius:8, color:'#eab308', fillColor:'#eab308', fillOpacity:0.8})
-     .addTo(shipLayer).bindPopup(`<b>LOAD:</b> ${v.params.loadPort}`);
+      .addTo(shipLayer).bindPopup(`<b>LOAD:</b> ${v.params.loadPort}`);
     
     // KIRMIZI: Tahliye Limanı
     L.circleMarker(dischPos, {radius:8, color:'#ef4444', fillColor:'#ef4444', fillOpacity:0.8})
-     .addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
+      .addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
 
-    // Haritayı Sığdır
+    // Rota Çizgisi (Polyline) - Opsiyonel, düz çizgi istiyorsan açabilirsin ama kapalı daha temiz.
+    // L.polyline([shipPos, loadPos, dischPos], {color: 'white', weight: 1, dashArray: '5, 5', opacity: 0.5}).addTo(shipLayer);
+
     const bounds = L.latLngBounds([shipPos, loadPos, dischPos]);
     map.fitBounds(bounds, {padding:[50,50]});
 }
@@ -395,7 +420,7 @@ function showFinancials() {
             <tr class="fin-sub-row"><td>- ${t.fin_pilot}</td><td>-$${Math.floor(vc.port.pilot).toLocaleString()}</td></tr>
             
             <tr><td>${t.fin_cargo}</td><td class="text-red-300">-$${Math.floor(vc.cargo_canal.total).toLocaleString()}</td></tr>
-            <tr class="fin-sub-row"><td>- ${t.fin_canal}</td><td>-$${Math.floor(vc.cargo_canal.canal).toLocaleString()}</td></tr>
+            <tr class="fin-sub-row"><td>- ${t.fin_canal} (${vc.cargo_canal.names || 'None'})</td><td>-$${Math.floor(vc.cargo_canal.canal).toLocaleString()}</td></tr>
 
             <tr><td>${t.fin_comm}</td><td class="text-red-300">-$${Math.floor(vc.commission).toLocaleString()}</td></tr>
 
@@ -415,6 +440,7 @@ function showFinancials() {
     document.getElementById('finModal').style.display = 'block';
 }
 
+// ... (AI Chatbot ve diğer fonksiyonlar aynen kalır)
 // =================================================================
 // 3. AI CHATBOT
 // =================================================================
@@ -440,7 +466,7 @@ async function sendChat() {
         const langName = LANG_NAMES[currentLang] || "English";
         const res = await fetch('/api/chat', {
             method: 'POST', 
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({message: msg, language: langName}) 
         });
         
