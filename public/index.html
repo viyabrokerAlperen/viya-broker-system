@@ -56,7 +56,7 @@
                 <h1 data-i18n="landing_title">NEXT GEN MARITIME INTELLIGENCE</h1>
                 <p data-i18n="landing_sub">Advanced Voyage Estimation, Legal Compliance & AI Brokerage.</p>
                 <div class="hero-actions">
-                    <button class="btn-primary" onclick="enterSystem()" data-i18n="btn_enter_term">ENTER TERMINAL</button>
+                    <button class="btn-primary" onclick="openAuthModal()" data-i18n="btn_enter_term">ENTER TERMINAL</button>
                     <button class="btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})" data-i18n="btn_learn_more">LEARN MORE</button>
                 </div>
             </div>
@@ -119,6 +119,10 @@
                 <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Docs</div>
                 <div class="nav-item" onclick="switchView('pricing')" data-i18n="nav_mem">Membership</div>
                 
+                <div id="userArea" class="nav-item" style="color:var(--neon-gold); display:none;" onclick="openProfileModal()">
+                    <i class="fa-solid fa-user-astronaut"></i> <span id="navUserName">PROFILE</span>
+                </div>
+
                 <select id="langSelectApp" onchange="changeLanguage(this.value)" class="lang-dropdown-small">
                     <option value="en">EN</option>
                     <option value="tr">TR</option>
@@ -154,7 +158,7 @@
                                 <div><label data-i18n="lbl_drate">DISCH RATE</label><input type="number" id="vDischRate" value="10000"></div>
                             </div>
                         </div>
-                        <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">CALCULATE VOYAGE</button>
+                        <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">SCAN MARKET</button>
                         <div id="cargoResultList" class="cargo-list"></div>
                     </div>
                 </aside>
@@ -242,6 +246,7 @@
     </div>
 
     <datalist id="portList"></datalist>
+
     <div id="authModal" class="modal" style="backdrop-filter: blur(10px); z-index: 9999;">
     <div class="modal-content" style="max-width: 400px; border: 1px solid var(--neon-cyan);">
         <div class="modal-header">
@@ -272,15 +277,40 @@
         </div>
         <div id="authMsg" style="text-align:center; margin-top:10px; font-size:0.8rem; height:20px;"></div>
     </div>
-</div>
-
-<div id="kvkkModal" class="modal" style="z-index: 10000;">
-    <div class="modal-content">
-        <div class="modal-header"><span class="modal-title" id="kvkkTitle">Loading...</span><span class="close-btn" onclick="closeModal('kvkkModal')">&times;</span></div>
-        <div class="modal-body" id="kvkkContent" style="white-space: pre-wrap; font-size:0.9rem; max-height:300px; overflow-y:auto;"></div>
-        <div style="text-align:right; margin-top:10px;"><button class="btn-secondary" onclick="document.getElementById('kvkkCheck').checked=true; closeModal('kvkkModal');">I AGREE</button></div>
     </div>
-</div>
+
+    <div id="kvkkModal" class="modal" style="z-index: 10000;">
+        <div class="modal-content">
+            <div class="modal-header"><span class="modal-title" id="kvkkTitle">Loading...</span><span class="close-btn" onclick="closeModal('kvkkModal')">&times;</span></div>
+            <div class="modal-body" id="kvkkContent" style="white-space: pre-wrap; font-size:0.9rem; max-height:300px; overflow-y:auto;"></div>
+            <div style="text-align:right; margin-top:10px;"><button class="btn-secondary" onclick="document.getElementById('kvkkCheck').checked=true; closeModal('kvkkModal');">I AGREE</button></div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal" style="backdrop-filter: blur(10px); z-index:10001;">
+        <div class="modal-content" style="max-width: 350px; border: 1px solid var(--neon-gold); text-align:center;">
+            <div class="modal-header">
+                <span class="modal-title">CAPTAIN'S LOG</span>
+                <span class="close-btn" onclick="closeModal('profileModal')">&times;</span>
+            </div>
+            
+            <div style="padding: 20px 0;">
+                <div style="width:80px; height:80px; background:#222; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; border:2px solid var(--neon-cyan);">
+                    <i class="fa-solid fa-user-tie" style="font-size:40px; color:var(--neon-cyan);"></i>
+                </div>
+                <h3 id="pName" style="color:white; margin:0;">Captain</h3>
+                <p id="pEmail" style="color:#888; font-size:0.9rem; margin-top:5px;">...</p>
+                <div style="margin:15px 0; padding:5px; background:rgba(255,215,0,0.1); border:1px solid var(--neon-gold); color:var(--neon-gold); font-size:0.8rem; display:inline-block; padding:5px 15px; border-radius:15px;">
+                    MEMBERSHIP: <b id="pPlan">FREE</b>
+                </div>
+            </div>
+
+            <button class="btn-action" onclick="logout()" style="width:100%; background: #ef4444; border-color: #ef4444;">
+                <i class="fa-solid fa-right-from-bracket"></i> LOG OUT
+            </button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
