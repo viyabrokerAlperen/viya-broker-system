@@ -45,7 +45,7 @@
             <option value="it">🇮🇹</option>
             <option value="gr">🇬🇷</option>
         </select>
-        <button class="lp-btn-login" onclick="enterSystem()">LOG IN</button>
+        <button class="lp-btn-login" onclick="openAuthModal()">LOG IN</button>
     </div>
 </header>
 
@@ -242,6 +242,45 @@
     </div>
 
     <datalist id="portList"></datalist>
+    <div id="authModal" class="modal" style="backdrop-filter: blur(10px); z-index: 9999;">
+    <div class="modal-content" style="max-width: 400px; border: 1px solid var(--neon-cyan);">
+        <div class="modal-header">
+            <span class="modal-title">VIYA ID ACCESS</span>
+            <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
+        </div>
+        <div class="auth-tabs" style="display:flex; margin-bottom:15px; border-bottom:1px solid #444;">
+            <div class="auth-tab active" onclick="switchAuthTab('login')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:var(--neon-cyan);">LOGIN</div>
+            <div class="auth-tab" onclick="switchAuthTab('register')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#888;">REGISTER</div>
+        </div>
+        
+        <div id="loginForm" class="auth-form">
+            <input type="email" id="lEmail" placeholder="E-Mail" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
+            <input type="password" id="lPass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
+            <button class="btn-action" onclick="doLogin()" style="width:100%;">SECURE LOGIN</button>
+        </div>
+
+        <div id="registerForm" class="auth-form" style="display:none;">
+            <input type="text" id="rName" placeholder="Full Name / Company" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
+            <input type="email" id="rEmail" placeholder="E-Mail" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
+            <input type="password" id="rPass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
+            
+            <div style="margin:10px 0; font-size:0.8rem; color:#ccc; display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="kvkkCheck">
+                <label for="kvkkCheck">I accept the <a href="#" onclick="showKVKK(); return false;" style="color:var(--neon-cyan)">Privacy Policy (KVKK)</a>.</label>
+            </div>
+            <button class="btn-action" onclick="doRegister()" style="width:100%;">CREATE ACCOUNT</button>
+        </div>
+        <div id="authMsg" style="text-align:center; margin-top:10px; font-size:0.8rem; height:20px;"></div>
+    </div>
+</div>
+
+<div id="kvkkModal" class="modal" style="z-index: 10000;">
+    <div class="modal-content">
+        <div class="modal-header"><span class="modal-title" id="kvkkTitle">Loading...</span><span class="close-btn" onclick="closeModal('kvkkModal')">&times;</span></div>
+        <div class="modal-body" id="kvkkContent" style="white-space: pre-wrap; font-size:0.9rem; max-height:300px; overflow-y:auto;"></div>
+        <div style="text-align:right; margin-top:10px;"><button class="btn-secondary" onclick="document.getElementById('kvkkCheck').checked=true; closeModal('kvkkModal');">I AGREE</button></div>
+    </div>
+</div>
     <script src="app.js"></script>
 </body>
 </html>
