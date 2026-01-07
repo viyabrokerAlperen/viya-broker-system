@@ -647,3 +647,109 @@ function downloadFile(filename, content) {
 }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
+// =================================================================
+// 5. AUTHENTICATION LOGIC (VIYA ID)
+// =================================================================
+
+let currentUser = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('viya_token');
+    const userStr = localStorage.getItem('viya_user');
+    if (token && userStr) {
+        currentUser = JSON.parse(userStr);
+        // Giriş yapıldıysa buton "TERMINAL" olur ve direkt açar
+        const loginBtn = document.querySelector('.lp-btn-login');
+        if(loginBtn) {
+            loginBtn.innerText = "OPEN TERMINAL";
+            loginBtn.onclick = enterSystem;
+        }
+    }
+});
+
+function openAuthModal() {
+    if (currentUser) { enterSystem(); return; }
+    document.getElementById('authModal').style.display = 'block';
+}
+
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(e => {
+        e.classList.remove('active');
+        e.style.color = '#888';
+    });
+    document.querySelectorAll('.auth-form').forEach(e => e.style.display = 'none');
+    
+    if (tab === 'login') {
+        document.querySelectorAll('.auth-tab')[0].classList.add('active');
+        document.querySelectorAll('.auth-tab')[0].style.color = 'var(--neon-cyan)';
+        document.getElementById('loginForm').style.display = 'block';
+    } else {
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.querySelectorAll('.auth-tab')[1].style.color = 'var(--neon-cyan)';
+        document.getElementById('registerForm').style.display = 'block';
+    }
+}
+
+async function showKVKK() {
+    try {
+        const res = await fetch('/api/kvkk');
+        const data = await res.json();
+        document.getElementById('kvkkTitle').innerText = data.title;
+        document.getElementById('kvkkContent').innerText = data.content;
+        document.getElementById('kvkkModal').style.display = 'block';
+    } catch(e) {}
+}
+
+async function doLogin() {
+    const email = document.getElementById('lEmail').value;
+    const pass = document.getElementById('lPass').value;
+    const msg = document.getElementById('authMsg');
+    
+    msg.innerText = "Connecting..."; msg.style.color = "yellow";
+
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, password: pass})
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem('viya_token', data.token);
+            localStorage.setItem('viya_user', JSON.stringify(data.user));
+            currentUser = data.user;
+            msg.innerText = "Access Granted."; msg.style.color = "#4ade80";
+            setTimeout(() => { closeModal('authModal'); enterSystem(); }, 1000);
+        } else {
+            msg.innerText = data.error || "Login Failed"; msg.style.color = "#ef4444";
+        }
+    } catch(e) { msg.innerText = "Connection Error"; }
+}
+
+async function doRegister() {
+    const name = document.getElementById('rName').value;
+    const email = document.getElementById('rEmail').value;
+    const pass = document.getElementById('rPass').value;
+    const kvkk = document.getElementById('kvkkCheck').checked;
+    const msg = document.getElementById('authMsg');
+
+    if(!kvkk) { msg.innerText = "Please accept KVKK."; msg.style.color = "#ef4444"; return; }
+    msg.innerText = "Creating ID...";
+
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({fullName: name, email, password: pass, kvkkAccepted: kvkk})
+        });
+        const data = await res.json();
+
+        if(data.success) {
+            msg.innerText = "ID Created! Please Login."; msg.style.color = "#4ade80";
+            setTimeout(() => switchAuthTab('login'), 1500);
+        } else {
+            msg.innerText = data.error; msg.style.color = "#ef4444";
+        }
+    } catch(e) { msg.innerText = "Error"; }
+}
