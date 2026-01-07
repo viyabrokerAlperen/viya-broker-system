@@ -1,6 +1,6 @@
 {
   "name": "viya-broker-system",
-  "version": "60.1.0",
+  "version": "13.0.0",
   "description": "Viya Broker - The Maritime Hub (Professional Edition)",
   "main": "server.js",
   "type": "module",
@@ -13,7 +13,10 @@
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.3.1",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "cookie-parser": "^1.4.6"
   },
   "engines": {
     "node": "20.x"
