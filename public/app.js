@@ -1,6 +1,6 @@
 // public/app.js
-// VIYA BROKER - COMMAND INTERFACE (V12.5 "SMART MAP EDITION")
-// Changes: Added OpenSeaMap Layer & High Risk Areas. Removed buggy route lines.
+// VIYA BROKER - COMMAND INTERFACE (V15.0 FINAL)
+// Features: Voyage Calc, Smart Map, Auth, Profile Management, Chatbot
 
 // GLOBAL DEĞİŞKENLER
 let currentVoyageData = null; 
@@ -208,14 +208,12 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 // --- YENİ HARİTA KATMANLARI (SEAMARK & NO-GO) ---
 
 // 1. OpenSeaMap (Deniz İşaretleri, Şamandıralar)
-// Bu katman şeffaftır, ana haritanın üzerine gelir.
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: 'OpenSeaMap'
 }).addTo(map);
 
 // 2. High Risk Area (Korsan Bölgesi - Aden Körfezi/Somali)
-// Kırmızı taralı alan olarak gösterilir.
 const hraPolygon = L.polygon([
     [12.5, 43.5], // Bab el Mandeb
     [15.0, 55.0], // Arabian Sea
@@ -387,9 +385,6 @@ function showDetails(v, el) {
     L.circleMarker(dischPos, {radius:8, color:'#ef4444', fillColor:'#ef4444', fillOpacity:0.8})
       .addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
 
-    // Rota Çizgisi (Polyline) - Opsiyonel, düz çizgi istiyorsan açabilirsin ama kapalı daha temiz.
-    // L.polyline([shipPos, loadPos, dischPos], {color: 'white', weight: 1, dashArray: '5, 5', opacity: 0.5}).addTo(shipLayer);
-
     const bounds = L.latLngBounds([shipPos, loadPos, dischPos]);
     map.fitBounds(bounds, {padding:[50,50]});
 }
@@ -440,7 +435,6 @@ function showFinancials() {
     document.getElementById('finModal').style.display = 'block';
 }
 
-// ... (AI Chatbot ve diğer fonksiyonlar aynen kalır)
 // =================================================================
 // 3. AI CHATBOT
 // =================================================================
@@ -518,7 +512,7 @@ function typeWriterEffect(text) {
 }
 
 // =================================================================
-// 4. CONTENT LOADERS (WITH BACKUP DATA)
+// 4. CONTENT LOADERS
 // =================================================================
 
 function openContentModal(title, content) {
@@ -533,7 +527,7 @@ function loadAcademy() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     aGrid.innerHTML = "";
     
-    // YEDEK VERİLER (API Boş Dönerse Bunlar Gözükecek)
+    // YEDEK VERİLER
     const ACADEMY_DATA = [
         {icon: "fa-scale-balanced", title: "Laytime Basics", desc: "SHINC vs SHEX explained.", content: "Laytime is the amount of time allowed..."},
         {icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR risks.", content: "Incoterms define the responsibilities of buyers and sellers..."},
@@ -579,7 +573,7 @@ async function loadDocs() {
         if(json && json.length > 0) data = json;
         else data = FALLBACK_DOCS;
     } catch(e) {
-        data = FALLBACK_DOCS; // Hata olursa yedeği kullan
+        data = FALLBACK_DOCS;
     }
 
     dContainer.innerHTML = "";
@@ -607,7 +601,6 @@ async function loadRegulations() {
     if(!rGrid) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
 
-    // YEDEK MEVZUAT LİSTESİ
     const FALLBACK_REGS = [
         {code: "SOLAS", title: "Safety of Life at Sea", summary: "Minimum safety standards for construction, equipment...", content: "Chapter I..."},
         {code: "MARPOL", title: "Marine Pollution", summary: "Prevention of pollution by ships (Oil, Chemicals, Sewage)...", content: "Annex I..."}
@@ -636,7 +629,6 @@ async function loadRegulations() {
     });
 }
 
-// UTILS
 function downloadFile(filename, content) {
     const element = document.createElement('a');
     const file = new Blob([content], {type: 'text/plain'});
@@ -647,8 +639,9 @@ function downloadFile(filename, content) {
 }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
+
 // =================================================================
-// 5. AUTHENTICATION LOGIC (VIYA ID)
+// 5. AUTHENTICATION & PROFILE LOGIC (VIYA ID)
 // =================================================================
 
 let currentUser = null;
@@ -656,13 +649,23 @@ let currentUser = null;
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem('viya_token');
     const userStr = localStorage.getItem('viya_user');
+    
     if (token && userStr) {
         currentUser = JSON.parse(userStr);
-        // Giriş yapıldıysa buton "TERMINAL" olur ve direkt açar
+        
+        // 1. Landing Page'deki butonu "ENTER" yap
         const loginBtn = document.querySelector('.lp-btn-login');
         if(loginBtn) {
-            loginBtn.innerText = "OPEN TERMINAL";
+            loginBtn.innerText = "ENTER TERMINAL";
             loginBtn.onclick = enterSystem;
+        }
+
+        // 2. İçerideki Navigasyon Barına İsmini Yaz
+        const userArea = document.getElementById('userArea');
+        if(userArea) {
+            userArea.style.display = 'block'; // Görünür yap
+            // İsimden ilk parçayı alıp büyük harf yap
+            document.getElementById('navUserName').innerText = currentUser.fullName.split(' ')[0].toUpperCase();
         }
     }
 });
@@ -720,7 +723,7 @@ async function doLogin() {
             localStorage.setItem('viya_user', JSON.stringify(data.user));
             currentUser = data.user;
             msg.innerText = "Access Granted."; msg.style.color = "#4ade80";
-            setTimeout(() => { closeModal('authModal'); enterSystem(); }, 1000);
+            setTimeout(() => { closeModal('authModal'); enterSystem(); window.location.reload(); }, 1000);
         } else {
             msg.innerText = data.error || "Login Failed"; msg.style.color = "#ef4444";
         }
@@ -752,4 +755,25 @@ async function doRegister() {
             msg.innerText = data.error; msg.style.color = "#ef4444";
         }
     } catch(e) { msg.innerText = "Error"; }
+}
+
+// PROFIL PENCERESİNİ AÇ
+function openProfileModal() {
+    if(!currentUser) return;
+    
+    document.getElementById('pName').innerText = currentUser.fullName;
+    document.getElementById('pEmail').innerText = currentUser.email;
+    document.getElementById('pPlan').innerText = currentUser.role === 'admin' ? 'ADMIRAL' : 'FREE CADET';
+    
+    document.getElementById('profileModal').style.display = 'block';
+}
+
+// GÜVENLİ ÇIKIŞ (LOGOUT)
+function logout() {
+    if(confirm("Are you sure you want to abandon ship, Captain?")) {
+        localStorage.removeItem('viya_token');
+        localStorage.removeItem('viya_user');
+        currentUser = null;
+        window.location.reload();
+    }
 }
