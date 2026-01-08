@@ -1,7 +1,7 @@
 {
   "name": "viya-broker-system",
-  "version": "13.0.0",
-  "description": "Viya Broker - The Maritime Hub (Professional Edition)",
+  "version": "15.0.0",
+  "description": "Viya Broker - The Maritime Hub (Platinum Edition with MongoDB)",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -16,7 +16,8 @@
     "cheerio": "^1.0.0-rc.12",
     "bcrypt": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.6",
+    "mongoose": "^8.0.0"
   },
   "engines": {
     "node": "20.x"
