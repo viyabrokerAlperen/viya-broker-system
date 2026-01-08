@@ -1,6 +1,6 @@
 // server.js
-// VIYA BROKER - PLATINUM EDITION (V14.0 - Auth & KVKK)
-// Features: Smart Channel Logic + User Authentication + Real Market Data
+// VIYA BROKER - PLATINUM EDITION (V16.0 - MongoDB Atlas Integration)
+// Status: DATABASE CONNECTED - PERSISTENT DATA STORAGE
 
 import express from 'express';
 import cors from 'cors';
@@ -9,10 +9,10 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
-// --- YENİ GÜVENLİK PAKETLERİ ---
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose'; // YENİ: Veritabanı Sürücüsü
 
 dotenv.config();
 
@@ -22,10 +22,32 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 10000;
 
-// GÜVENLİK AYARLARI
-const SECRET_KEY = process.env.JWT_SECRET || "VIYA_SUPER_SECRET_KEY_2026"; // Bunu .env'ye de koyabilirsin
-const USERS_FILE = path.join(process.cwd(), 'data', 'users.json');
+// GÜVENLİK VE BAĞLANTI AYARLARI
+const SECRET_KEY = process.env.JWT_SECRET || "VIYA_SUPER_SECRET_KEY_2026";
+const MONGO_URI = process.env.MONGO_URI; // Render'dan gelecek bağlantı adresi
 
+// --- MONGODB BAĞLANTISI ---
+if (MONGO_URI) {
+    mongoose.connect(MONGO_URI)
+        .then(() => console.log(" ✅ [SYSTEM] DATABASE: CONNECTED (MongoDB Atlas)"))
+        .catch(err => console.error(" ❌ [SYSTEM] DATABASE ERROR:", err));
+} else {
+    console.warn(" ⚠️ [SYSTEM] MONGO_URI eksik! Veritabanı çalışmayacak.");
+}
+
+// --- MONGODB USER ŞEMASI ---
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    fullName: { type: String, default: "Captain" },
+    role: { type: String, default: "user" },
+    plan: { type: String, default: "FREE" },
+    createdAt: { type: Date, default: Date.now },
+    kvkkAccepted: { type: Boolean, default: false }
+});
+const User = mongoose.model('User', userSchema);
+
+// AI SETUP
 const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
 let genAI = null;
 if (API_KEY) {
@@ -39,8 +61,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 1. DATA & USER MANAGEMENT
+// 1. DATA LOADERS (STATİK VERİLER HALA DOSYADA)
 // ==========================================
+// Limanlar, gemiler ve dokümanlar çok değişmediği için JSON'da kalabilir.
+// Sadece Üyeleri veritabanına taşıdık.
 
 const loadRawJSON = (filename) => {
     try {
@@ -52,15 +76,6 @@ const loadRawJSON = (filename) => {
     } catch (e) { return null; }
 };
 
-// Kullanıcı İşlemleri
-const getUsers = () => {
-    try { 
-        if (!fs.existsSync(USERS_FILE)) return [];
-        return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); 
-    } catch (e) { return []; }
-};
-const saveUsers = (users) => fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-
 const PORT_DB_RAW = loadRawJSON('ports.json') || {};
 const DOCS_DB = loadRawJSON('documents.json') || [];
 const REGS_DB = loadRawJSON('regulations.json') || [];
@@ -69,10 +84,7 @@ const VESSEL_DB = loadRawJSON('vessels.json') || [];
 let PORT_DB = {};
 const cleanPortName = (name) => {
     if (!name) return "";
-    return name.toUpperCase()
-        .replace(/İ/g, "I").replace(/Ğ/g, "G").replace(/Ü/g, "U")
-        .replace(/Ş/g, "S").replace(/Ö/g, "O").replace(/Ç/g, "C")
-        .trim();
+    return name.toUpperCase().replace(/İ/g, "I").replace(/Ğ/g, "G").replace(/Ü/g, "U").replace(/Ş/g, "S").replace(/Ö/g, "O").replace(/Ç/g, "C").trim();
 };
 
 if (Object.keys(PORT_DB_RAW).length > 0) {
@@ -82,10 +94,10 @@ if (Object.keys(PORT_DB_RAW).length > 0) {
         }
     });
 } else {
+    // Fallback Ports
     PORT_DB["ISTANBUL"] = {lat: 41.0082, lng: 28.9784};
     PORT_DB["SHANGHAI"] = {lat: 31.2304, lng: 121.4737};
     PORT_DB["ROTTERDAM"] = {lat: 51.9225, lng: 4.47917};
-    PORT_DB["SINGAPORE"] = {lat: 1.3521, lng: 103.8198};
 }
 
 const MARKET_RATES = {
@@ -98,7 +110,7 @@ const MARKET_RATES = {
 };
 
 // ==========================================
-// 2. AUTH & KVKK ENDPOINTS
+// 2. AUTH & KVKK ENDPOINTS (MONGODB POWERED)
 // ==========================================
 
 app.get('/api/kvkk', (req, res) => {
@@ -111,48 +123,62 @@ app.get('/api/kvkk', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password, fullName, kvkkAccepted } = req.body;
+        
         if (!kvkkAccepted) return res.status(400).json({ error: "KVKK onayı zorunludur." });
         if (!email || !password) return res.status(400).json({ error: "E-posta ve şifre giriniz." });
 
-        const users = getUsers();
-        if (users.find(u => u.email === email)) return res.status(400).json({ error: "Bu e-posta zaten kayıtlı." });
+        // MongoDB Kontrolü
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ error: "Bu e-posta zaten kayıtlı." });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = {
-            id: Date.now(),
+        
+        // Yeni Kullanıcı Oluştur (Veritabanına Kayıt)
+        const newUser = await User.create({
             email,
             password: hashedPassword,
             fullName: fullName || "Captain",
-            role: "user",
-            created: new Date().toISOString()
-        };
+            kvkkAccepted: true
+        });
 
-        users.push(newUser);
-        saveUsers(users);
         res.json({ success: true, msg: "Kayıt başarılı! Giriş yapın." });
-    } catch (e) { res.status(500).json({ error: "Sunucu hatası." }); }
+    } catch (e) { 
+        console.error(e);
+        res.status(500).json({ error: "Veritabanı hatası." }); 
+    }
 });
 
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const users = getUsers();
-        const user = users.find(u => u.email === email);
-
+        
+        // Veritabanından Kullanıcıyı Bul
+        const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ error: "Kullanıcı bulunamadı." });
         
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Hatalı şifre." });
 
-        const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
-        const { password: _, ...userData } = user; // Şifreyi gönderme
+        const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
+        
+        // Şifreyi çıkartıp gönder
+        const userData = {
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+            plan: user.plan
+        };
         
         res.json({ success: true, token, user: userData });
-    } catch (e) { res.status(500).json({ error: "Giriş hatası." }); }
+    } catch (e) { 
+        console.error(e);
+        res.status(500).json({ error: "Giriş hatası." }); 
+    }
 });
 
 // ==========================================
-// 3. ANALİZ MOTORU & DİĞERLERİ
+// 3. VOYAGE ANALYTICS ENGINE
 // ==========================================
 
 function checkCanals(loadGeo, dischGeo) {
