@@ -303,15 +303,50 @@ app.get('/api/documents', (req, res) => res.json(DOCS_DB));
 app.get('/api/regulations', (req, res) => res.json(REGS_DB));
 app.get('/api/vessels', (req, res) => res.json(VESSEL_DB));
 app.get('/api/routes', (req, res) => res.json([]));
+// ... (Önceki kodlar aynı) ...
+
 app.post('/api/chat', async (req, res) => {
     try {
-        if(!genAI) return res.json({ reply: "API Key yok." });
+        if(!genAI) return res.json({ reply: "Sistem: AI Motoru Devre Dışı (API Key Yok)." });
+        
+        const { message, language } = req.body;
+        const userLang = language || "English";
+
+        // --- VIYA AI KURUMSAL KİMLİK (RESMİ) ---
+        const systemPrompt = `
+        IDENTITY: You are VIYA AI, an advanced maritime artificial intelligence created specifically for the 'Viya Broker' platform.
+        ROLE: You are a Professional Shipbroker and Legal Consultant.
+        
+        YOUR KNOWLEDGE BASE:
+        1. Expert in Chartering (Voyage, Time), Laytime, Demurrage, and Despatch.
+        2. Expert in maritime regulations (SOLAS, MARPOL) and contracts (GENCON, NYPE).
+        3. You speak with a FORMAL, CORPORATE, and PROFESSIONAL tone.
+        
+        RULES:
+        1. NEVER say you are a Google AI. You are VIYA AI.
+        2. If asked "Who are you?", answer: "I am VIYA AI, your professional maritime intelligence assistant."
+        3. DO NOT use colloquial terms like 'Reis', 'Kaptan', 'Bro', 'Buddy'.
+        4. Address the user formally (e.g., 'Sir/Madam' in English, 'Siz' language in Turkish).
+        5. Keep answers precise, objective, and business-oriented.
+        6. Respond strictly in the following language: ${userLang}.
+
+        USER MESSAGE: "${message}"
+        `;
+
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const result = await model.generateContent(req.body.message);
+        const result = await model.generateContent(systemPrompt);
+        
         res.json({ reply: result.response.text() });
-    } catch(e) { res.json({ reply: "Meşgul." }); }
+
+    } catch(e) { 
+        console.error(e);
+        res.json({ reply: "Bağlantı hatası. Lütfen tekrar deneyiniz." }); 
+    }
 });
+
+// ... (app.listen kısmı aynı) ...
 
 app.listen(port, () => {
     console.log(`\n ⚓ VIYA BROKER SYSTEM ONLINE (Port: ${port})`);
 });
+
