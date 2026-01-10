@@ -777,3 +777,172 @@ function logout() {
         window.location.reload();
     }
 }
+// =================================================================
+// 6. DOCUMENT STUDIO LOGIC (NEW)
+// =================================================================
+
+let currentTemplate = null;
+
+// Sayfa yüklenince listeyi çek
+document.addEventListener("DOMContentLoaded", async () => {
+    // ... Mevcut kodlar ...
+    await loadTemplateList(); // Bunu ekle
+});
+
+async function loadTemplateList() {
+    try {
+        const res = await fetch('/api/templates');
+        const list = await res.json();
+        const sel = document.getElementById('docTemplateSelect');
+        if(!sel) return;
+
+        // Kategorilere göre grupla
+        const groups = {};
+        list.forEach(t => {
+            if(!groups[t.category]) groups[t.category] = [];
+            groups[t.category].push(t);
+        });
+
+        // Select box'ı doldur
+        Object.keys(groups).forEach(cat => {
+            const group = document.createElement('optgroup');
+            group.label = cat;
+            groups[cat].forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.innerText = t.title;
+                group.appendChild(opt);
+            });
+            sel.appendChild(group);
+        });
+    } catch(e) { console.error("Template load error", e); }
+}
+
+async function loadTemplateForm() {
+    const id = document.getElementById('docTemplateSelect').value;
+    const formDiv = document.getElementById('step2-form');
+    const inputContainer = document.getElementById('dynamicFormInputs');
+    const infoBox = document.getElementById('templateInfo');
+    
+    if(!id) {
+        formDiv.style.display = 'none';
+        infoBox.style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/templates/' + id);
+        currentTemplate = await res.json();
+
+        // Bilgi kutusunu güncelle
+        document.getElementById('selDocTitle').innerText = currentTemplate.title;
+        document.getElementById('selDocCat').innerText = currentTemplate.category;
+        infoBox.style.display = 'block';
+
+        // Formu temizle ve yeni inputları ekle
+        inputContainer.innerHTML = '';
+        
+        currentTemplate.fields.forEach(field => {
+            const wrap = document.createElement('div');
+            wrap.className = 'input-group';
+            
+            const label = document.createElement('label');
+            label.innerText = field.label;
+            
+            let input;
+            if(field.type === 'textarea') {
+                input = document.createElement('textarea');
+                input.rows = 3;
+                input.style.resize = 'vertical';
+            } else if(field.type === 'select') {
+                input = document.createElement('select');
+                field.options.forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt; o.innerText = opt;
+                    input.appendChild(o);
+                });
+            } else {
+                input = document.createElement('input');
+                input.type = field.type;
+            }
+            
+            input.id = 'inp_' + field.key;
+            if(field.placeholder) input.placeholder = field.placeholder;
+            if(field.default) input.value = field.default;
+            
+            // Otomatik veri doldurma (Varsa)
+            if(field.key === 'VESSEL_NAME' && document.getElementById('vType')) {
+                // Burada kullanıcı profiline göre de doldurabiliriz ileride
+            }
+            if(field.key === 'DATE') {
+                 input.value = new Date().toISOString().split('T')[0];
+            }
+
+            wrap.appendChild(label);
+            wrap.appendChild(input);
+            inputContainer.appendChild(wrap);
+        });
+
+        formDiv.style.display = 'block';
+
+    } catch(e) { console.error(e); }
+}
+
+async function generateDocument() {
+    if(!currentTemplate) return;
+
+    // Input verilerini topla
+    const inputs = {};
+    currentTemplate.fields.forEach(field => {
+        const val = document.getElementById('inp_' + field.key).value;
+        inputs[field.key] = val;
+    });
+
+    const btn = document.querySelector('#step2-form button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
+
+    try {
+        const res = await fetch('/api/generate-document', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                templateId: currentTemplate.id,
+                inputs: inputs
+            })
+        });
+        const data = await res.json();
+        
+        if(data.success) {
+            document.getElementById('docEditor').value = data.document;
+        } else {
+            alert("Error generating document");
+        }
+    } catch(e) {
+        console.error(e);
+        alert("System Error");
+    } finally {
+        btn.innerHTML = originalText;
+    }
+}
+
+function downloadPDF() {
+    const text = document.getElementById('docEditor').value;
+    if(!text) return;
+    
+    // Basit bir .txt indiricisi (PDF için kütüphane gerekir, şimdilik TXT yeterli)
+    const element = document.createElement('a');
+    const file = new Blob([text], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = (currentTemplate ? currentTemplate.title : "Document") + "_" + Date.now() + ".txt";
+    document.body.appendChild(element);
+    element.click();
+}
+
+function copyToClipboard() {
+    const copyText = document.getElementById("docEditor");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); 
+    navigator.clipboard.writeText(copyText.value);
+    alert("Copied to clipboard!");
+}
