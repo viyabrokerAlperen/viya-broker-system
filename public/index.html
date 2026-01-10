@@ -10,10 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <link rel="stylesheet" href="style.css">
-    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="loader" id="loader">
@@ -24,30 +25,24 @@
     </div>
 
     <div id="landing-page">
-       <header class="lp-header">
-    <div class="lp-brand">
-        <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" style="height: 35px;"> VIYA
-        VIYA BROKER
-    </div>
-    <div class="lp-menu-wrapper">
-        <nav class="lp-nav">
-            <a href="#hero">Home</a>
-            <a href="#about">About Us</a>
-            <a href="#mission">Mission</a>
-            <a href="#contact">Contact</a>
-        </nav>
-        <select id="langSelectLanding" onchange="changeLanguage(this.value)" class="lang-dropdown">
-            <option value="en">🇬🇧</option>
-            <option value="tr">🇹🇷</option>
-            <option value="de">🇩🇪</option>
-            <option value="fr">🇫🇷</option>
-            <option value="es">🇪🇸</option>
-            <option value="it">🇮🇹</option>
-            <option value="gr">🇬🇷</option>
-        </select>
-        <button class="lp-btn-login" onclick="openAuthModal()">LOG IN</button>
-    </div>
-</header>
+        <header class="lp-header">
+            <div class="lp-brand">
+                <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" style="height: 35px;"> VIYA BROKER
+            </div>
+            <div class="lp-menu-wrapper">
+                <nav class="lp-nav">
+                    <a href="#hero">Home</a>
+                    <a href="#about">About Us</a>
+                    <a href="#mission">Mission</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+                <select id="langSelectLanding" onchange="changeLanguage(this.value)" class="lang-dropdown">
+                    <option value="en">🇬🇧</option>
+                    <option value="tr">🇹🇷</option>
+                </select>
+                <button class="lp-btn-login" onclick="openAuthModal()">LOG IN</button>
+            </div>
+        </header>
 
         <section id="hero" class="lp-hero">
             <div class="hero-overlay"></div>
@@ -63,46 +58,8 @@
         </section>
 
         <section id="about" class="lp-section">
-            <h2 class="sec-title" data-i18n="menu_about">WHO WE ARE</h2>
-            <div class="sec-content">
-                <p>VIYA BROKER is a cutting-edge maritime technology firm dedicated to digitizing the shipbroking industry. We combine traditional maritime knowledge with advanced Artificial Intelligence to provide accurate voyage estimations and legal compliance checks.</p>
-                <div class="features-grid">
-                    <div class="f-card">
-                        <i class="fa-solid fa-brain"></i>
-                        <h3>AI Powered</h3>
-                        <p>Instant legal & operational answers powered by Gemini Pro.</p>
-                    </div>
-                    <div class="f-card">
-                        <i class="fa-solid fa-calculator"></i>
-                        <h3>Precise Calc</h3>
-                        <p>Voyage estimation with real-time bunker prices and port dues.</p>
-                    </div>
-                    <div class="f-card">
-                        <i class="fa-solid fa-globe"></i>
-                        <h3>Global Reach</h3>
-                        <p>Database of 500+ ports and international regulations.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="mission" class="lp-section alt-bg">
-            <h2 class="sec-title" data-i18n="menu_mission">OUR MISSION</h2>
-            <div class="sec-content text-center">
-                <p class="mission-text">"To empower shipowners and charterers with instant, accurate, and actionable intelligence, eliminating the inefficiencies of traditional brokerage."</p>
-            </div>
-        </section>
-
-        <section id="contact" class="lp-section">
-            <h2 class="sec-title" data-i18n="menu_contact">CONTACT US</h2>
-            <div class="contact-box">
-                <div class="c-item"><i class="fa-solid fa-envelope"></i> <span>chartering@viyabroker.com</span></div>
-                <div class="c-item"><i class="fa-solid fa-phone"></i> <span>+90 212 555 0000</span></div>
-                <div class="c-item"><i class="fa-solid fa-location-dot"></i> <span>Istanbul, Turkiye</span></div>
-            </div>
-            <div class="footer">
-                <span data-i18n="footer_rights">© 2026 VIYA BROKER. All Rights Reserved.</span>
-            </div>
+            <h2 class="sec-title">WHO WE ARE</h2>
+            <div class="sec-content"><p>VIYA BROKER is a cutting-edge maritime technology firm dedicated to digitizing the shipbroking industry.</p></div>
         </section>
     </div>
 
@@ -114,11 +71,9 @@
             </div>
             <div class="nav-links">
                 <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
-                <div class="nav-item" onclick="switchView('document-studio')" data-i18n="nav_docstudio">Document Studio</div>
-                <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
-                <div class="nav-item" onclick="switchView('regulations')" data-i18n="nav_reg">Regulations</div>
-                <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Docs</div>
-                <div class="nav-item" onclick="switchView('pricing')" data-i18n="nav_mem">Membership</div>
+                <div class="nav-item" onclick="switchView('marketplace')" style="color:var(--neon-gold);"><i class="fa-solid fa-ship"></i> Market</div>
+                <div class="nav-item" onclick="switchView('document-studio')" data-i18n="nav_docstudio">Doc Studio</div>
+                <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Academy</div>
                 
                 <div id="userArea" class="nav-item" style="color:var(--neon-gold); display:none;" onclick="openProfileModal()">
                     <i class="fa-solid fa-user-astronaut"></i> <span id="navUserName">PROFILE</span>
@@ -127,39 +82,32 @@
                 <select id="langSelectApp" onchange="changeLanguage(this.value)" class="lang-dropdown-small">
                     <option value="en">EN</option>
                     <option value="tr">TR</option>
-                    <option value="de">DE</option>
-                    <option value="fr">FR</option>
-                    <option value="es">ES</option>
-                    <option value="it">IT</option>
-                    <option value="gr">GR</option>
                 </select>
             </div>
-            <div class="live-ticker">BRENT: <span id="oilPrice" class="blinking">...</span> | VLSFO: <span id="vlsfoPrice">...</span></div>
+            <div class="live-ticker">BRENT: <span id="oilPrice" class="blinking">...</span></div>
         </nav>
 
         <div id="dashboard" class="view-section active">
             <div class="dash-grid">
                 <aside class="panel">
-                    <div class="p-header"><i class="fa-solid fa-sliders"></i> <span data-i18n="panel_params">PARAMETERS</span></div>
+                    <div class="p-header"><i class="fa-solid fa-sliders"></i> PARAMETERS</div>
                     <div class="p-body">
-                        <div class="input-group"><label data-i18n="lbl_vessel">VESSEL CLASS</label>
+                        <div class="input-group"><label>VESSEL CLASS</label>
                             <select id="vType">
-                                <optgroup label="DRY BULK"><option value="HANDYSIZE">Handysize (35k)</option><option value="SUPRAMAX">Supramax (58k)</option><option value="PANAMAX">Panamax (82k)</option><option value="CAPESIZE">Capesize (180k)</option></optgroup>
-                                <optgroup label="TANKER"><option value="MR_TANKER">MR Tanker (50k)</option><option value="AFRAMAX">Aframax (115k)</option><option value="VLCC">VLCC (300k)</option></optgroup>
-                                <optgroup label="GAS"><option value="LNG_CONV">LNG Carrier</option></optgroup>
+                                <option value="HANDYSIZE">Handysize (35k)</option>
+                                <option value="SUPRAMAX">Supramax (58k)</option>
+                                <option value="PANAMAX">Panamax (82k)</option>
                             </select>
                         </div>
-                        <div class="input-group"><label data-i18n="lbl_port">POSITION (PORT)</label><input type="text" id="refPort" list="portList" onchange="fillCoords()" placeholder="Type port name..."></div>
+                        <div class="input-group"><label>POSITION</label><input type="text" id="refPort" list="portList" onchange="fillCoords()"></div>
                         <div class="input-group"><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
-                        <div class="input-group"><label data-i18n="lbl_speed">SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
-                        <div class="input-group"><label data-i18n="lbl_qty">CARGO QTY (MT)</label><input type="number" id="vQty" value="50000"></div>
-                        <div class="input-group">
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-                                <div><label data-i18n="lbl_lrate">LOAD RATE</label><input type="number" id="vLoadRate" value="15000"></div>
-                                <div><label data-i18n="lbl_drate">DISCH RATE</label><input type="number" id="vDischRate" value="10000"></div>
-                            </div>
-                        </div>
-                        <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">SCAN MARKET</button>
+                        <div class="input-group"><label>CARGO QTY</label><input type="number" id="vQty" value="50000"></div>
+                        
+                        <input type="hidden" id="vSpeed" value="13.5">
+                        <input type="hidden" id="vLoadRate" value="15000">
+                        <input type="hidden" id="vDischRate" value="10000">
+
+                        <button class="btn-action" onclick="scanMarket()">SCAN MARKET</button>
                         <div id="cargoResultList" class="cargo-list"></div>
                     </div>
                 </aside>
@@ -167,106 +115,129 @@
                 <div class="panel map-panel"><div id="map"></div></div>
 
                 <aside class="panel">
-                    <div class="p-header"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="panel_estim">ESTIMATION</span></div>
+                    <div class="p-header">ESTIMATION</div>
                     <div class="p-body" id="analysisPanel" style="display:none;">
                         <div class="stat-grid">
                             <div class="stat-card"><div class="stat-val" id="dispTCE">$0</div><div class="stat-lbl">TCE / Day</div></div>
-                            <div class="stat-card"><div class="stat-val" id="dispProfit" style="color:var(--success)">$0</div><div class="stat-lbl" data-i18n="stat_profit">Net Profit</div></div>
+                            <div class="stat-card"><div class="stat-val" id="dispProfit">$0</div><div class="stat-lbl">Net Profit</div></div>
                         </div>
-                        <button class="btn-download" style="margin:10px 0; border-color:var(--neon-gold); color:var(--neon-gold);" onclick="showFinancials()" data-i18n="btn_breakdown">VIEW FULL BREAKDOWN</button>
+                        <button class="btn-download" onclick="showFinancials()">VIEW BREAKDOWN</button>
                         <div id="financialDetails"></div>
                         <div class="ai-insight" id="aiOutput"></div>
                     </div>
-                    <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;" data-i18n="empty_state">Awaiting Inputs...</div>
+                    <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;">Awaiting Inputs...</div>
                 </aside>
             </div>
         </div>
 
-        <!-- YENİ: DOCUMENT STUDIO -->
+        <div id="marketplace" class="view-section">
+            <div class="library-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:15px;">
+                    <div class="section-title" style="margin:0;"><i class="fa-solid fa-ship" style="color:var(--neon-gold)"></i> GLOBAL SHIP MARKET</div>
+                    <button class="btn-action" style="width:auto; margin:0;" onclick="openCreateListingModal()"><i class="fa-solid fa-plus"></i> SELL / CHARTER SHIP</button>
+                </div>
+                
+                <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto;">
+                    <select id="filterType" class="input-dark" style="width:150px;"><option value="">All Types</option><option value="Bulk Carrier">Bulk Carrier</option><option value="Tanker">Tanker</option></select>
+                    <button class="btn-download" style="width:auto;" onclick="loadMarketplaceListings()"><i class="fa-solid fa-filter"></i> FILTER</button>
+                </div>
+
+                <div id="marketplaceGrid" class="docs-grid"></div>
+            </div>
+        </div>
+
         <div id="document-studio" class="view-section">
             <div class="library-section">
-                <div class="section-title"><i class="fa-solid fa-file-signature"></i> DOCUMENT STUDIO</div>
-                <p style="color:#94a3b8; margin-bottom:20px;">Generate professional maritime documents with AI assistance. Select a template below:</p>
+                <div class="section-title">DOCUMENT STUDIO</div>
+                <p style="color:#94a3b8; margin-bottom:20px;">AI Powered Maritime Legal Drafting</p>
                 
-                <div id="templateCategories" style="margin-bottom:30px;">
-                    <div class="template-category">
-                        <h3 style="color:var(--neon-cyan); margin-bottom:15px;"><i class="fa-solid fa-cloud-showers-heavy"></i> Weather Related</h3>
+                <div id="templateCategories">
+                    <div class="template-category" style="margin-top:20px;">
+                        <h3 style="color:var(--neon-cyan); font-size:1rem; margin-bottom:10px;"><i class="fa-solid fa-cloud-bolt"></i> Weather Related</h3>
                         <div class="docs-grid" id="weatherTemplates"></div>
                     </div>
-                    
                     <div class="template-category" style="margin-top:30px;">
-                        <h3 style="color:var(--neon-gold); margin-bottom:15px;"><i class="fa-solid fa-boxes-stacked"></i> Cargo Issues</h3>
+                        <h3 style="color:var(--neon-gold); font-size:1rem; margin-bottom:10px;"><i class="fa-solid fa-box-open"></i> Cargo Issues</h3>
                         <div class="docs-grid" id="cargoTemplates"></div>
                     </div>
-                    
                     <div class="template-category" style="margin-top:30px;">
-                        <h3 style="color:var(--neon-purple); margin-bottom:15px;"><i class="fa-solid fa-anchor"></i> Port/Terminal</h3>
+                        <h3 style="color:var(--neon-purple); font-size:1rem; margin-bottom:10px;"><i class="fa-solid fa-anchor"></i> Port & Terminal</h3>
                         <div class="docs-grid" id="portTemplates"></div>
                     </div>
-                    
-                    <div class="template-category" style="margin-top:30px;">
-                        <h3 style="color:var(--neon-green); margin-bottom:15px;"><i class="fa-solid fa-clock"></i> Laytime Disputes</h3>
-                        <div class="docs-grid" id="laytimeTemplates"></div>
-                    </div>
-                    
-                    <div class="template-category" style="margin-top:30px;">
-                        <h3 style="color:#f59e0b; margin-bottom:15px;"><i class="fa-solid fa-gas-pump"></i> Bunker Quality</h3>
-                        <div class="docs-grid" id="bunkerTemplates"></div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="academy" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_kb">KNOWLEDGE BASE</div><div class="docs-grid" id="academyGrid"></div></div></div>
-        
-        <div id="regulations" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_reg">REGULATIONS</div><div class="docs-grid" id="regsGrid"></div></div></div>
-        
-        <div id="docs" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_doc">DOCUMENT CENTER</div><div id="docsContainer"></div></div></div>
-        
-        <div id="pricing" class="view-section">
-            <div class="pricing-container">
-                <div class="price-card pro">
-                    <div class="plan-name">BROKER PRO</div>
-                    <div class="plan-price">$199<span>/mo</span></div>
-                    <ul class="plan-features">
-                        <li>Unlimited Scans</li><li>Live Market Data</li><li>Full Regulation Access</li>
-                    </ul>
-                    <button class="btn-plan pro">UPGRADE</button>
-                </div>
-                <div class="price-card premium">
-                    <div class="plan-name">FLEET OWNER</div>
-                    <div class="plan-price">$999<span>/mo</span></div>
-                    <ul class="plan-features">
-                        <li><i class="fa-solid fa-crown" style="color:var(--neon-gold)"></i> All Features + API</li>
-                        <li>24/7 Dedicated Legal AI</li><li>Custom Reports</li>
-                    </ul>
-                    <button class="btn-plan basic">CONTACT SALES</button>
-                </div>
+        <div id="academy" class="view-section">
+            <div class="library-section">
+                <div class="section-title">ACADEMY & LIBRARY</div>
+                <div id="academyGrid" class="docs-grid"></div>
             </div>
         </div>
+        <div id="regulations" class="view-section"><div class="library-section"><div class="section-title">REGULATIONS</div><div class="docs-grid" id="regsGrid"></div></div></div>
+        <div id="docs" class="view-section"><div class="library-section"><div class="section-title">DOCUMENTS</div><div id="docsContainer"></div></div></div>
     </div>
 
-    <div id="docModal" class="modal">
-        <div class="modal-content">
+    <div id="createListingModal" class="modal">
+        <div class="modal-content" style="max-width:800px; border:1px solid var(--neon-gold);">
             <div class="modal-header">
-                <span class="modal-title" id="modalTitle"></span>
-                <span class="close-btn" onclick="closeModal('docModal')">&times;</span>
+                <span class="modal-title" style="color:var(--neon-gold);">CREATE VESSEL LISTING</span>
+                <span class="close-btn" onclick="closeModal('createListingModal')">&times;</span>
             </div>
-            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-body">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <input type="text" id="listVesselName" placeholder="Vessel Name" class="input-dark">
+                    <select id="listVesselType" class="input-dark">
+                        <option>Bulk Carrier</option>
+                        <option>Tanker</option>
+                        <option>Container</option>
+                        <option>Gas Carrier</option>
+                    </select>
+                    <input type="number" id="listDWT" placeholder="DWT" class="input-dark">
+                    <input type="number" id="listYear" placeholder="Year Built" class="input-dark">
+                    <input type="text" id="listFlag" placeholder="Flag" class="input-dark">
+                    <input type="number" id="listPrice" placeholder="Price (USD)" class="input-dark">
+                </div>
+                <textarea id="listDescription" placeholder="Detailed Description (Speed, Consumption, etc.)" rows="4" class="input-dark" style="margin-top:15px;"></textarea>
+                
+                <div style="margin-top:15px; border:1px dashed #444; padding:20px; text-align:center;">
+                    <p style="color:#aaa; margin-bottom:10px;">Upload Vessel Photos (Max 4)</p>
+                    <input type="file" id="listImages" accept="image/*" multiple onchange="handleImageUpload(event)" style="color:#fff;">
+                    <div id="imagePreview" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:10px;"></div>
+                </div>
+                
+                <button class="btn-action" onclick="submitListing()" style="margin-top:20px; background:var(--neon-gold); color:black; font-weight:bold;">PUBLISH LISTING</button>
+            </div>
         </div>
     </div>
 
-    <div id="finModal" class="modal">
-        <div class="modal-content">
+    <div id="vesselDetailModal" class="modal">
+        <div class="modal-content" style="max-width:900px;">
             <div class="modal-header">
-                <span class="modal-title" data-i18n="modal_fin_title">FINANCIAL BREAKDOWN</span>
-                <span class="close-btn" onclick="closeModal('finModal')">&times;</span>
+                <span class="modal-title" id="vesselDetailTitle">VESSEL DETAILS</span>
+                <span class="close-btn" onclick="closeModal('vesselDetailModal')">&times;</span>
             </div>
-            <div class="modal-body" id="finBody"></div>
+            <div class="modal-body" id="vesselDetailBody">
+                </div>
         </div>
     </div>
 
-    <!-- YENİ: DOCUMENT GENERATOR MODAL -->
+    <div id="messagingModal" class="modal">
+        <div class="modal-content" style="max-width:600px; border:1px solid var(--neon-cyan);">
+            <div class="modal-header">
+                <span class="modal-title" id="chatWithName">CHAT</span>
+                <span class="close-btn" onclick="closeModal('messagingModal')">&times;</span>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div id="messageHistory" style="height:400px; overflow-y:auto; background:#050505; padding:20px; display:flex; flex-direction:column; gap:10px;"></div>
+                <div style="padding:15px; background:#111; display:flex; gap:10px; border-top:1px solid #333;">
+                    <input type="text" id="messageInput" placeholder="Type a message..." style="flex:1; padding:12px; background:#222; border:none; color:#fff; border-radius:4px;">
+                    <button class="btn-action" onclick="sendMessage()" style="width:auto; margin:0; padding:0 20px;"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="docGeneratorModal" class="modal">
         <div class="modal-content" style="max-width:900px;">
             <div class="modal-header">
@@ -274,29 +245,29 @@
                 <span class="close-btn" onclick="closeModal('docGeneratorModal')">&times;</span>
             </div>
             <div class="modal-body">
-                <div id="docGenForm" style="margin-bottom:20px;">
+                <div id="docGenForm">
                     <p style="color:#94a3b8; margin-bottom:15px;">Fill in the details below. AI will complete the document:</p>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Vessel Name</label><input type="text" id="genVesselName" placeholder="M/V VIYA STAR" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">IMO Number</label><input type="text" id="genIMO" placeholder="9876543" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Load Port</label><input type="text" id="genLoadPort" placeholder="ISTANBUL" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Discharge Port</label><input type="text" id="genDischPort" placeholder="ROTTERDAM" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Cargo Type</label><input type="text" id="genCargo" placeholder="GRAIN" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
-                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Cargo Quantity (MT)</label><input type="number" id="genQty" placeholder="50000" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Vessel Name</label><input type="text" id="genVesselName" placeholder="M/V VIYA STAR" class="input-dark"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">IMO Number</label><input type="text" id="genIMO" placeholder="9876543" class="input-dark"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Load Port</label><input type="text" id="genLoadPort" placeholder="ISTANBUL" class="input-dark"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Discharge Port</label><input type="text" id="genDischPort" placeholder="ROTTERDAM" class="input-dark"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Cargo Type</label><input type="text" id="genCargo" placeholder="GRAIN" class="input-dark"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Quantity</label><input type="text" id="genQty" placeholder="50000 MT" class="input-dark"></div>
                     </div>
-                    <button class="btn-action" onclick="generateDocument()" style="margin-top:20px; width:100%;"><i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE WITH AI</button>
+                    <button class="btn-action" onclick="generateDocument()" style="width:100%; margin-top:20px;">GENERATE WITH AI</button>
                 </div>
                 
                 <div id="generatedDocArea" style="display:none;">
                     <div style="background:#0a0a0a; border:1px solid var(--neon-cyan); padding:15px; margin-bottom:15px;">
-                        <div style="color:var(--neon-gold); font-size:0.85rem; margin-bottom:10px;">
-                            <i class="fa-solid fa-triangle-exclamation"></i> <strong>LEGAL DISCLAIMER:</strong> This document is a DRAFT generated by AI assistance. VIYA BROKER strongly recommends review by a qualified maritime lawyer before execution.
+                        <div style="color:var(--neon-gold); font-size:0.85rem;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <strong>LEGAL DISCLAIMER:</strong> This is a DRAFT. Review before use.
                         </div>
                     </div>
-                    <textarea id="docOutput" style="width:100%; height:400px; background:#0a0a0a; border:1px solid #333; color:#fff; padding:15px; font-family:monospace; font-size:0.9rem;"></textarea>
+                    <textarea id="docOutput" style="width:100%; height:400px; background:#0a0a0a; border:1px solid #333; color:#fff; padding:15px; font-family:monospace;"></textarea>
                     <div style="display:flex; gap:10px; margin-top:15px;">
-                        <button class="btn-download" onclick="downloadGeneratedDoc()"><i class="fa-solid fa-download"></i> DOWNLOAD TXT</button>
-                        <button class="btn-download" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i> COPY TO CLIPBOARD</button>
+                        <button class="btn-download" onclick="downloadGeneratedDoc()"><i class="fa-solid fa-download"></i> DOWNLOAD</button>
+                        <button class="btn-download" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i> COPY</button>
                     </div>
                 </div>
             </div>
@@ -307,10 +278,10 @@
     <div class="chat-window" id="chatWindow">
         <div class="chat-header">
             <span>VIYA AI</span>
-            <div><span onclick="toggleExpand()" style="cursor:pointer; margin-right:10px;"><i class="fa-solid fa-expand"></i></span><span onclick="toggleChat()" style="cursor:pointer">&times;</span></div>
+            <div><span onclick="toggleChat()" style="cursor:pointer">&times;</span></div>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="msg ai" data-i18n="ai_welcome">Hello Captain! I am VIYA AI. Ready to assist.</div>
+            <div class="msg ai" data-i18n="ai_welcome">Hello Captain! Ready to assist.</div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="..." onkeypress="handleEnter(event)">
@@ -320,70 +291,61 @@
 
     <datalist id="portList"></datalist>
 
-    <div id="authModal" class="modal" style="backdrop-filter: blur(10px); z-index: 9999;">
-    <div class="modal-content" style="max-width: 400px; border: 1px solid var(--neon-cyan);">
-        <div class="modal-header">
-            <span class="modal-title">VIYA ID ACCESS</span>
-            <span class="close-btn" onclick="closeModal('authModal')">&times;</span>
-        </div>
-        <div class="auth-tabs" style="display:flex; margin-bottom:15px; border-bottom:1px solid #444;">
-            <div class="auth-tab active" onclick="switchAuthTab('login')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:var(--neon-cyan);">LOGIN</div>
-            <div class="auth-tab" onclick="switchAuthTab('register')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#888;">REGISTER</div>
-        </div>
-        
-        <div id="loginForm" class="auth-form">
-            <input type="email" id="lEmail" placeholder="E-Mail" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
-            <input type="password" id="lPass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
-            <button class="btn-action" onclick="doLogin()" style="width:100%;">SECURE LOGIN</button>
-        </div>
-
-        <div id="registerForm" class="auth-form" style="display:none;">
-            <input type="text" id="rName" placeholder="Full Name / Company" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
-            <input type="email" id="rEmail" placeholder="E-Mail" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
-            <input type="password" id="rPass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; background:#111; border:1px solid #444; color:white;">
-            
-            <div style="margin:10px 0; font-size:0.8rem; color:#ccc; display:flex; align-items:center; gap:5px;">
-                <input type="checkbox" id="kvkkCheck">
-                <label for="kvkkCheck">I accept the <a href="#" onclick="showKVKK(); return false;" style="color:var(--neon-cyan)">Privacy Policy (KVKK)</a>.</label>
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; border:1px solid var(--neon-cyan);">
+            <div class="modal-header"><span class="modal-title">VIYA ID</span><span class="close-btn" onclick="closeModal('authModal')">&times;</span></div>
+            <div class="auth-tabs" style="display:flex; margin-bottom:15px;">
+                <div class="auth-tab active" onclick="switchAuthTab('login')" style="flex:1; text-align:center; padding:10px; cursor:pointer;">LOGIN</div>
+                <div class="auth-tab" onclick="switchAuthTab('register')" style="flex:1; text-align:center; padding:10px; cursor:pointer;">REGISTER</div>
             </div>
-            <button class="btn-action" onclick="doRegister()" style="width:100%;">CREATE ACCOUNT</button>
-        </div>
-        <div id="authMsg" style="text-align:center; margin-top:10px; font-size:0.8rem; height:20px;"></div>
-    </div>
-    </div>
-
-    <div id="kvkkModal" class="modal" style="z-index: 10000;">
-        <div class="modal-content">
-            <div class="modal-header"><span class="modal-title" id="kvkkTitle">Loading...</span><span class="close-btn" onclick="closeModal('kvkkModal')">&times;</span></div>
-            <div class="modal-body" id="kvkkContent" style="white-space: pre-wrap; font-size:0.9rem; max-height:300px; overflow-y:auto;"></div>
-            <div style="text-align:right; margin-top:10px;"><button class="btn-secondary" onclick="document.getElementById('kvkkCheck').checked=true; closeModal('kvkkModal');">I AGREE</button></div>
-        </div>
-    </div>
-
-    <div id="profileModal" class="modal" style="backdrop-filter: blur(10px); z-index:10001;">
-        <div class="modal-content" style="max-width: 350px; border: 1px solid var(--neon-gold); text-align:center;">
-            <div class="modal-header">
-                <span class="modal-title">CAPTAIN'S LOG</span>
-                <span class="close-btn" onclick="closeModal('profileModal')">&times;</span>
+            <div id="loginForm" class="auth-form">
+                <input type="email" id="lEmail" placeholder="E-Mail" class="input-dark" style="margin-bottom:10px;">
+                <input type="password" id="lPass" placeholder="Password" class="input-dark" style="margin-bottom:10px;">
+                <button class="btn-action" onclick="doLogin()" style="width:100%;">LOGIN</button>
             </div>
-            
-            <div style="padding: 20px 0;">
+            <div id="registerForm" class="auth-form" style="display:none;">
+                <input type="text" id="rName" placeholder="Full Name" class="input-dark" style="margin-bottom:10px;">
+                <input type="email" id="rEmail" placeholder="E-Mail" class="input-dark" style="margin-bottom:10px;">
+                <input type="password" id="rPass" placeholder="Password" class="input-dark" style="margin-bottom:10px;">
+                <div style="margin:10px 0;"><input type="checkbox" id="kvkkCheck"> <label for="kvkkCheck" style="color:#ccc;">I accept Privacy Policy</label></div>
+                <button class="btn-action" onclick="doRegister()" style="width:100%;">CREATE ACCOUNT</button>
+            </div>
+            <div id="authMsg" style="text-align:center; margin-top:10px; height:20px;"></div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 350px; text-align:center; border:1px solid var(--neon-gold);">
+            <div class="modal-header"><span class="modal-title">CAPTAIN'S LOG</span><span class="close-btn" onclick="closeModal('profileModal')">&times;</span></div>
+            <div style="padding: 20px;">
                 <div style="width:80px; height:80px; background:#222; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; border:2px solid var(--neon-cyan);">
                     <i class="fa-solid fa-user-tie" style="font-size:40px; color:var(--neon-cyan);"></i>
                 </div>
                 <h3 id="pName" style="color:white; margin:0;">Captain</h3>
-                <p id="pEmail" style="color:#888; font-size:0.9rem; margin-top:5px;">...</p>
-                <div style="margin:15px 0; padding:5px; background:rgba(255,215,0,0.1); border:1px solid var(--neon-gold); color:var(--neon-gold); font-size:0.8rem; display:inline-block; padding:5px 15px; border-radius:15px;">
-                    MEMBERSHIP: <b id="pPlan">FREE</b>
-                </div>
+                <p id="pEmail" style="color:#888;">...</p>
+                <div style="margin:15px 0; padding:5px 15px; border:1px solid var(--neon-gold); color:var(--neon-gold); border-radius:15px; display:inline-block;">MEMBERSHIP: <b id="pPlan">FREE</b></div>
             </div>
-
-            <button class="btn-action" onclick="logout()" style="width:100%; background: #ef4444; border-color: #ef4444;">
-                <i class="fa-solid fa-right-from-bracket"></i> LOG OUT
-            </button>
+            <button class="btn-action" onclick="logout()" style="width:100%; background: #ef4444;">ABANDON SHIP</button>
         </div>
     </div>
 
+    <div id="finModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><span class="modal-title" data-i18n="modal_fin_title">FINANCIAL BREAKDOWN</span><span class="close-btn" onclick="closeModal('finModal')">&times;</span></div>
+            <div class="modal-body" id="finBody"></div>
+        </div>
+    </div>
+    
+    <div id="docModal" class="modal">
+        <div class="modal-content"><div class="modal-header"><span class="modal-title" id="modalTitle"></span><span class="close-btn" onclick="closeModal('docModal')">&times;</span></div><div class="modal-body" id="modalBody"></div></div>
+    </div>
+
     <script src="app.js"></script>
+    
+    <style>
+        /* HTML İÇİNDE KÜÇÜK BİR CSS FIX */
+        .input-dark { width:100%; padding:10px; background:#111; border:1px solid #444; color:#fff; }
+        .input-dark:focus { border-color:var(--neon-cyan); outline:none; }
+    </style>
 </body>
 </html>
