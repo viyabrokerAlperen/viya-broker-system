@@ -114,6 +114,8 @@
             </div>
             <div class="nav-links">
                 <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
+                <div class="nav-item" onclick="switchView('docStudio')" data-i18n="nav_studio">Doc Studio</div>
+                
                 <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
                 <div class="nav-item" onclick="switchView('regulations')" data-i18n="nav_reg">Regulations</div>
                 <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Docs</div>
@@ -177,6 +179,53 @@
                         <div class="ai-insight" id="aiOutput"></div>
                     </div>
                     <div class="p-body" id="emptyState" style="text-align:center; padding-top:50px; color:#555;" data-i18n="empty_state">Awaiting Inputs...</div>
+                </aside>
+            </div>
+        </div>
+
+        <div id="docStudio" class="view-section">
+            <div class="dash-grid" style="grid-template-columns: 350px 1fr;">
+                
+                <aside class="panel">
+                    <div class="p-header">
+                        <span><i class="fa-solid fa-file-signature"></i> DOCUMENT WIZARD</span>
+                    </div>
+                    <div class="p-body">
+                        <div id="step1-select">
+                            <label class="input-group-label" style="color:#94a3b8; font-size:0.8rem; margin-bottom:10px; display:block;">SELECT DOCUMENT TYPE</label>
+                            <select id="docTemplateSelect" class="input-dark" onchange="loadTemplateForm()" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid #333; border-radius:4px;">
+                                <option value="">-- Choose Template --</option>
+                            </select>
+                            
+                            <div id="templateInfo" style="margin-top:20px; padding:15px; background:rgba(0,242,255,0.05); border-left:3px solid var(--neon-cyan); display:none;">
+                                <div id="selDocTitle" style="font-weight:bold; color:var(--neon-cyan); margin-bottom:5px;"></div>
+                                <div id="selDocCat" style="font-size:0.8rem; color:#94a3b8;"></div>
+                            </div>
+                        </div>
+
+                        <hr style="border-color:#333; margin:20px 0;">
+
+                        <div id="step2-form" style="display:none;">
+                            <div style="margin-bottom:15px; font-family:var(--font-tech); color:var(--neon-gold);">INPUT DATA</div>
+                            <div id="dynamicFormInputs"></div>
+                            <button class="btn-action" onclick="generateDocument()">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE DRAFT
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <aside class="panel">
+                    <div class="p-header">
+                        <span><i class="fa-solid fa-pen-to-square"></i> LIVE EDITOR</span>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-download" onclick="copyToClipboard()" style="width:auto; padding:5px 15px;"><i class="fa-solid fa-copy"></i> Copy</button>
+                            <button class="btn-download" onclick="downloadPDF()" style="width:auto; padding:5px 15px; color:var(--neon-gold); border-color:var(--neon-gold);"><i class="fa-solid fa-file-pdf"></i> Download</button>
+                        </div>
+                    </div>
+                    <div class="p-body" style="padding:0;">
+                        <textarea id="docEditor" style="width:100%; height:100%; background:#0b1221; color:#e2e8f0; border:none; padding:30px; font-family:'Courier New', monospace; font-size:1rem; line-height:1.6; resize:none;" placeholder="Select a template to begin..."></textarea>
+                    </div>
                 </aside>
             </div>
         </div>
