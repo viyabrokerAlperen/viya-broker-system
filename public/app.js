@@ -519,12 +519,6 @@ async function generateDocument() {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                templateType:
-                    // =================================================================
-// PART 2 OF 2 - DOCUMENT GENERATOR + AI CHAT + CONTENT LOADERS
-// =================================================================
-
-// (generateDocument fonksiyonunun devamı)
                 templateType: currentTemplateType,
                 templateKey: currentTemplateKey,
                 userInputs: userInputs
