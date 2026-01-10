@@ -1,12 +1,14 @@
 // public/app.js
-// VIYA BROKER - COMMAND INTERFACE (V15.0 FINAL)
-// Features: Voyage Calc, Smart Map, Auth, Profile Management, Chatbot
+// VIYA BROKER - COMMAND INTERFACE (V17.0 - Document Generator Added)
+// Features: Voyage Calc, Smart Map, Auth, Profile Management, Chatbot, DOCUMENT STUDIO
 
 // GLOBAL DEĞİŞKENLER
 let currentVoyageData = null; 
 let REGS_DB = [], DOCS_DB = [];
 let currentLang = 'en';
 let mapRouteLayer = null; 
+let currentTemplateType = null;
+let currentTemplateKey = null;
 
 // Dil İsimleri (AI Chat İçin)
 const LANG_NAMES = {
@@ -19,7 +21,7 @@ const TRANSLATIONS = {
     en: {
         landing_title: "NEXT GEN MARITIME INTELLIGENCE", landing_sub: "Advanced Voyage Estimation & Legal AI.",
         btn_login: "LOG IN", btn_enter_term: "ENTER TERMINAL", btn_learn_more: "LEARN MORE", btn_register: "BECOME MEMBER",
-        nav_term: "Terminal", nav_kb: "Academy", nav_reg: "Regulations", nav_docs: "Docs", nav_mem: "Membership",
+        nav_term: "Terminal", nav_docstudio: "Document Studio", nav_kb: "Academy", nav_reg: "Regulations", nav_docs: "Docs", nav_mem: "Membership",
         menu_home: "Home", menu_about: "About Us", menu_mission: "Mission", menu_contact: "Contact",
         lbl_vessel: "VESSEL CLASS", lbl_port: "POSITION", lbl_speed: "SPEED", lbl_qty: "CARGO", lbl_lrate: "LOAD RATE", lbl_drate: "DISCH RATE",
         btn_scan: "SCAN MARKET", panel_params: "PARAMETERS", panel_estim: "ESTIMATION",
@@ -33,12 +35,12 @@ const TRANSLATIONS = {
         sec_kb: "KNOWLEDGE BASE", sec_reg: "REGULATIONS", sec_doc: "DOCUMENT CENTER",
         ai_welcome: "Hello Captain! I am VIYA AI. Systems Online.", chat_placeholder: "Ask me anything about the market...",
         footer_rights: "© 2026 VIYA BROKER. All Rights Reserved.",
-        btn_read: "READ", btn_download: "DOWNLOAD", btn_view: "DETAILS"
+        btn_read: "READ", btn_download: "DOWNLOAD", btn_view: "DETAILS", btn_generate: "GENERATE"
     },
     tr: {
         landing_title: "YENİ NESİL DENİZCİLİK ZEKASI", landing_sub: "İleri Sefer Tahmini & Hukuki AI.",
         btn_login: "GİRİŞ", btn_enter_term: "TERMİNALE GİR", btn_learn_more: "DAHA FAZLA", btn_register: "ÜYE OL",
-        nav_term: "Terminal", nav_kb: "Akademi", nav_reg: "Mevzuat", nav_docs: "Evraklar", nav_mem: "Üyelik",
+        nav_term: "Terminal", nav_docstudio: "Doküman Stüdyosu", nav_kb: "Akademi", nav_reg: "Mevzuat", nav_docs: "Evraklar", nav_mem: "Üyelik",
         menu_home: "Anasayfa", menu_about: "Hakkımızda", menu_mission: "Misyon", menu_contact: "İletişim",
         lbl_vessel: "GEMİ TİPİ", lbl_port: "KONUM", lbl_speed: "HIZ", lbl_qty: "YÜK", lbl_lrate: "YÜKLEME HIZI", lbl_drate: "TAHLİYE HIZI",
         btn_scan: " PİYASAYI TARA", panel_params: "PARAMETRELER", panel_estim: "TAHMİN",
@@ -52,7 +54,7 @@ const TRANSLATIONS = {
         sec_kb: "BİLGİ BANKASI", sec_reg: "YÖNETMELİKLER", sec_doc: "DOKÜMAN MERKEZİ",
         ai_welcome: "Merhaba Reis! Ben VIYA AI. Sistemler Aktif.", chat_placeholder: "Piyasa veya sefer hakkında sor...",
         footer_rights: "© 2026 VIYA BROKER. Tüm Hakları Saklıdır.",
-        btn_read: "OKU", btn_download: "İNDİR", btn_view: "DETAYLAR"
+        btn_read: "OKU", btn_download: "İNDİR", btn_view: "DETAYLAR", btn_generate: "OLUŞTUR"
     },
 };
 
@@ -113,7 +115,10 @@ async function init() {
         }
 
         // İçerikleri Yükle
-        loadAcademy(); loadDocs(); loadRegulations();
+        loadAcademy(); 
+        loadDocs(); 
+        loadRegulations();
+        loadDocumentTemplates(); // YENİ!
 
     } catch(e) {
         console.error("System Init Error:", e);
@@ -169,7 +174,7 @@ function switchView(id) {
     document.getElementById(id).classList.add('active'); 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     
-    const navMap = {'dashboard':0, 'academy':1, 'regulations':2, 'docs':3, 'pricing':4};
+    const navMap = {'dashboard':0, 'document-studio':1, 'academy':2, 'regulations':3, 'docs':4, 'pricing':5};
     if(navMap[id] !== undefined) {
         const items = document.querySelectorAll('.nav-item');
         if(items[navMap[id]]) items[navMap[id]].classList.add('active');
@@ -206,20 +211,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 }).addTo(map);
 
 // --- YENİ HARİTA KATMANLARI (SEAMARK & NO-GO) ---
-
-// 1. OpenSeaMap (Deniz İşaretleri, Şamandıralar)
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: 'OpenSeaMap'
 }).addTo(map);
 
-// 2. High Risk Area (Korsan Bölgesi - Aden Körfezi/Somali)
 const hraPolygon = L.polygon([
-    [12.5, 43.5], // Bab el Mandeb
-    [15.0, 55.0], // Arabian Sea
-    [5.0, 60.0],  // Indian Ocean
-    [-5.0, 50.0], // Seychelles yakını
-    [0.0, 40.0]   // Kenya açıkları
+    [12.5, 43.5], [15.0, 55.0], [5.0, 60.0], [-5.0, 50.0], [0.0, 40.0]
 ], {
     color: 'red',
     fillColor: '#f03',
@@ -227,8 +225,6 @@ const hraPolygon = L.polygon([
     weight: 1,
     dashArray: '5, 10'
 }).addTo(map).bindPopup("HIGH RISK AREA (HRA) - Piracy Risk");
-
-// --- END MAP LAYERS ---
 
 let shipLayer = L.layerGroup().addTo(map);
 
@@ -248,10 +244,9 @@ async function fillCoords() {
 
 function updateShipMarker(lat, lng) { 
     if(shipLayer) shipLayer.clearLayers(); 
-    // MAVİ: Gemi
     L.circleMarker([lat, lng], {
         radius: 8, 
-        color: '#0ea5e9', // Sky Blue
+        color: '#0ea5e9',
         fillColor: '#0ea5e9',
         fillOpacity: 0.8, 
         weight: 2
@@ -373,15 +368,12 @@ function showDetails(v, el) {
     const loadPos = [v.loadGeo?.lat || 0, v.loadGeo?.lng || 0];
     const dischPos = [v.dischGeo?.lat || 0, v.dischGeo?.lng || 0];
 
-    // MAVİ: Gemi
     L.circleMarker(shipPos, {radius:8, color:'#3b82f6', fillColor:'#3b82f6', fillOpacity:0.8})
       .addTo(shipLayer).bindPopup("<b>SHIP POSITION</b>").openPopup();
     
-    // SARI: Yükleme Limanı
     L.circleMarker(loadPos, {radius:8, color:'#eab308', fillColor:'#eab308', fillOpacity:0.8})
       .addTo(shipLayer).bindPopup(`<b>LOAD:</b> ${v.params.loadPort}`);
     
-    // KIRMIZI: Tahliye Limanı
     L.circleMarker(dischPos, {radius:8, color:'#ef4444', fillColor:'#ef4444', fillOpacity:0.8})
       .addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
 
@@ -436,7 +428,149 @@ function showFinancials() {
 }
 
 // =================================================================
-// 3. AI CHATBOT
+// 3. DOCUMENT STUDIO (YENİ!)
+// =================================================================
+
+async function loadDocumentTemplates() {
+    try {
+        const res = await fetch('/api/document-templates');
+        const data = await res.json();
+        
+        if(!data.success || !data.templates) return;
+        
+        const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+        
+        // Kategorilere göre ayır
+        const weather = data.templates.filter(t => t.category === 'Weather Related');
+        const cargo = data.templates.filter(t => t.category === 'Cargo Issues');
+        const port = data.templates.filter(t => t.category === 'Port/Terminal');
+        const laytime = data.templates.filter(t => t.category === 'Laytime Disputes');
+        const bunker = data.templates.filter(t => t.category === 'Bunker Quality');
+        
+        renderTemplateCards('weatherTemplates', weather, t);
+        renderTemplateCards('cargoTemplates', cargo, t);
+        renderTemplateCards('portTemplates', port, t);
+        renderTemplateCards('laytimeTemplates', laytime, t);
+        renderTemplateCards('bunkerTemplates', bunker, t);
+        
+    } catch(e) {
+        console.error('Template load error:', e);
+    }
+}
+
+function renderTemplateCards(containerId, templates, translations) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    
+    container.innerHTML = '';
+    
+    templates.forEach(tmpl => {
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.innerHTML = `
+            <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
+            <div class="doc-title">${tmpl.title}</div>
+            <div class="doc-desc">${tmpl.category}</div>
+            <button class="btn-download" onclick="openDocGenerator('${tmpl.type}', '${tmpl.templateKey}', '${tmpl.title.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ${translations.btn_generate || 'GENERATE'}
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function openDocGenerator(templateType, templateKey, templateTitle) {
+    currentTemplateType = templateType;
+    currentTemplateKey = templateKey;
+    
+    document.getElementById('docGenTitle').innerText = templateTitle;
+    document.getElementById('docGenForm').style.display = 'block';
+    document.getElementById('generatedDocArea').style.display = 'none';
+    
+    // Form'u temizle
+    document.getElementById('genVesselName').value = '';
+    document.getElementById('genIMO').value = '';
+    document.getElementById('genLoadPort').value = '';
+    document.getElementById('genDischPort').value = '';
+    document.getElementById('genCargo').value = '';
+    document.getElementById('genQty').value = '';
+    
+    document.getElementById('docGeneratorModal').style.display = 'block';
+}
+
+async function generateDocument() {
+    const loader = document.getElementById('loader');
+    if(loader) loader.style.display = 'grid';
+    
+    const userInputs = {
+        VESSEL_NAME: document.getElementById('genVesselName').value || 'TO BE COMPLETED',
+        IMO_NUMBER: document.getElementById('genIMO').value || 'XXXXXXX',
+        LOAD_PORT: document.getElementById('genLoadPort').value || 'TO BE COMPLETED',
+        DISCHARGE_PORT: document.getElementById('genDischPort').value || 'TO BE COMPLETED',
+        CARGO_TYPE: document.getElementById('genCargo').value || 'TO BE COMPLETED',
+        CARGO_QUANTITY: document.getElementById('genQty').value || 'XXXXX',
+        DATE: new Date().toLocaleDateString('en-GB'),
+        CHARTERERS_NAME: 'TO BE COMPLETED BY USER',
+        FLAG: 'TO BE COMPLETED'
+    };
+    
+    try {
+        const res = await fetch('/api/generate-document', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                templateType:
+                    // =================================================================
+// PART 2 OF 2 - DOCUMENT GENERATOR + AI CHAT + CONTENT LOADERS
+// =================================================================
+
+// (generateDocument fonksiyonunun devamı)
+                templateType: currentTemplateType,
+                templateKey: currentTemplateKey,
+                userInputs: userInputs
+            })
+        });
+        
+        const data = await res.json();
+        
+        if(data.success) {
+            document.getElementById('docGenForm').style.display = 'none';
+            document.getElementById('generatedDocArea').style.display = 'block';
+            document.getElementById('docOutput').value = data.document;
+        } else {
+            alert('Document generation failed: ' + (data.error || 'Unknown error'));
+        }
+        
+    } catch(e) {
+        console.error('Generation error:', e);
+        alert('Connection error. Please try again.');
+    } finally {
+        if(loader) loader.style.display = 'none';
+    }
+}
+
+function downloadGeneratedDoc() {
+    const content = document.getElementById('docOutput').value;
+    const blob = new Blob([content], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `VIYA_${currentTemplateKey}_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function copyToClipboard() {
+    const textarea = document.getElementById('docOutput');
+    textarea.select();
+    document.execCommand('copy');
+    alert('Document copied to clipboard!');
+}
+
+// =================================================================
+// 4. AI CHATBOT
 // =================================================================
 
 function toggleChat() { 
@@ -512,7 +646,7 @@ function typeWriterEffect(text) {
 }
 
 // =================================================================
-// 4. CONTENT LOADERS
+// 5. CONTENT LOADERS
 // =================================================================
 
 function openContentModal(title, content) {
@@ -527,7 +661,6 @@ function loadAcademy() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     aGrid.innerHTML = "";
     
-    // YEDEK VERİLER
     const ACADEMY_DATA = [
         {icon: "fa-scale-balanced", title: "Laytime Basics", desc: "SHINC vs SHEX explained.", content: "Laytime is the amount of time allowed..."},
         {icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR risks.", content: "Incoterms define the responsibilities of buyers and sellers..."},
@@ -549,7 +682,6 @@ async function loadDocs() {
     if(!dContainer) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     
-    // YEDEK DOKÜMAN LİSTESİ
     const FALLBACK_DOCS = [
         {
             category: "Standard Contracts",
@@ -637,11 +769,17 @@ function downloadFile(filename, content) {
     document.body.appendChild(element);
     element.click();
 }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
+
+function closeModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
+}
+
+window.onclick = function(event) { 
+    if (event.target.classList.contains('modal')) event.target.style.display = 'none'; 
+}
 
 // =================================================================
-// 5. AUTHENTICATION & PROFILE LOGIC (VIYA ID)
+// 6. AUTHENTICATION & PROFILE LOGIC
 // =================================================================
 
 let currentUser = null;
@@ -653,18 +791,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (token && userStr) {
         currentUser = JSON.parse(userStr);
         
-        // 1. Landing Page'deki butonu "ENTER" yap
         const loginBtn = document.querySelector('.lp-btn-login');
         if(loginBtn) {
             loginBtn.innerText = "ENTER TERMINAL";
             loginBtn.onclick = enterSystem;
         }
 
-        // 2. İçerideki Navigasyon Barına İsmini Yaz
         const userArea = document.getElementById('userArea');
         if(userArea) {
-            userArea.style.display = 'block'; // Görünür yap
-            // İsimden ilk parçayı alıp büyük harf yap
+            userArea.style.display = 'block';
             document.getElementById('navUserName').innerText = currentUser.fullName.split(' ')[0].toUpperCase();
         }
     }
@@ -757,7 +892,6 @@ async function doRegister() {
     } catch(e) { msg.innerText = "Error"; }
 }
 
-// PROFIL PENCERESİNİ AÇ
 function openProfileModal() {
     if(!currentUser) return;
     
@@ -768,7 +902,6 @@ function openProfileModal() {
     document.getElementById('profileModal').style.display = 'block';
 }
 
-// GÜVENLİ ÇIKIŞ (LOGOUT)
 function logout() {
     if(confirm("Are you sure you want to abandon ship, Captain?")) {
         localStorage.removeItem('viya_token');
@@ -777,172 +910,20 @@ function logout() {
         window.location.reload();
     }
 }
+
 // =================================================================
-// 6. DOCUMENT STUDIO LOGIC (NEW)
+// 7. UTILITY FUNCTIONS
 // =================================================================
 
-let currentTemplate = null;
-
-// Sayfa yüklenince listeyi çek
-document.addEventListener("DOMContentLoaded", async () => {
-    // ... Mevcut kodlar ...
-    await loadTemplateList(); // Bunu ekle
-});
-
-async function loadTemplateList() {
-    try {
-        const res = await fetch('/api/templates');
-        const list = await res.json();
-        const sel = document.getElementById('docTemplateSelect');
-        if(!sel) return;
-
-        // Kategorilere göre grupla
-        const groups = {};
-        list.forEach(t => {
-            if(!groups[t.category]) groups[t.category] = [];
-            groups[t.category].push(t);
-        });
-
-        // Select box'ı doldur
-        Object.keys(groups).forEach(cat => {
-            const group = document.createElement('optgroup');
-            group.label = cat;
-            groups[cat].forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.innerText = t.title;
-                group.appendChild(opt);
-            });
-            sel.appendChild(group);
-        });
-    } catch(e) { console.error("Template load error", e); }
-}
-
-async function loadTemplateForm() {
-    const id = document.getElementById('docTemplateSelect').value;
-    const formDiv = document.getElementById('step2-form');
-    const inputContainer = document.getElementById('dynamicFormInputs');
-    const infoBox = document.getElementById('templateInfo');
-    
-    if(!id) {
-        formDiv.style.display = 'none';
-        infoBox.style.display = 'none';
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/templates/' + id);
-        currentTemplate = await res.json();
-
-        // Bilgi kutusunu güncelle
-        document.getElementById('selDocTitle').innerText = currentTemplate.title;
-        document.getElementById('selDocCat').innerText = currentTemplate.category;
-        infoBox.style.display = 'block';
-
-        // Formu temizle ve yeni inputları ekle
-        inputContainer.innerHTML = '';
-        
-        currentTemplate.fields.forEach(field => {
-            const wrap = document.createElement('div');
-            wrap.className = 'input-group';
-            
-            const label = document.createElement('label');
-            label.innerText = field.label;
-            
-            let input;
-            if(field.type === 'textarea') {
-                input = document.createElement('textarea');
-                input.rows = 3;
-                input.style.resize = 'vertical';
-            } else if(field.type === 'select') {
-                input = document.createElement('select');
-                field.options.forEach(opt => {
-                    const o = document.createElement('option');
-                    o.value = opt; o.innerText = opt;
-                    input.appendChild(o);
-                });
-            } else {
-                input = document.createElement('input');
-                input.type = field.type;
-            }
-            
-            input.id = 'inp_' + field.key;
-            if(field.placeholder) input.placeholder = field.placeholder;
-            if(field.default) input.value = field.default;
-            
-            // Otomatik veri doldurma (Varsa)
-            if(field.key === 'VESSEL_NAME' && document.getElementById('vType')) {
-                // Burada kullanıcı profiline göre de doldurabiliriz ileride
-            }
-            if(field.key === 'DATE') {
-                 input.value = new Date().toISOString().split('T')[0];
-            }
-
-            wrap.appendChild(label);
-            wrap.appendChild(input);
-            inputContainer.appendChild(wrap);
-        });
-
-        formDiv.style.display = 'block';
-
-    } catch(e) { console.error(e); }
-}
-
-async function generateDocument() {
-    if(!currentTemplate) return;
-
-    // Input verilerini topla
-    const inputs = {};
-    currentTemplate.fields.forEach(field => {
-        const val = document.getElementById('inp_' + field.key).value;
-        inputs[field.key] = val;
-    });
-
-    const btn = document.querySelector('#step2-form button');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
-
-    try {
-        const res = await fetch('/api/generate-document', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                templateId: currentTemplate.id,
-                inputs: inputs
-            })
-        });
-        const data = await res.json();
-        
-        if(data.success) {
-            document.getElementById('docEditor').value = data.document;
-        } else {
-            alert("Error generating document");
-        }
-    } catch(e) {
-        console.error(e);
-        alert("System Error");
-    } finally {
-        btn.innerHTML = originalText;
+function toggleExpand() {
+    const chatWindow = document.getElementById('chatWindow');
+    if(chatWindow.style.height === '80vh') {
+        chatWindow.style.height = '500px';
+        chatWindow.style.width = '380px';
+    } else {
+        chatWindow.style.height = '80vh';
+        chatWindow.style.width = '600px';
     }
 }
 
-function downloadPDF() {
-    const text = document.getElementById('docEditor').value;
-    if(!text) return;
-    
-    // Basit bir .txt indiricisi (PDF için kütüphane gerekir, şimdilik TXT yeterli)
-    const element = document.createElement('a');
-    const file = new Blob([text], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = (currentTemplate ? currentTemplate.title : "Document") + "_" + Date.now() + ".txt";
-    document.body.appendChild(element);
-    element.click();
-}
-
-function copyToClipboard() {
-    const copyText = document.getElementById("docEditor");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); 
-    navigator.clipboard.writeText(copyText.value);
-    alert("Copied to clipboard!");
-}
+console.log("⚓ VIYA BROKER V17.0 - DOCUMENT GENERATOR ONLINE");
