@@ -579,7 +579,7 @@ CRITICAL: If user didn't provide specific data for a field, use these fallbacks:
 OUTPUT: Return the filled document directly, no preamble.
 `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(aiPrompt);
         const generatedDocument = result.response.text();
 
@@ -791,3 +791,4 @@ app.listen(port, () => {
     console.log(`\n ⚓ VIYA BROKER SYSTEM ONLINE (Port: ${port})`);
     console.log(` 📂 Document Templates: ${Object.keys(DOCUMENT_TEMPLATES.letter_of_protest).length} loaded`);
 });
+
