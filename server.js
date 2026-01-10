@@ -1,7 +1,6 @@
 // server.js
-// VIYA BROKER - PLATINUM EDITION (V17.0 - Document Generator Added)
-// Status: DATABASE CONNECTED + AI DOCUMENT GENERATION ONLINE
-// PART 1 OF 2
+// VIYA BROKER - PLATINUM EDITION (V18.0 - Marketplace + Messaging Added)
+// Status: DATABASE + AI + MARKETPLACE + REAL-TIME MESSAGING ONLINE
 
 import express from 'express';
 import cors from 'cors';
@@ -14,6 +13,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
+import { Server } from 'socket.io';
+import http from 'http';
 
 dotenv.config();
 
@@ -22,6 +23,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
+
+// HTTP SERVER + SOCKET.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 // GÜVENLİK VE BAĞLANTI AYARLARI
 const SECRET_KEY = process.env.JWT_SECRET || "VIYA_SUPER_SECRET_KEY_2026";
@@ -36,7 +46,9 @@ if (MONGO_URI) {
     console.warn(" ⚠️ [SYSTEM] MONGO_URI eksik! Veritabanı çalışmayacak.");
 }
 
-// --- MONGODB USER ŞEMASI ---
+// --- MONGODB SCHEMAS ---
+
+// USER SCHEMA
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -48,6 +60,54 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
+// VESSEL LISTING SCHEMA (YENİ!)
+const vesselListingSchema = new mongoose.Schema({
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    sellerName: { type: String, required: true },
+    sellerEmail: { type: String, required: true },
+    vesselName: { type: String, required: true },
+    vesselType: { type: String, required: true },
+    dwt: { type: Number, required: true },
+    yearBuilt: { type: Number, required: true },
+    flag: { type: String, required: true },
+    imoNumber: { type: String },
+    classification: { type: String },
+    price: { type: Number, required: true },
+    priceType: { type: String, enum: ['SALE', 'TIME_CHARTER', 'VOYAGE_CHARTER'], default: 'SALE' },
+    images: [{ type: String }],
+    description: { type: String },
+    specifications: {
+        loa: Number,
+        beam: Number,
+        draft: Number,
+        engine: String,
+        horsePower: Number,
+        fuelConsumption: String,
+        speed: Number,
+        holds: Number,
+        cranes: Number
+    },
+    currentLocation: { type: String },
+    status: { type: String, enum: ['ACTIVE', 'SOLD', 'UNDER_NEGOTIATION'], default: 'ACTIVE' },
+    views: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+const VesselListing = mongoose.model('VesselListing', vesselListingSchema);
+
+// MESSAGE SCHEMA (YENİ!)
+const messageSchema = new mongoose.Schema({
+    from: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    fromName: { type: String, required: true },
+    to: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    toName: { type: String, required: true },
+    vesselListing: { type: mongoose.Schema.Types.ObjectId, ref: 'VesselListing' },
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false },
+    timestamp: { type: Date, default: Date.now }
+});
+const Message = mongoose.model('Message', messageSchema);
+
 // AI SETUP
 const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
 let genAI = null;
@@ -58,7 +118,7 @@ if (API_KEY) {
 }
 
 app.use(cors({ origin: '*', methods: ['GET', 'POST'] }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Fotoğraflar için
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -109,7 +169,7 @@ const MARKET_RATES = {
 };
 
 // ==========================================
-// 2. DOCUMENT TEMPLATES DATABASE (YENİ!)
+// 2. DOCUMENT TEMPLATES DATABASE
 // ==========================================
 
 const DOCUMENT_TEMPLATES = {
@@ -443,6 +503,13 @@ cc: Owners, P&I Club, Flag State, ISO 8217 Testing Laboratory`
 };
 
 // ==========================================
+// PART 1 BİTTİ - PART 2'DE DEVAM EDECEK
+// ==========================================
+// ==========================================
+// PART 2 OF 2 - MARKETPLACE, MESSAGING, CHAT, VOYAGE ENGINE
+// ==========================================
+
+// ==========================================
 // 3. AUTH & KVKK ENDPOINTS
 // ==========================================
 
@@ -507,14 +574,246 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ==========================================
-// 4. DOCUMENT GENERATOR API (YENİ!)
+// 4. MARKETPLACE ENDPOINTS (YENİ!)
 // ==========================================
 
-// Template listesini döndür
+app.get('/api/marketplace/listings', async (req, res) => {
+    try {
+        const { type, minDwt, maxDwt, minYear, maxYear, flag, status } = req.query;
+        
+        let filter = {};
+        if (type) filter.vesselType = type;
+        if (minDwt) filter.dwt = { ...filter.dwt, $gte: parseInt(minDwt) };
+        if (maxDwt) filter.dwt = { ...filter.dwt, $lte: parseInt(maxDwt) };
+        if (minYear) filter.yearBuilt = { ...filter.yearBuilt, $gte: parseInt(minYear) };
+        if (maxYear) filter.yearBuilt = { ...filter.yearBuilt, $lte: parseInt(maxYear) };
+        if (flag) filter.flag = flag;
+        if (status) filter.status = status;
+        else filter.status = 'ACTIVE';
+        
+        const listings = await VesselListing.find(filter)
+            .sort({ createdAt: -1 })
+            .limit(50);
+        
+        res.json({ success: true, listings });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+app.get('/api/marketplace/listing/:id', async (req, res) => {
+    try {
+        const listing = await VesselListing.findById(req.params.id);
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+        
+        listing.views += 1;
+        await listing.save();
+        
+        res.json({ success: true, listing });
+    } catch (e) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+app.post('/api/marketplace/create-listing', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(401).json({ error: 'User not found' });
+        
+        const listingData = {
+            ...req.body,
+            seller: user._id,
+            sellerName: user.fullName,
+            sellerEmail: user.email
+        };
+        
+        if (listingData.images && listingData.images.length > 4) {
+            listingData.images = listingData.images.slice(0, 4);
+        }
+        
+        const newListing = await VesselListing.create(listingData);
+        res.json({ success: true, listing: newListing });
+        
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to create listing' });
+    }
+});
+
+app.put('/api/marketplace/listing/:id', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const listing = await VesselListing.findById(req.params.id);
+        
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+        if (listing.seller.toString() !== decoded.id) {
+            return res.status(403).json({ error: 'Not authorized to edit this listing' });
+        }
+        
+        Object.assign(listing, req.body);
+        listing.updatedAt = Date.now();
+        await listing.save();
+        
+        res.json({ success: true, listing });
+    } catch (e) {
+        res.status(500).json({ error: 'Update failed' });
+    }
+});
+
+app.delete('/api/marketplace/listing/:id', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const listing = await VesselListing.findById(req.params.id);
+        
+        if (!listing) return res.status(404).json({ error: 'Listing not found' });
+        if (listing.seller.toString() !== decoded.id) {
+            return res.status(403).json({ error: 'Not authorized to delete this listing' });
+        }
+        
+        await VesselListing.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Listing deleted' });
+    } catch (e) {
+        res.status(500).json({ error: 'Delete failed' });
+    }
+});
+
+app.get('/api/marketplace/my-listings', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const listings = await VesselListing.find({ seller: decoded.id }).sort({ createdAt: -1 });
+        
+        res.json({ success: true, listings });
+    } catch (e) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// ==========================================
+// 5. MESSAGING ENDPOINTS (YENİ!)
+// ==========================================
+
+app.post('/api/messages/send', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(401).json({ error: 'User not found' });
+        
+        const { toUserId, message, vesselListingId } = req.body;
+        const toUser = await User.findById(toUserId);
+        if (!toUser) return res.status(404).json({ error: 'Recipient not found' });
+        
+        const newMessage = await Message.create({
+            from: user._id,
+            fromName: user.fullName,
+            to: toUserId,
+            toName: toUser.fullName,
+            message,
+            vesselListing: vesselListingId || null
+        });
+        
+        io.to(toUserId).emit('new_message', newMessage);
+        
+        res.json({ success: true, message: newMessage });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+app.get('/api/messages/conversation/:userId', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        const otherUserId = req.params.userId;
+        
+        const messages = await Message.find({
+            $or: [
+                { from: decoded.id, to: otherUserId },
+                { from: otherUserId, to: decoded.id }
+            ]
+        }).sort({ timestamp: 1 });
+        
+        await Message.updateMany(
+            { from: otherUserId, to: decoded.id, read: false },
+            { read: true }
+        );
+        
+        res.json({ success: true, messages });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to load messages' });
+    }
+});
+
+app.get('/api/messages/inbox', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        
+        const decoded = jwt.verify(token, SECRET_KEY);
+        
+        const messages = await Message.aggregate([
+            {
+                $match: {
+                    $or: [{ from: new mongoose.Types.ObjectId(decoded.id) }, { to: new mongoose.Types.ObjectId(decoded.id) }]
+                }
+            },
+            { $sort: { timestamp: -1 } },
+            {
+                $group: {
+                    _id: {
+                        $cond: [
+                            { $eq: ['$from', new mongoose.Types.ObjectId(decoded.id)] },
+                            '$to',
+                            '$from'
+                        ]
+                    },
+                    lastMessage: { $first: '$$ROOT' },
+                    unreadCount: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $eq: ['$to', new mongoose.Types.ObjectId(decoded.id)] }, { $eq: ['$read', false] }] },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+        
+        res.json({ success: true, conversations: messages });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to load inbox' });
+    }
+});
+
+// ==========================================
+// 6. DOCUMENT GENERATOR API
+// ==========================================
+
 app.get('/api/document-templates', (req, res) => {
     const templateList = [];
     
-    // Letter of Protest kategorileri
     Object.entries(DOCUMENT_TEMPLATES.letter_of_protest).forEach(([key, data]) => {
         templateList.push({
             id: `lop_${key}`,
@@ -528,7 +827,6 @@ app.get('/api/document-templates', (req, res) => {
     res.json({ success: true, templates: templateList });
 });
 
-// Doküman oluştur (AI ile placeholder doldurma)
 app.post('/api/generate-document', async (req, res) => {
     try {
         if (!genAI) {
@@ -539,7 +837,6 @@ app.post('/api/generate-document', async (req, res) => {
 
         const { templateType, templateKey, userInputs } = req.body;
         
-        // Template'i bul
         let template = null;
         if (templateType === 'letter_of_protest') {
             template = DOCUMENT_TEMPLATES.letter_of_protest[templateKey];
@@ -549,7 +846,6 @@ app.post('/api/generate-document', async (req, res) => {
             return res.status(404).json({ error: "Template not found" });
         }
 
-        // AI'ya gönderilecek prompt
         const aiPrompt = `
 You are a professional maritime document generator for VIYA BROKER system.
 
@@ -579,7 +875,7 @@ CRITICAL: If user didn't provide specific data for a field, use these fallbacks:
 OUTPUT: Return the filled document directly, no preamble.
 `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         const result = await model.generateContent(aiPrompt);
         const generatedDocument = result.response.text();
 
@@ -600,14 +896,7 @@ OUTPUT: Return the filled document directly, no preamble.
 });
 
 // ==========================================
-// PART 1 BİTTİ - PART 2'YE DEVAM EDECEK
-// ==========================================
-// ==========================================
-// PART 2 OF 2 - VOYAGE ANALYTICS & CHAT
-// ==========================================
-
-// ==========================================
-// 5. VOYAGE ANALYTICS ENGINE
+// 7. VOYAGE ANALYTICS ENGINE
 // ==========================================
 
 function checkCanals(loadGeo, dischGeo) {
@@ -726,7 +1015,7 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 // ==========================================
-// 6. DATA ENDPOINTS
+// 8. DATA ENDPOINTS
 // ==========================================
 
 app.get('/api/ports', (req, res) => res.json(Object.keys(PORT_DB).sort()));
@@ -738,7 +1027,7 @@ app.get('/api/vessels', (req, res) => res.json(VESSEL_DB));
 app.get('/api/routes', (req, res) => res.json([]));
 
 // ==========================================
-// 7. AI CHAT
+// 9. AI CHAT
 // ==========================================
 
 app.post('/api/chat', async (req, res) => {
@@ -784,11 +1073,54 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ==========================================
-// 8. SERVER START
+// 10. SOCKET.IO (REAL-TIME MESSAGING & VIDEO)
 // ==========================================
 
-app.listen(port, () => {
-    console.log(`\n ⚓ VIYA BROKER SYSTEM ONLINE (Port: ${port})`);
-    console.log(` 📂 Document Templates: ${Object.keys(DOCUMENT_TEMPLATES.letter_of_protest).length} loaded`);
+io.on('connection', (socket) => {
+    console.log('✅ User connected:', socket.id);
+    
+    socket.on('join_room', (userId) => {
+        socket.join(userId);
+        console.log(`User ${userId} joined their room`);
+    });
+    
+    socket.on('send_message', (data) => {
+        io.to(data.toUserId).emit('new_message', data);
+    });
+    
+    socket.on('call_user', (data) => {
+        io.to(data.toUserId).emit('incoming_call', {
+            from: data.from,
+            fromName: data.fromName,
+            offer: data.offer
+        });
+    });
+    
+    socket.on('answer_call', (data) => {
+        io.to(data.toUserId).emit('call_answered', {
+            answer: data.answer
+        });
+    });
+    
+    socket.on('ice_candidate', (data) => {
+        io.to(data.toUserId).emit('ice_candidate', {
+            candidate: data.candidate
+        });
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('❌ User disconnected:', socket.id);
+    });
 });
 
+// ==========================================
+// 11. SERVER START
+// ==========================================
+
+server.listen(port, () => {
+    console.log(`\n ⚓ VIYA BROKER SYSTEM V18.0 ONLINE (Port: ${port})`);
+    console.log(` 📂 Document Templates: ${Object.keys(DOCUMENT_TEMPLATES.letter_of_protest).length} loaded`);
+    console.log(` 🚢 Marketplace: ONLINE`);
+    console.log(` 💬 Real-time Messaging: ACTIVE (Socket.io)`);
+    console.log(` 📹 Video Call Support: READY (WebRTC)`);
+});
