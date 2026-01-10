@@ -1,5 +1,5 @@
 // server.js
-// VIYA BROKER - PLATINUM EDITION (V16.0 - MongoDB Atlas Integration)
+// VIYA BROKER - PLATINUM EDITION (V16.1 - Document Studio Added)
 // Status: DATABASE CONNECTED - PERSISTENT DATA STORAGE
 
 import express from 'express';
@@ -12,7 +12,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import mongoose from 'mongoose'; // YENİ: Veritabanı Sürücüsü
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -24,7 +24,7 @@ const port = process.env.PORT || 10000;
 
 // GÜVENLİK VE BAĞLANTI AYARLARI
 const SECRET_KEY = process.env.JWT_SECRET || "VIYA_SUPER_SECRET_KEY_2026";
-const MONGO_URI = process.env.MONGO_URI; // Render'dan gelecek bağlantı adresi
+const MONGO_URI = process.env.MONGO_URI; 
 
 // --- MONGODB BAĞLANTISI ---
 if (MONGO_URI) {
@@ -61,10 +61,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 1. DATA LOADERS (STATİK VERİLER HALA DOSYADA)
+// 1. DATA LOADERS
 // ==========================================
-// Limanlar, gemiler ve dokümanlar çok değişmediği için JSON'da kalabilir.
-// Sadece Üyeleri veritabanına taşıdık.
 
 const loadRawJSON = (filename) => {
     try {
@@ -80,6 +78,7 @@ const PORT_DB_RAW = loadRawJSON('ports.json') || {};
 const DOCS_DB = loadRawJSON('documents.json') || [];
 const REGS_DB = loadRawJSON('regulations.json') || [];
 const VESSEL_DB = loadRawJSON('vessels.json') || [];
+const TEMPLATES_DB = loadRawJSON('templates.json') || []; // YENİ EKLENDİ
 
 let PORT_DB = {};
 const cleanPortName = (name) => {
@@ -94,7 +93,6 @@ if (Object.keys(PORT_DB_RAW).length > 0) {
         }
     });
 } else {
-    // Fallback Ports
     PORT_DB["ISTANBUL"] = {lat: 41.0082, lng: 28.9784};
     PORT_DB["SHANGHAI"] = {lat: 31.2304, lng: 121.4737};
     PORT_DB["ROTTERDAM"] = {lat: 51.9225, lng: 4.47917};
@@ -110,7 +108,7 @@ const MARKET_RATES = {
 };
 
 // ==========================================
-// 2. AUTH & KVKK ENDPOINTS (MONGODB POWERED)
+// 2. AUTH & KVKK ENDPOINTS
 // ==========================================
 
 app.get('/api/kvkk', (req, res) => {
@@ -127,13 +125,11 @@ app.post('/api/auth/register', async (req, res) => {
         if (!kvkkAccepted) return res.status(400).json({ error: "KVKK onayı zorunludur." });
         if (!email || !password) return res.status(400).json({ error: "E-posta ve şifre giriniz." });
 
-        // MongoDB Kontrolü
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ error: "Bu e-posta zaten kayıtlı." });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Yeni Kullanıcı Oluştur (Veritabanına Kayıt)
         const newUser = await User.create({
             email,
             password: hashedPassword,
@@ -152,7 +148,6 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Veritabanından Kullanıcıyı Bul
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ error: "Kullanıcı bulunamadı." });
         
@@ -161,7 +156,6 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
         
-        // Şifreyi çıkartıp gönder
         const userData = {
             id: user._id,
             email: user.email,
@@ -268,7 +262,7 @@ app.post('/api/analyze', async (req, res) => {
             const voyage = await analyzeVoyage(loadPort, dischPort, cargo || "General Cargo", quantity, shipLat || 0, shipLng || 0);
             if(voyage && genAI) {
                  try {
-                    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                     const r = await model.generateContent(`Act as broker. Voyage: ${loadPort}-${dischPort}. Cargo: ${cargo}. Profit: $${Math.floor(voyage.financials.profit)}. Short comment.`);
                     voyage.aiAnalysis = r.response.text();
                  } catch(e){}
@@ -303,14 +297,63 @@ app.get('/api/documents', (req, res) => res.json(DOCS_DB));
 app.get('/api/regulations', (req, res) => res.json(REGS_DB));
 app.get('/api/vessels', (req, res) => res.json(VESSEL_DB));
 app.get('/api/routes', (req, res) => res.json([]));
-// ... (Önceki kodlar aynı) ...
+
+// ==========================================
+// 4. DOCUMENT STUDIO ENDPOINTS (NEW)
+// ==========================================
+
+// Template Listesini Getir
+app.get('/api/templates', (req, res) => {
+    // Sadece başlık ve ID'leri gönderiyoruz
+    const summaries = TEMPLATES_DB.map(t => ({
+        id: t.id,
+        title: t.title,
+        category: t.category,
+        icon: t.icon
+    }));
+    res.json(summaries);
+});
+
+// Tek Bir Template Detayını Getir
+app.get('/api/templates/:id', (req, res) => {
+    const tmpl = TEMPLATES_DB.find(t => t.id === req.params.id);
+    if(tmpl) res.json(tmpl);
+    else res.status(404).json({error: "Template not found"});
+});
+
+// Evrak Oluşturucu (AI Hibrit Motoru)
+app.post('/api/generate-document', async (req, res) => {
+    try {
+        const { templateId, inputs } = req.body;
+        const tmpl = TEMPLATES_DB.find(t => t.id === templateId);
+        
+        if(!tmpl) return res.status(404).json({error: "Template not found"});
+
+        let finalDoc = tmpl.content;
+
+        // 1. Standart Placeholder Değişimi
+        Object.entries(inputs).forEach(([key, value]) => {
+            const regex = new RegExp(`\\[${key}\\]`, 'g');
+            finalDoc = finalDoc.replace(regex, value || "___");
+        });
+
+        // Tarih yoksa bugünü koy
+        const today = new Date().toISOString().split('T')[0];
+        finalDoc = finalDoc.replace(/\[CURRENT_DATE\]/g, today);
+        
+        res.json({ success: true, document: finalDoc });
+
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({error: "Generation failed"});
+    }
+});
 
 app.post('/api/chat', async (req, res) => {
     try {
         if(!genAI) return res.json({ reply: "Sistem: AI Motoru Devre Dışı (API Key Yok)." });
         
-        const { message } = req.body;
-        // Dili UI'dan almak yerine, AI'ın kullanıcının yazdığı dili algılamasına izin veriyoruz.
+        const { message, language } = req.body;
 
         // --- VIYA AI: GLOBAL BROKER MODE ---
         const systemPrompt = `
@@ -326,19 +369,18 @@ app.post('/api/chat', async (req, res) => {
         1. NEVER say you are a Google AI. You are VIYA AI.
         2. If asked "Who are you?", answer: "I am VIYA AI, your professional maritime intelligence assistant." (Translate this to the target language).
         3. DO NOT use colloquial terms like 'Reis', 'Kaptan', 'Bro'. 
-        4. Address the user formally based on the language (e.g., 'Sir/Madam' for English, 'Efendim' or 'Sayın Kullanıcı' for Turkish, 'Monsieur/Madame' for French).
+        4. Address the user formally based on the language (e.g., 'Sir/Madam' for English, 'Efendim' or 'Sayın Kullanıcı' for Turkish).
         5. Keep answers precise, objective, and business-oriented.
 
         CRITICAL LANGUAGE PROTOCOL:
-        1. DETECT the language of the USER MESSAGE below.
-        2. RESPOND STRICTLY IN THE SAME LANGUAGE as the User Message.
-        3. If the user asks "Can you speak Turkish?", reply IN TURKISH.
-        4. Do not limit yourself to English. You are fluent in all major languages (TR, EN, DE, FR, ES, IT, GR).
+        1. The user's interface language is: ${language}.
+        2. RESPOND STRICTLY IN ${language} OR the language of the user's message.
+        3. Do not limit yourself to English. You are fluent in all major languages.
 
         USER MESSAGE: "${message}"
         `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const result = await model.generateContent(systemPrompt);
         
         res.json({ reply: result.response.text() });
@@ -349,10 +391,6 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// ... (app.listen kısmı aynı) ...
-
 app.listen(port, () => {
     console.log(`\n ⚓ VIYA BROKER SYSTEM ONLINE (Port: ${port})`);
 });
-
-
