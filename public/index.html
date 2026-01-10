@@ -114,8 +114,7 @@
             </div>
             <div class="nav-links">
                 <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
-                <div class="nav-item" onclick="switchView('docStudio')" data-i18n="nav_studio">Doc Studio</div>
-                
+                <div class="nav-item" onclick="switchView('document-studio')" data-i18n="nav_docstudio">Document Studio</div>
                 <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
                 <div class="nav-item" onclick="switchView('regulations')" data-i18n="nav_reg">Regulations</div>
                 <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Docs</div>
@@ -183,50 +182,38 @@
             </div>
         </div>
 
-        <div id="docStudio" class="view-section">
-            <div class="dash-grid" style="grid-template-columns: 350px 1fr;">
+        <!-- YENİ: DOCUMENT STUDIO -->
+        <div id="document-studio" class="view-section">
+            <div class="library-section">
+                <div class="section-title"><i class="fa-solid fa-file-signature"></i> DOCUMENT STUDIO</div>
+                <p style="color:#94a3b8; margin-bottom:20px;">Generate professional maritime documents with AI assistance. Select a template below:</p>
                 
-                <aside class="panel">
-                    <div class="p-header">
-                        <span><i class="fa-solid fa-file-signature"></i> DOCUMENT WIZARD</span>
+                <div id="templateCategories" style="margin-bottom:30px;">
+                    <div class="template-category">
+                        <h3 style="color:var(--neon-cyan); margin-bottom:15px;"><i class="fa-solid fa-cloud-showers-heavy"></i> Weather Related</h3>
+                        <div class="docs-grid" id="weatherTemplates"></div>
                     </div>
-                    <div class="p-body">
-                        <div id="step1-select">
-                            <label class="input-group-label" style="color:#94a3b8; font-size:0.8rem; margin-bottom:10px; display:block;">SELECT DOCUMENT TYPE</label>
-                            <select id="docTemplateSelect" class="input-dark" onchange="loadTemplateForm()" style="width:100%; padding:10px; background:#0f172a; color:white; border:1px solid #333; border-radius:4px;">
-                                <option value="">-- Choose Template --</option>
-                            </select>
-                            
-                            <div id="templateInfo" style="margin-top:20px; padding:15px; background:rgba(0,242,255,0.05); border-left:3px solid var(--neon-cyan); display:none;">
-                                <div id="selDocTitle" style="font-weight:bold; color:var(--neon-cyan); margin-bottom:5px;"></div>
-                                <div id="selDocCat" style="font-size:0.8rem; color:#94a3b8;"></div>
-                            </div>
-                        </div>
-
-                        <hr style="border-color:#333; margin:20px 0;">
-
-                        <div id="step2-form" style="display:none;">
-                            <div style="margin-bottom:15px; font-family:var(--font-tech); color:var(--neon-gold);">INPUT DATA</div>
-                            <div id="dynamicFormInputs"></div>
-                            <button class="btn-action" onclick="generateDocument()">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE DRAFT
-                            </button>
-                        </div>
+                    
+                    <div class="template-category" style="margin-top:30px;">
+                        <h3 style="color:var(--neon-gold); margin-bottom:15px;"><i class="fa-solid fa-boxes-stacked"></i> Cargo Issues</h3>
+                        <div class="docs-grid" id="cargoTemplates"></div>
                     </div>
-                </aside>
-
-                <aside class="panel">
-                    <div class="p-header">
-                        <span><i class="fa-solid fa-pen-to-square"></i> LIVE EDITOR</span>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-download" onclick="copyToClipboard()" style="width:auto; padding:5px 15px;"><i class="fa-solid fa-copy"></i> Copy</button>
-                            <button class="btn-download" onclick="downloadPDF()" style="width:auto; padding:5px 15px; color:var(--neon-gold); border-color:var(--neon-gold);"><i class="fa-solid fa-file-pdf"></i> Download</button>
-                        </div>
+                    
+                    <div class="template-category" style="margin-top:30px;">
+                        <h3 style="color:var(--neon-purple); margin-bottom:15px;"><i class="fa-solid fa-anchor"></i> Port/Terminal</h3>
+                        <div class="docs-grid" id="portTemplates"></div>
                     </div>
-                    <div class="p-body" style="padding:0;">
-                        <textarea id="docEditor" style="width:100%; height:100%; background:#0b1221; color:#e2e8f0; border:none; padding:30px; font-family:'Courier New', monospace; font-size:1rem; line-height:1.6; resize:none;" placeholder="Select a template to begin..."></textarea>
+                    
+                    <div class="template-category" style="margin-top:30px;">
+                        <h3 style="color:var(--neon-green); margin-bottom:15px;"><i class="fa-solid fa-clock"></i> Laytime Disputes</h3>
+                        <div class="docs-grid" id="laytimeTemplates"></div>
                     </div>
-                </aside>
+                    
+                    <div class="template-category" style="margin-top:30px;">
+                        <h3 style="color:#f59e0b; margin-bottom:15px;"><i class="fa-solid fa-gas-pump"></i> Bunker Quality</h3>
+                        <div class="docs-grid" id="bunkerTemplates"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -276,6 +263,43 @@
                 <span class="close-btn" onclick="closeModal('finModal')">&times;</span>
             </div>
             <div class="modal-body" id="finBody"></div>
+        </div>
+    </div>
+
+    <!-- YENİ: DOCUMENT GENERATOR MODAL -->
+    <div id="docGeneratorModal" class="modal">
+        <div class="modal-content" style="max-width:900px;">
+            <div class="modal-header">
+                <span class="modal-title" id="docGenTitle">DOCUMENT GENERATOR</span>
+                <span class="close-btn" onclick="closeModal('docGeneratorModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="docGenForm" style="margin-bottom:20px;">
+                    <p style="color:#94a3b8; margin-bottom:15px;">Fill in the details below. AI will complete the document:</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Vessel Name</label><input type="text" id="genVesselName" placeholder="M/V VIYA STAR" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">IMO Number</label><input type="text" id="genIMO" placeholder="9876543" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Load Port</label><input type="text" id="genLoadPort" placeholder="ISTANBUL" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Discharge Port</label><input type="text" id="genDischPort" placeholder="ROTTERDAM" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Cargo Type</label><input type="text" id="genCargo" placeholder="GRAIN" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                        <div><label style="color:#fff; display:block; margin-bottom:5px;">Cargo Quantity (MT)</label><input type="number" id="genQty" placeholder="50000" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #333; color:#fff;"></div>
+                    </div>
+                    <button class="btn-action" onclick="generateDocument()" style="margin-top:20px; width:100%;"><i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE WITH AI</button>
+                </div>
+                
+                <div id="generatedDocArea" style="display:none;">
+                    <div style="background:#0a0a0a; border:1px solid var(--neon-cyan); padding:15px; margin-bottom:15px;">
+                        <div style="color:var(--neon-gold); font-size:0.85rem; margin-bottom:10px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <strong>LEGAL DISCLAIMER:</strong> This document is a DRAFT generated by AI assistance. VIYA BROKER strongly recommends review by a qualified maritime lawyer before execution.
+                        </div>
+                    </div>
+                    <textarea id="docOutput" style="width:100%; height:400px; background:#0a0a0a; border:1px solid #333; color:#fff; padding:15px; font-family:monospace; font-size:0.9rem;"></textarea>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <button class="btn-download" onclick="downloadGeneratedDoc()"><i class="fa-solid fa-download"></i> DOWNLOAD TXT</button>
+                        <button class="btn-download" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i> COPY TO CLIPBOARD</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
