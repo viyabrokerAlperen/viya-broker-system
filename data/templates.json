@@ -1,0 +1,45 @@
+[
+  {
+    "id": "lop-weather",
+    "title": "Letter of Protest - Adverse Weather",
+    "category": "Weather Related",
+    "icon": "fa-cloud-bolt",
+    "fields": [
+      { "key": "VESSEL_NAME", "label": "Vessel Name", "type": "text" },
+      { "key": "PORT_NAME", "label": "Port Name", "type": "text" },
+      { "key": "DATE", "label": "Date", "type": "date" },
+      { "key": "CARGO_OP", "label": "Operation (Loading/Discharging)", "type": "select", "options": ["Loading", "Discharging"] },
+      { "key": "WEATHER_DESC", "label": "Description of Weather", "type": "textarea", "placeholder": "e.g. Heavy rain and strong winds force 7..." },
+      { "key": "STOP_TIME", "label": "Stopped From", "type": "datetime-local" },
+      { "key": "RESUME_TIME", "label": "Resumed At", "type": "datetime-local" }
+    ],
+    "content": "LETTER OF PROTEST (WEATHER)\n\nDate: [DATE]\nPort: [PORT_NAME]\nVessel: [VESSEL_NAME]\n\nTo: The Shippers / Charterers / Receivers\n\nDear Sirs,\n\nPlease be informed that the [CARGO_OP] operation of the above-mentioned vessel was interrupted due to adverse weather conditions as follows:\n\nNature of Weather: [WEATHER_DESC]\n\nStoppage Time: [STOP_TIME]\nResumption Time: [RESUME_TIME]\n\nPlease note that the Master and Owners hold you responsible for all delays, time lost, and consequences arising from this interruption. This letter is issued without prejudice to the rights and defenses of the Owners under the Charter Party and/or Bill of Lading.\n\nYours faithfully,\n\nMaster of MV [VESSEL_NAME]"
+  },
+  {
+    "id": "lop-cargo-damage",
+    "title": "Letter of Protest - Cargo Damage",
+    "category": "Cargo Issues",
+    "icon": "fa-box-open",
+    "fields": [
+      { "key": "VESSEL_NAME", "label": "Vessel Name", "type": "text" },
+      { "key": "PORT_NAME", "label": "Port Name", "type": "text" },
+      { "key": "CARGO_TYPE", "label": "Cargo Type", "type": "text" },
+      { "key": "DAMAGE_DESC", "label": "Description of Damage", "type": "textarea", "placeholder": "e.g. Wet cargo found in hold no. 2..." },
+      { "key": "REMARKS", "label": "Master's Remarks", "type": "text", "default": "Cargo received in damaged condition." }
+    ],
+    "content": "LETTER OF PROTEST (CARGO DAMAGE)\n\nDate: [CURRENT_DATE]\nPort: [PORT_NAME]\nVessel: [VESSEL_NAME]\n\nTo: The Shippers / Stevedores\n\nRe: Cargo Damage - [CARGO_TYPE]\n\nDear Sirs,\n\nI hereby give you notice that the cargo loaded/discharged today was found to be damaged as follows:\n\n[DAMAGE_DESC]\n\nRemarks: [REMARKS]\n\nI hereby hold you responsible for all loss, damage, and claims that may arise from this condition. This protest is made to protect the interests of the Owners and the Vessel.\n\nYours faithfully,\n\nMaster of MV [VESSEL_NAME]"
+  },
+  {
+    "id": "lop-laytime",
+    "title": "Letter of Protest - Slow Operations",
+    "category": "Laytime Disputes",
+    "icon": "fa-clock",
+    "fields": [
+      { "key": "VESSEL_NAME", "label": "Vessel Name", "type": "text" },
+      { "key": "PORT_NAME", "label": "Port Name", "type": "text" },
+      { "key": "REASON", "label": "Reason for Delay", "type": "text", "placeholder": "e.g. Lack of trucks / Crane breakdown" },
+      { "key": "DELAY_HOURS", "label": "Total Delay (Hours)", "type": "number" }
+    ],
+    "content": "LETTER OF PROTEST (SLOW OPERATIONS)\n\nDate: [CURRENT_DATE]\nPort: [PORT_NAME]\nVessel: [VESSEL_NAME]\n\nTo: The Charterers / Agents\n\nDear Sirs,\n\nI hereby protest against the slow working rate during the cargo operations. The vessel has experienced unnecessary delays due to:\n\nReason: [REASON]\nEstimated Time Lost: [DELAY_HOURS] hours\n\nPlease be advised that the vessel considers this time as counting as Laytime (or Demurrage if applicable). We hold you responsible for all time lost.\n\nYours faithfully,\n\nMaster of MV [VESSEL_NAME]"
+  }
+]
