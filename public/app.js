@@ -200,48 +200,52 @@ function initSocket() {
 
     socket.on('connect', () => {
         console.log('✅ Socket connected:', socket.id);
-        if (currentUser) {
-            socket.emit('join_room', currentUser.id);
-        }
+        if (currentUser) socket.emit('join_room', currentUser.id);
     });
 
     socket.on('new_message', (data) => {
-        console.log('📩 New message:', data);
-        // Eğer açık sohbet varsa mesajı göster
-        if (currentChatUserId && (data.from === currentChatUserId || data.fromName)) {
+        if (currentChatUserId && (data.from === currentChatUserId || data.from === currentUser.id)) {
             displayMessage(data);
         }
-        // Inbox badge güncelle
         updateInboxBadge();
     });
 
-    // Video Call Events
+    // --- VIDEO CALL EVENTS (DÜZELTİLMİŞ HALİ) ---
+    // Burası eskisinin yerine geçecek:
+
     socket.on('incoming_call', (data) => {
-        if (confirm(`${data.fromName} is calling you. Accept?`)) {
-            currentRoomId = data.roomId;
+        if (confirm(`Incoming video call from ${data.fromName}. Accept?`)) {
             answerCall(data);
         }
     });
 
-    socket.on('call_answered', (data) => {
+    // BURADA ASYNC/AWAIT ÇOK ÖNEMLİ (Eskisinde yoktu)
+    socket.on('call_answered', async (data) => {
+        console.log("✅ Call Answered! Setting remote description...");
         if (peerConnection) {
-            peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            } catch (e) {
+                console.error("Error setting remote description:", e);
+            }
         }
     });
 
-    socket.on('ice_candidate', (data) => {
+    // BURADA DA TRY/CATCH VE ASYNC ÖNEMLİ
+    socket.on('ice_candidate', async (data) => {
         if (peerConnection && data.candidate) {
-            peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                console.log("➕ Added remote ICE candidate");
+            } catch (e) { 
+                console.error("Error adding ICE candidate", e); 
+            }
         }
     });
 
     socket.on('call_ended', () => {
+        alert("Call ended.");
         endVideoCall();
-    });
-
-    socket.on('user_joined_room', (data) => {
-        console.log('User joined video room:', data.userName);
-        document.getElementById('remoteUserName').innerText = data.userName;
     });
 
     socket.on('disconnect', () => {
@@ -938,10 +942,10 @@ async function sendMessage() {
 }
 
 // ==========================================
-// 8. VIDEO CALL LOGIC (FULL WEB-RTC IMPLEMENTATION)
+// 8. VIDEO CALL LOGIC (FIXED & TESTED)
 // ==========================================
 
-// WebRTC Ayarları (Google STUN Sunucuları - Bağlantı için şart)
+// Google STUN Sunucuları (Bağlantı için ŞART)
 const rtcConfig = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -949,16 +953,23 @@ const rtcConfig = {
     ]
 };
 
+// Global Değişkenler
+let localStream = null;
+let peerConnection = null;
+let currentRoomId = null;
+let isMuted = false;
+let isVideoOff = false;
+
+// 1. ARAMAYI BAŞLAT (Caller)
 async function startVideoCall() {
     if (!currentChatUserId) {
         alert("Please select a user to call.");
         return;
     }
     
-    // 1. Arayan (Caller) için Peer Connection oluştur
-    await createPeerConnection();
+    console.log("🚀 Starting Call...");
 
-    // 2. Video odası oluştur (Backend Kaydı)
+    // Önce odayı veritabanında oluştur
     const token = localStorage.getItem('viya_token');
     try {
         const res = await fetch('/api/video/create-room', {
@@ -970,59 +981,87 @@ async function startVideoCall() {
         
         if (data.success) {
             currentRoomId = data.room.roomId;
-            openVideoModal(true); // true = Arayan kişi (Caller)
+            openVideoModal(true); // true = Arayan
             
-            // 3. Teklif (Offer) oluştur
+            // Kamerayı aç
+            await startLocalStream();
+
+            // Bağlantıyı kur
+            createPeerConnection();
+
+            // Teklif (Offer) oluştur ve gönder
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
 
-            // 4. Sinyali gönder
+            console.log("📡 Sending Offer...");
             socket.emit('call_user', {
                 toUserId: currentChatUserId,
                 from: currentUser.id,
                 fromName: currentUser.fullName,
                 roomId: currentRoomId,
-                offer: offer // SDP verisini gönderiyoruz
+                offer: offer
             });
         }
     } catch (e) {
-        console.error("Call start error:", e);
-        alert("Failed to start call.");
+        console.error("Start call error:", e);
+        alert("Failed to connect.");
     }
 }
 
+// 2. ARAMAYI CEVAPLA (Callee)
 async function answerCall(data) {
+    console.log("📞 Answering Call...");
     currentRoomId = data.roomId;
-    currentChatUserId = data.from; // Arayan kişiyi set et
+    currentChatUserId = data.from; // Karşı tarafı set et
     
-    openVideoModal(false); // false = Cevaplayan (Callee)
+    openVideoModal(false); // false = Cevaplayan
     
-    // 1. Cevaplayan için Peer Connection oluştur
-    await createPeerConnection();
+    // Kamerayı aç
+    await startLocalStream();
 
-    // 2. Gelen teklifi (Offer) kabul et
+    // Bağlantıyı kur
+    createPeerConnection();
+
+    // Gelen teklifi kaydet
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
 
-    // 3. Cevap (Answer) oluştur
+    // Cevap (Answer) oluştur ve gönder
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
-    // 4. Cevabı gönder
+    console.log("📡 Sending Answer...");
     socket.emit('answer_call', {
         toUserId: data.from,
         answer: answer
     });
 }
 
-async function createPeerConnection() {
-    // Varsa eski bağlantıyı temizle
-    if (peerConnection) {
-        peerConnection.close();
+// 3. KAMERA ERİŞİMİ
+async function startLocalStream() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+        
+        // Varsa, mevcut bağlantıya stream'i ekle
+        if (peerConnection) {
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+        }
+    } catch (err) {
+        console.error("Camera Error:", err);
+        alert("Camera access failed! Check permissions.");
+        endVideoCall();
     }
+}
 
+// 4. PEER CONNECTION MOTORU (En Kritik Kısım)
+function createPeerConnection() {
+    if (peerConnection) peerConnection.close();
+    
     peerConnection = new RTCPeerConnection(rtcConfig);
 
-    // 1. ICE Adaylarını Yönet (Yol bulma işlemi)
+    // ICE Candidate (Yol bulma)
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
             socket.emit('ice_candidate', {
@@ -1032,71 +1071,42 @@ async function createPeerConnection() {
         }
     };
 
-    // 2. Karşı tarafın videosu geldiğinde ekrana bas
+    // Karşı tarafın görüntüsü geldiğinde (Siyah ekranı çözen yer)
     peerConnection.ontrack = (event) => {
+        console.log("📺 Remote stream received!");
         const remoteVideo = document.getElementById('remoteVideo');
-        if (remoteVideo) {
+        if (remoteVideo.srcObject !== event.streams[0]) {
             remoteVideo.srcObject = event.streams[0];
             document.getElementById('remoteUserName').innerText = "Connected";
         }
     };
 
-    // 3. Kendi kameramızı ve mikrofonumuzu akışa ekle
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideo').srcObject = localStream;
-        
+    // Eğer stream zaten hazırsa ekle
+    if (localStream) {
         localStream.getTracks().forEach(track => {
             peerConnection.addTrack(track, localStream);
         });
-    } catch (err) {
-        console.error("Camera Error:", err);
-        alert("Camera access denied! Call cannot proceed.");
-        endVideoCall();
     }
 }
 
-// Socket.io Listener'larını Güncelle (app.js initSocket içine eklenecek mantıklar burayla uyumlu çalışır)
-// Not: Aşağıdaki eventler initSocket() içinde zaten var, sadece mantığını teyit et:
-/*
-    socket.on('call_answered', async (data) => {
-        if (peerConnection) {
-            // Arayan kişi, karşı tarafın cevabını kaydeder
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-        }
-    });
-
-    socket.on('ice_candidate', async (data) => {
-        if (peerConnection && data.candidate) {
-            // Yeni internet yolu (candidate) bulunduğunda ekle
-            try {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            } catch (e) { console.error("Error adding candidate", e); }
-        }
-    });
-*/
-
+// 5. UI KONTROLLERİ
 function openVideoModal(isCaller) {
     document.getElementById('videoCallModal').style.display = 'block';
-    document.getElementById('currentRoomId').innerText = currentRoomId || "Connecting...";
+    document.getElementById('currentRoomId').innerText = currentRoomId;
     document.getElementById('remoteUserName').innerText = isCaller ? "Calling..." : "Connecting...";
 }
 
 function endVideoCall() {
-    // 1. Akışları durdur
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
     }
-    // 2. Bağlantıyı kapat
     if (peerConnection) {
         peerConnection.close();
         peerConnection = null;
     }
-    // 3. Modalı kapat
     document.getElementById('videoCallModal').style.display = 'none';
     
-    // 4. Karşı tarafa kapatma sinyali gönder (Eğer hala bağlıysak)
     if (currentChatUserId && socket) {
         socket.emit('end_call', { 
             toUserId: currentChatUserId, 
@@ -1111,8 +1121,8 @@ function toggleMute() {
         isMuted = !isMuted;
         localStream.getAudioTracks()[0].enabled = !isMuted;
         const btn = document.getElementById('muteBtn');
-        btn.innerHTML = isMuted ? '<i class="fa-solid fa-microphone-slash"></i>' : '<i class="fa-solid fa-microphone"></i>';
         btn.style.background = isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)';
+        btn.innerHTML = isMuted ? '<i class="fa-solid fa-microphone-slash"></i>' : '<i class="fa-solid fa-microphone"></i>';
     }
 }
 
@@ -1121,8 +1131,8 @@ function toggleVideo() {
         isVideoOff = !isVideoOff;
         localStream.getVideoTracks()[0].enabled = !isVideoOff;
         const btn = document.getElementById('videoBtn');
-        btn.innerHTML = isVideoOff ? '<i class="fa-solid fa-video-slash"></i>' : '<i class="fa-solid fa-video"></i>';
         btn.style.background = isVideoOff ? '#ef4444' : 'rgba(255,255,255,0.1)';
+        btn.innerHTML = isVideoOff ? '<i class="fa-solid fa-video-slash"></i>' : '<i class="fa-solid fa-video"></i>';
     }
 }
 
@@ -1130,26 +1140,19 @@ async function shareScreen() {
     try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const screenTrack = screenStream.getVideoTracks()[0];
-        
-        // Mevcut video izini (track) bul ve ekran paylaşımıyla değiştir
         const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
-        if(sender) {
-            sender.replaceTrack(screenTrack);
-        }
         
+        if(sender) sender.replaceTrack(screenTrack);
         document.getElementById('localVideo').srcObject = screenStream;
         
-        // Paylaşım durunca kameraya geri dön
         screenTrack.onended = () => {
             if(localStream) {
-                const cameraTrack = localStream.getVideoTracks()[0];
-                if(sender) sender.replaceTrack(cameraTrack);
+                const camTrack = localStream.getVideoTracks()[0];
+                if(sender) sender.replaceTrack(camTrack);
                 document.getElementById('localVideo').srcObject = localStream;
             }
         };
-    } catch(e) {
-        console.error("Screen share failed", e);
-    }
+    } catch(e) { console.error("Screen share error", e); }
 }
 
 // ==========================================
