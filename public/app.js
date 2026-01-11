@@ -938,83 +938,181 @@ async function sendMessage() {
 }
 
 // ==========================================
-// 8. VIDEO CALL LOGIC (V18.1 WEB RTC)
+// 8. VIDEO CALL LOGIC (FULL WEB-RTC IMPLEMENTATION)
 // ==========================================
 
+// WebRTC Ayarları (Google STUN Sunucuları - Bağlantı için şart)
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
 async function startVideoCall() {
-    if (!currentChatUserId) return;
+    if (!currentChatUserId) {
+        alert("Please select a user to call.");
+        return;
+    }
     
-    // 1. Oda oluştur
+    // 1. Arayan (Caller) için Peer Connection oluştur
+    await createPeerConnection();
+
+    // 2. Video odası oluştur (Backend Kaydı)
     const token = localStorage.getItem('viya_token');
-    const res = await fetch('/api/video/create-room', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ vesselListingId: currentChatVesselId })
-    });
-    const data = await res.json();
-    
-    if (data.success) {
-        currentRoomId = data.room.roomId;
-        openVideoModal(true); // true = caller
-        
-        // Sinyal gönder
-        socket.emit('call_user', {
-            toUserId: currentChatUserId,
-            from: currentUser.id,
-            fromName: currentUser.fullName,
-            roomId: currentRoomId
+    try {
+        const res = await fetch('/api/video/create-room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ vesselListingId: currentChatVesselId })
         });
+        const data = await res.json();
+        
+        if (data.success) {
+            currentRoomId = data.room.roomId;
+            openVideoModal(true); // true = Arayan kişi (Caller)
+            
+            // 3. Teklif (Offer) oluştur
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            // 4. Sinyali gönder
+            socket.emit('call_user', {
+                toUserId: currentChatUserId,
+                from: currentUser.id,
+                fromName: currentUser.fullName,
+                roomId: currentRoomId,
+                offer: offer // SDP verisini gönderiyoruz
+            });
+        }
+    } catch (e) {
+        console.error("Call start error:", e);
+        alert("Failed to start call.");
     }
 }
 
 async function answerCall(data) {
     currentRoomId = data.roomId;
-    openVideoModal(false); // false = callee
-    // WebRTC connection logic would go here (simplified for this demo)
-    // In a real app, we would create PeerConnection, add stream, create Answer...
+    currentChatUserId = data.from; // Arayan kişiyi set et
+    
+    openVideoModal(false); // false = Cevaplayan (Callee)
+    
+    // 1. Cevaplayan için Peer Connection oluştur
+    await createPeerConnection();
+
+    // 2. Gelen teklifi (Offer) kabul et
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+
+    // 3. Cevap (Answer) oluştur
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    // 4. Cevabı gönder
+    socket.emit('answer_call', {
+        toUserId: data.from,
+        answer: answer
+    });
 }
+
+async function createPeerConnection() {
+    // Varsa eski bağlantıyı temizle
+    if (peerConnection) {
+        peerConnection.close();
+    }
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+
+    // 1. ICE Adaylarını Yönet (Yol bulma işlemi)
+    peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+            socket.emit('ice_candidate', {
+                toUserId: currentChatUserId,
+                candidate: event.candidate
+            });
+        }
+    };
+
+    // 2. Karşı tarafın videosu geldiğinde ekrana bas
+    peerConnection.ontrack = (event) => {
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo) {
+            remoteVideo.srcObject = event.streams[0];
+            document.getElementById('remoteUserName').innerText = "Connected";
+        }
+    };
+
+    // 3. Kendi kameramızı ve mikrofonumuzu akışa ekle
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+        
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+    } catch (err) {
+        console.error("Camera Error:", err);
+        alert("Camera access denied! Call cannot proceed.");
+        endVideoCall();
+    }
+}
+
+// Socket.io Listener'larını Güncelle (app.js initSocket içine eklenecek mantıklar burayla uyumlu çalışır)
+// Not: Aşağıdaki eventler initSocket() içinde zaten var, sadece mantığını teyit et:
+/*
+    socket.on('call_answered', async (data) => {
+        if (peerConnection) {
+            // Arayan kişi, karşı tarafın cevabını kaydeder
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+    });
+
+    socket.on('ice_candidate', async (data) => {
+        if (peerConnection && data.candidate) {
+            // Yeni internet yolu (candidate) bulunduğunda ekle
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            } catch (e) { console.error("Error adding candidate", e); }
+        }
+    });
+*/
 
 function openVideoModal(isCaller) {
     document.getElementById('videoCallModal').style.display = 'block';
-    document.getElementById('currentRoomId').innerText = currentRoomId;
-    
-    // Kamerayı aç
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-            localStream = stream;
-            document.getElementById('localVideo').srcObject = stream;
-            // In real WebRTC, addTrack here
-        })
-        .catch(err => {
-            alert("Camera/Mic access denied: " + err.message);
-            endVideoCall();
-        });
+    document.getElementById('currentRoomId').innerText = currentRoomId || "Connecting...";
+    document.getElementById('remoteUserName').innerText = isCaller ? "Calling..." : "Connecting...";
 }
 
 function endVideoCall() {
+    // 1. Akışları durdur
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
     }
+    // 2. Bağlantıyı kapat
     if (peerConnection) {
         peerConnection.close();
         peerConnection = null;
     }
+    // 3. Modalı kapat
     document.getElementById('videoCallModal').style.display = 'none';
-    currentRoomId = null;
     
-    // Notify other party
+    // 4. Karşı tarafa kapatma sinyali gönder (Eğer hala bağlıysak)
     if (currentChatUserId && socket) {
-        socket.emit('end_call', { toUserId: currentChatUserId, from: currentUser.id });
+        socket.emit('end_call', { 
+            toUserId: currentChatUserId, 
+            from: currentUser ? currentUser.id : null 
+        });
     }
+    currentRoomId = null;
 }
 
 function toggleMute() {
     if (localStream) {
         isMuted = !isMuted;
         localStream.getAudioTracks()[0].enabled = !isMuted;
-        document.getElementById('muteBtn').innerHTML = isMuted ? '<i class="fa-solid fa-microphone-slash"></i>' : '<i class="fa-solid fa-microphone"></i>';
-        document.getElementById('muteBtn').style.background = isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)';
+        const btn = document.getElementById('muteBtn');
+        btn.innerHTML = isMuted ? '<i class="fa-solid fa-microphone-slash"></i>' : '<i class="fa-solid fa-microphone"></i>';
+        btn.style.background = isMuted ? '#ef4444' : 'rgba(255,255,255,0.1)';
     }
 }
 
@@ -1022,8 +1120,35 @@ function toggleVideo() {
     if (localStream) {
         isVideoOff = !isVideoOff;
         localStream.getVideoTracks()[0].enabled = !isVideoOff;
-        document.getElementById('videoBtn').innerHTML = isVideoOff ? '<i class="fa-solid fa-video-slash"></i>' : '<i class="fa-solid fa-video"></i>';
-        document.getElementById('videoBtn').style.background = isVideoOff ? '#ef4444' : 'rgba(255,255,255,0.1)';
+        const btn = document.getElementById('videoBtn');
+        btn.innerHTML = isVideoOff ? '<i class="fa-solid fa-video-slash"></i>' : '<i class="fa-solid fa-video"></i>';
+        btn.style.background = isVideoOff ? '#ef4444' : 'rgba(255,255,255,0.1)';
+    }
+}
+
+async function shareScreen() {
+    try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Mevcut video izini (track) bul ve ekran paylaşımıyla değiştir
+        const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
+        if(sender) {
+            sender.replaceTrack(screenTrack);
+        }
+        
+        document.getElementById('localVideo').srcObject = screenStream;
+        
+        // Paylaşım durunca kameraya geri dön
+        screenTrack.onended = () => {
+            if(localStream) {
+                const cameraTrack = localStream.getVideoTracks()[0];
+                if(sender) sender.replaceTrack(cameraTrack);
+                document.getElementById('localVideo').srcObject = localStream;
+            }
+        };
+    } catch(e) {
+        console.error("Screen share failed", e);
     }
 }
 
