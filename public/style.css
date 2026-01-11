@@ -281,3 +281,117 @@ option { background-color: #0f172a; color: white; }
     .lp-hero h1 { font-size: 2.5rem; }
     .lp-section { padding: 60px 5%; }
 }
+/* V18.1 EKLEMELERİ - Marketplace & Video Call */
+
+/* Marketplace Filters */
+.marketplace-filters { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 20px; 
+    flex-wrap: wrap; 
+    align-items: center; 
+}
+
+/* Vessel Card Image */
+.vessel-image { 
+    height: 150px; 
+    background: #0a0a0a; 
+    margin: -30px -30px 15px -30px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-bottom: 1px solid var(--border-color); 
+    position: relative; 
+    overflow: hidden; 
+}
+.vessel-image img { width: 100%; height: 100%; object-fit: cover; }
+.vessel-image i { font-size: 3rem; color: #333; }
+
+.vessel-type-badge { 
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    background: var(--neon-gold); 
+    color: #000; 
+    padding: 4px 10px; 
+    font-size: 0.7rem; 
+    font-weight: bold; 
+    border-radius: 4px; 
+}
+
+/* Video Call Controls */
+.video-control-btn { 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+    border: none; 
+    background: #333; 
+    color: #fff; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    margin: 0 10px; 
+    transition: 0.3s; 
+}
+.video-control-btn:hover { 
+    background: #444; 
+    transform: scale(1.1); 
+}
+
+/* Input Dark (Marketplace forms) */
+.input-dark { 
+    width: 100%; 
+    padding: 12px; 
+    background: #0f172a; 
+    border: 1px solid var(--border-color); 
+    color: #fff; 
+    border-radius: 4px; 
+    font-size: 0.9rem; 
+}
+.input-dark:focus { 
+    border-color: var(--neon-cyan); 
+    outline: none; 
+}
+
+/* Inbox Badge */
+.inbox-badge { 
+    background: var(--danger); 
+    color: #fff; 
+    font-size: 0.7rem; 
+    padding: 2px 6px; 
+    border-radius: 10px; 
+    margin-left: 5px; 
+}
+
+/* Data Source Badge (Market Ticker) */
+.data-source-badge { 
+    font-size: 0.7rem; 
+    margin-left: 5px; 
+}
+
+/* Template Category */
+.template-category { margin-bottom: 30px; }
+
+/* Library Section */
+.library-section { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 20px; 
+}
+.section-title { 
+    font-family: var(--font-tech); 
+    font-size: 1.5rem; 
+    color: var(--neon-cyan); 
+    margin-bottom: 30px; 
+    padding-bottom: 15px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+}
+
+/* Category Header */
+.category-header { 
+    font-family: var(--font-tech); 
+    font-size: 1rem; 
+    color: var(--neon-gold); 
+    margin: 30px 0 15px; 
+    padding-bottom: 10px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+}
