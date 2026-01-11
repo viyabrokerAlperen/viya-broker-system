@@ -953,13 +953,6 @@ const rtcConfig = {
     ]
 };
 
-// Global Değişkenler
-let localStream = null;
-let peerConnection = null;
-let currentRoomId = null;
-let isMuted = false;
-let isVideoOff = false;
-
 // 1. ARAMAYI BAŞLAT (Caller)
 async function startVideoCall() {
     if (!currentChatUserId) {
