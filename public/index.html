@@ -1056,10 +1056,39 @@
                 </button>
             </div>
             <div id="registerForm" class="auth-form" style="display:none;">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="rName" class="form-input" placeholder="John Doe">
-                </div>
+    <div id="regStep1">
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="rName" class="form-input" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="rEmail" class="form-input" placeholder="john@company.com">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="rPass" class="form-input" placeholder="Min. 6 characters">
+        </div>
+        <div class="form-checkbox">
+            <input type="checkbox" id="kvkkCheck">
+            <label for="kvkkCheck">I agree to the <a href="#" onclick="showKVKK();return false;">Privacy Policy</a></label>
+        </div>
+        <button class="btn-auth" onclick="doRegisterStep1()">
+            <i class="fa-solid fa-paper-plane"></i> Send Verification Code
+        </button>
+    </div>
+
+    <div id="regStep2" style="display:none; text-align:center;">
+        <p style="color:#fff; margin-bottom:15px;">Enter the 6-digit code sent to your email:</p>
+        <input type="text" id="rCode" class="form-input" placeholder="123456" style="text-align:center; letter-spacing:5px; font-size:1.5rem; margin-bottom:15px;" maxlength="6">
+        <button class="btn-auth" onclick="doRegisterStep2()" style="background:#4ade80; color:#000;">
+            <i class="fa-solid fa-check"></i> Verify & Register
+        </button>
+        <div style="margin-top:15px; font-size:0.85rem; color:#888; cursor:pointer; text-decoration:underline;" onclick="backToStep1()">
+            Wrong email? Go back
+        </div>
+    </div>
+</div>
                 <div class="form-group">
                     <label>Email Address</label>
                     <input type="email" id="rEmail" class="form-input" placeholder="john@company.com">
