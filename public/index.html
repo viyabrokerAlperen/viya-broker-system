@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIYA BROKER | Global Maritime Intelligence</title>
     <link rel="icon" href="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -13,201 +13,1412 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="loader" id="loader"><div style="text-align:center;"><div class="spinner"></div><div style="font-family:var(--font-tech);color:var(--neon-cyan);letter-spacing:2px;" data-i18n="computing">SYSTEM PROCESSING...</div></div></div>
+    <!-- LOADER -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA">
+            </div>
+            <div class="loader-bar"><div class="loader-progress"></div></div>
+            <div class="loader-text">Initializing Systems...</div>
+        </div>
+    </div>
 
-    <!-- LANDING PAGE -->
+    <!-- ========== LANDING PAGE ========== -->
     <div id="landing-page">
-        <header class="lp-header">
-            <div class="lp-brand"><img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" style="height:35px;"> VIYA BROKER</div>
-            <div class="lp-menu-wrapper">
-                <nav class="lp-nav">
-                    <a href="#hero" data-i18n="menu_home">Home</a>
-                    <a href="#about" data-i18n="menu_about">About Us</a>
-                    <a href="#mission" data-i18n="menu_mission">Mission</a>
-                    <a href="#contact" data-i18n="menu_contact">Contact</a>
-                </nav>
-                <select id="langSelectLanding" onchange="changeLanguage(this.value)" class="lang-dropdown">
-                    <option value="en">🇬🇧</option><option value="tr">🇹🇷</option><option value="de">🇩🇪</option><option value="fr">🇫🇷</option><option value="es">🇪🇸</option><option value="it">🇮🇹</option><option value="gr">🇬🇷</option>
+        <!-- Navigation -->
+        <nav class="landing-nav">
+            <div class="nav-container">
+                <a href="#" class="nav-logo">
+                    <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA">
+                    <span>VIYA BROKER</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="#home" class="nav-link active">Home</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#services" class="nav-link">Services</a>
+                    <a href="#fleet" class="nav-link">Fleet</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </div>
+                <div class="nav-actions">
+                    <select id="langSelect" class="lang-select" onchange="changeLanguage(this.value)">
+                        <option value="en">EN</option>
+                        <option value="tr">TR</option>
+                        <option value="de">DE</option>
+                        <option value="fr">FR</option>
+                        <option value="es">ES</option>
+                    </select>
+                    <button class="btn-outline" onclick="openAuthModal('login')">Sign In</button>
+                    <button class="btn-primary" onclick="openAuthModal('register')">Get Started</button>
+                </div>
+                <button class="nav-toggle" onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-bg">
+                <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=2000&q=80" alt="Container Ship" class="hero-img">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-anchor"></i>
+                    <span>Trusted by 500+ Maritime Companies</span>
+                </div>
+                <h1 class="hero-title">
+                    Navigate the Future of<br>
+                    <span class="highlight">Maritime Intelligence</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Advanced voyage estimation, real-time market analytics, and AI-powered 
+                    brokerage solutions for the modern shipping industry.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn-hero-primary" onclick="openAuthModal('register')">
+                        <i class="fa-solid fa-rocket"></i>
+                        Start Free Trial
+                    </button>
+                    <button class="btn-hero-secondary" onclick="playDemo()">
+                        <i class="fa-solid fa-play"></i>
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Global Ports</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">$2.5B</span>
+                        <span class="stat-label">Transactions</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">AI Support</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll">
+                <span>Scroll to explore</span>
+                <div class="scroll-line"></div>
+            </div>
+        </section>
+
+        <!-- Trusted By -->
+        <section class="trusted-section">
+            <div class="container">
+                <p class="trusted-label">Trusted by industry leaders worldwide</p>
+                <div class="trusted-logos">
+                    <div class="logo-item">MAERSK</div>
+                    <div class="logo-item">MSC</div>
+                    <div class="logo-item">COSCO</div>
+                    <div class="logo-item">EVERGREEN</div>
+                    <div class="logo-item">HAPAG-LLOYD</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-image">
+                        <img src="https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1000&q=80" alt="Ship Bridge">
+                        <div class="about-image-accent"></div>
+                        <div class="experience-badge">
+                            <span class="exp-number">15+</span>
+                            <span class="exp-text">Years of<br>Excellence</span>
+                        </div>
+                    </div>
+                    <div class="about-content">
+                        <span class="section-tag">About Us</span>
+                        <h2 class="section-title">Redefining Maritime Brokerage</h2>
+                        <p class="about-text">
+                            VIYA BROKER combines decades of maritime expertise with cutting-edge 
+                            artificial intelligence to deliver unparalleled insights and services 
+                            to shipowners, charterers, and brokers worldwide.
+                        </p>
+                        <p class="about-text">
+                            Our platform processes millions of data points daily, providing you with 
+                            accurate voyage estimations, market trends, and legal compliance tools 
+                            that help you make informed decisions.
+                        </p>
+                        <div class="about-features">
+                            <div class="feature-item">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Real-time Market Data</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>AI-Powered Analytics</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Global Port Database</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Legal Document Generator</span>
+                            </div>
+                        </div>
+                        <button class="btn-learn-more">
+                            Learn More About Us
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="services-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Our Services</span>
+                    <h2 class="section-title">Comprehensive Maritime Solutions</h2>
+                    <p class="section-subtitle">Everything you need to optimize your shipping operations</p>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card featured">
+                        <div class="service-icon">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h3>Voyage Calculator</h3>
+                        <p>Advanced estimation engine with real-time bunker prices, port costs, and route optimization.</p>
+                        <ul class="service-features">
+                            <li>TCE Calculation</li>
+                            <li>Fuel Consumption Analysis</li>
+                            <li>Canal Transit Costs</li>
+                        </ul>
+                        <a href="#" class="service-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon gold">
+                            <i class="fa-solid fa-ship"></i>
+                        </div>
+                        <h3>Ship Marketplace</h3>
+                        <p>Buy, sell, or charter vessels through our secure global marketplace.</p>
+                        <ul class="service-features">
+                            <li>Verified Listings</li>
+                            <li>Secure Messaging</li>
+                            <li>Video Inspections</li>
+                        </ul>
+                        <a href="#" class="service-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon purple">
+                            <i class="fa-solid fa-file-contract"></i>
+                        </div>
+                        <h3>Document Studio</h3>
+                        <p>AI-powered legal document generation for maritime contracts and protests.</p>
+                        <ul class="service-features">
+                            <li>Letter of Protest</li>
+                            <li>Charter Party Clauses</li>
+                            <li>NOR Templates</li>
+                        </ul>
+                        <a href="#" class="service-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon green">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <h3>VIYA AI Assistant</h3>
+                        <p>24/7 intelligent assistant for maritime law, regulations, and operations.</p>
+                        <ul class="service-features">
+                            <li>Instant Answers</li>
+                            <li>Multi-language Support</li>
+                            <li>Legal References</li>
+                        </ul>
+                        <a href="#" class="service-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fleet/Market Preview -->
+        <section id="fleet" class="fleet-section">
+            <div class="fleet-bg">
+                <img src="https://images.unsplash.com/photo-1559825481-12a05cc00344?auto=format&fit=crop&w=2000&q=80" alt="Port">
+                <div class="fleet-overlay"></div>
+            </div>
+            <div class="container">
+                <div class="section-header light">
+                    <span class="section-tag">Global Fleet Market</span>
+                    <h2 class="section-title">Find Your Next Vessel</h2>
+                    <p class="section-subtitle">Browse thousands of vessels available for sale or charter</p>
+                </div>
+                <div class="fleet-stats">
+                    <div class="fleet-stat">
+                        <i class="fa-solid fa-ship"></i>
+                        <span class="fleet-stat-number">1,250+</span>
+                        <span class="fleet-stat-label">Active Listings</span>
+                    </div>
+                    <div class="fleet-stat">
+                        <i class="fa-solid fa-handshake"></i>
+                        <span class="fleet-stat-number">350</span>
+                        <span class="fleet-stat-label">Monthly Deals</span>
+                    </div>
+                    <div class="fleet-stat">
+                        <i class="fa-solid fa-globe"></i>
+                        <span class="fleet-stat-number">80+</span>
+                        <span class="fleet-stat-label">Countries</span>
+                    </div>
+                </div>
+                <div class="fleet-cta">
+                    <button class="btn-fleet" onclick="openAuthModal('register')">
+                        Access Full Marketplace
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Market Ticker -->
+        <section class="ticker-section">
+            <div class="ticker-wrapper">
+                <div class="ticker-content">
+                    <div class="ticker-item">
+                        <span class="ticker-label">BRENT CRUDE</span>
+                        <span class="ticker-value" id="tickerBrent">$78.50</span>
+                        <span class="ticker-change positive">+1.2%</span>
+                    </div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">VLSFO</span>
+                        <span class="ticker-value" id="tickerVLSFO">$485</span>
+                        <span class="ticker-change negative">-0.8%</span>
+                    </div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">MGO</span>
+                        <span class="ticker-value" id="tickerMGO">$650</span>
+                        <span class="ticker-change positive">+0.5%</span>
+                    </div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">BDI INDEX</span>
+                        <span class="ticker-value">1,847</span>
+                        <span class="ticker-change positive">+2.1%</span>
+                    </div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">CAPESIZE</span>
+                        <span class="ticker-value">$18,500/day</span>
+                        <span class="ticker-change positive">+3.2%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- News/Blog Preview -->
+        <section id="news" class="news-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Maritime News</span>
+                    <h2 class="section-title">Latest Industry Updates</h2>
+                </div>
+                <div class="news-grid">
+                    <article class="news-card featured">
+                        <div class="news-image">
+                            <img src="https://images.unsplash.com/photo-1605281317010-fe5ffe798166?auto=format&fit=crop&w=800&q=80" alt="News">
+                            <span class="news-category">Market Analysis</span>
+                        </div>
+                        <div class="news-content">
+                            <span class="news-date">January 12, 2026</span>
+                            <h3>Dry Bulk Market Shows Strong Recovery in Q1 2026</h3>
+                            <p>The Baltic Dry Index reaches 18-month high as demand from Asia surges...</p>
+                            <a href="#" class="news-link">Read More</a>
+                        </div>
+                    </article>
+                    <article class="news-card">
+                        <div class="news-image">
+                            <img src="https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=800&q=80" alt="News">
+                            <span class="news-category">Regulations</span>
+                        </div>
+                        <div class="news-content">
+                            <span class="news-date">January 10, 2026</span>
+                            <h3>IMO 2026: New Emission Standards Take Effect</h3>
+                            <p>Shipping industry prepares for stricter environmental regulations...</p>
+                            <a href="#" class="news-link">Read More</a>
+                        </div>
+                    </article>
+                    <article class="news-card">
+                        <div class="news-image">
+                            <img src="https://images.unsplash.com/photo-1524522173746-f628baad3644?auto=format&fit=crop&w=800&q=80" alt="News">
+                            <span class="news-category">Technology</span>
+                        </div>
+                        <div class="news-content">
+                            <span class="news-date">January 8, 2026</span>
+                            <h3>AI Revolution in Maritime: What's Next?</h3>
+                            <p>How artificial intelligence is transforming ship operations...</p>
+                            <a href="#" class="news-link">Read More</a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <span class="section-tag">Contact Us</span>
+                        <h2 class="section-title">Let's Start a Conversation</h2>
+                        <p>Have questions about our services? Our team is here to help you 24/7.</p>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fa-solid fa-envelope"></i>
+                                <div>
+                                    <span class="contact-label">Email</span>
+                                    <a href="mailto:chartering@viyabroker.com">chartering@viyabroker.com</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fa-solid fa-phone"></i>
+                                <div>
+                                    <span class="contact-label">Phone</span>
+                                    <a href="tel:+902125550000">+90 212 555 0000</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <div>
+                                    <span class="contact-label">Headquarters</span>
+                                    <span>Istanbul, Türkiye</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="social-links">
+                            <a href="#" class="social-link"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="#" class="social-link"><i class="fa-brands fa-twitter"></i></a>
+                            <a href="#" class="social-link"><i class="fa-brands fa-instagram"></i></a>
+                        </div>
+                    </div>
+                    <div class="contact-form-wrapper">
+                        <form class="contact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" placeholder="john@company.com">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select>
+                                    <option>General Inquiry</option>
+                                    <option>Chartering Services</option>
+                                    <option>Technical Support</option>
+                                    <option>Partnership</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message</label>
+                                <textarea rows="4" placeholder="How can we help you?"></textarea>
+                            </div>
+                            <button type="submit" class="btn-submit">
+                                Send Message
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA">
+                        <p>Global Maritime Intelligence Platform. Empowering the shipping industry with AI-driven insights.</p>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Platform</h4>
+                        <a href="#">Voyage Calculator</a>
+                        <a href="#">Ship Marketplace</a>
+                        <a href="#">Document Studio</a>
+                        <a href="#">AI Assistant</a>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Careers</a>
+                        <a href="#">News</a>
+                        <a href="#">Contact</a>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Legal</h4>
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">KVKK</a>
+                        <a href="#">Cookies</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 VIYA BROKER. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span><i class="fa-solid fa-shield-check"></i> SSL Secured</span>
+                        <span><i class="fa-solid fa-lock"></i> GDPR Compliant</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ========== MAIN APPLICATION ========== -->
+    <div id="app-container" style="display:none;">
+        <!-- Top Bar -->
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="topbar-brand">
+                    <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA">
+                    <span>VIYA BROKER</span>
+                </div>
+            </div>
+            <div class="topbar-center">
+                <div class="market-ticker">
+                    <div class="ticker-item-app">
+                        <span class="ticker-name">BRENT</span>
+                        <span class="ticker-price" id="oilPrice">$78.50</span>
+                    </div>
+                    <div class="ticker-item-app">
+                        <span class="ticker-name">VLSFO</span>
+                        <span class="ticker-price" id="vlsfoPrice">$485</span>
+                    </div>
+                    <div class="ticker-item-app">
+                        <span class="ticker-name">MGO</span>
+                        <span class="ticker-price" id="mgoPrice">$650</span>
+                    </div>
+                    <span id="dataSource" class="data-badge"></span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="topbar-btn" onclick="openInbox()" title="Messages">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span class="notification-badge" id="inboxBadge" style="display:none;">0</span>
+                </button>
+                <button class="topbar-btn" onclick="toggleChat()" title="AI Assistant">
+                    <i class="fa-solid fa-robot"></i>
+                </button>
+                <select class="lang-select-app" onchange="changeLanguage(this.value)">
+                    <option value="en">EN</option>
+                    <option value="tr">TR</option>
+                    <option value="de">DE</option>
                 </select>
-                <button class="lp-btn-login" onclick="openAuthModal()" data-i18n="btn_login">LOG IN</button>
+                <div class="user-menu" onclick="openProfileModal()">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span class="user-name" id="navUserName">Captain</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
             </div>
         </header>
 
-        <section id="hero" class="lp-hero">
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" class="hero-logo">
-                <h1 data-i18n="landing_title">NEXT GEN MARITIME INTELLIGENCE</h1>
-                <p data-i18n="landing_sub">Advanced Voyage Estimation, Legal Compliance & AI Brokerage.</p>
-                <div class="hero-actions">
-                    <button class="btn-primary" onclick="openAuthModal()" data-i18n="btn_enter_term">ENTER TERMINAL</button>
-                    <button class="btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})" data-i18n="btn_learn_more">LEARN MORE</button>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="#" class="sidebar-link active" onclick="switchView('dashboard')">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="switchView('calculator')">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>Voyage Calculator</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="switchView('marketplace')">
+                        <i class="fa-solid fa-ship"></i>
+                        <span>Marketplace</span>
+                        <span class="badge-new">HOT</span>
+                    </a>
                 </div>
-            </div>
-        </section>
-
-        <section id="about" class="lp-section">
-            <h2 class="sec-title" data-i18n="menu_about">WHO WE ARE</h2>
-            <div class="sec-content">
-                <p>VIYA BROKER is a cutting-edge maritime technology firm dedicated to digitizing the shipbroking industry. We combine traditional maritime knowledge with advanced Artificial Intelligence.</p>
-                <div class="features-grid">
-                    <div class="f-card"><i class="fa-solid fa-brain"></i><h3>AI Powered</h3><p>Instant legal & operational answers powered by AI.</p></div>
-                    <div class="f-card"><i class="fa-solid fa-calculator"></i><h3>Precise Calc</h3><p>Voyage estimation with real-time bunker prices.</p></div>
-                    <div class="f-card"><i class="fa-solid fa-globe"></i><h3>Global Reach</h3><p>Database of 500+ ports and regulations.</p></div>
-                    <div class="f-card"><i class="fa-solid fa-ship"></i><h3>Ship Market</h3><p>Buy, sell or charter vessels online.</p></div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Tools</span>
+                    <a href="#" class="sidebar-link" onclick="switchView('document-studio')">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span>Document Studio</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="switchView('academy')">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Academy</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="switchView('regulations')">
+                        <i class="fa-solid fa-gavel"></i>
+                        <span>Regulations</span>
+                    </a>
                 </div>
-            </div>
-        </section>
+                <div class="nav-section">
+                    <span class="nav-section-title">Resources</span>
+                    <a href="#" class="sidebar-link" onclick="switchView('news')">
+                        <i class="fa-solid fa-newspaper"></i>
+                        <span>Maritime News</span>
+                        <span class="badge-new">NEW</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="switchView('docs')">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>Documents</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <span class="nav-section-title">Account</span>
+                    <a href="#" class="sidebar-link" onclick="switchView('pricing')">
+                        <i class="fa-solid fa-crown"></i>
+                        <span>Upgrade Plan</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
 
-        <section id="mission" class="lp-section alt-bg">
-            <h2 class="sec-title" data-i18n="menu_mission">OUR MISSION</h2>
-            <div class="sec-content text-center"><p class="mission-text">"To empower shipowners, charterers and brokers with instant, accurate, and actionable intelligence."</p></div>
-        </section>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="view-section active">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Welcome back, <span id="dashUserName">Captain</span></h1>
+                        <p class="page-subtitle">Here's what's happening in the maritime world today</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-page-action" onclick="switchView('calculator')">
+                            <i class="fa-solid fa-calculator"></i>
+                            New Calculation
+                        </button>
+                    </div>
+                </div>
 
-        <section id="contact" class="lp-section">
-            <h2 class="sec-title" data-i18n="menu_contact">CONTACT US</h2>
-            <div class="contact-box">
-                <div class="c-item"><i class="fa-solid fa-envelope"></i><span>chartering@viyabroker.com</span></div>
-                <div class="c-item"><i class="fa-solid fa-phone"></i><span>+90 212 555 0000</span></div>
-                <div class="c-item"><i class="fa-solid fa-location-dot"></i><span>Istanbul, Turkiye</span></div>
-            </div>
-            <div class="footer"><span data-i18n="footer_rights">© 2026 VIYA BROKER. All Rights Reserved.</span></div>
-        </section>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="app-container" style="display:none;">
-        <nav id="mainNav">
-            <div class="brand" onclick="window.location.reload()"><img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png"> VIYA</div>
-            <div class="nav-links">
-                <div class="nav-item active" onclick="switchView('dashboard')" data-i18n="nav_term">Terminal</div>
-                <div class="nav-item" onclick="switchView('marketplace')" style="color:var(--neon-gold);"><i class="fa-solid fa-ship"></i> <span data-i18n="nav_market">Market</span></div>
-                <div class="nav-item" onclick="switchView('document-studio')" data-i18n="nav_docstudio">Document Studio</div>
-                <div class="nav-item" onclick="switchView('academy')" data-i18n="nav_kb">Knowledge Base</div>
-                <div class="nav-item" onclick="switchView('regulations')" data-i18n="nav_reg">Regulations</div>
-                <div class="nav-item" onclick="switchView('docs')" data-i18n="nav_docs">Docs</div>
-                <div class="nav-item" onclick="switchView('pricing')" data-i18n="nav_mem">Membership</div>
-                <div id="inboxArea" class="nav-item" style="display:none;" onclick="openInbox()"><i class="fa-solid fa-envelope"></i><span id="inboxBadge" class="inbox-badge" style="display:none;">0</span></div>
-                <div id="userArea" class="nav-item" style="color:var(--neon-gold);display:none;" onclick="openProfileModal()"><i class="fa-solid fa-user-astronaut"></i> <span id="navUserName">PROFILE</span></div>
-                <select id="langSelectApp" onchange="changeLanguage(this.value)" class="lang-dropdown-small"><option value="en">EN</option><option value="tr">TR</option><option value="de">DE</option><option value="fr">FR</option><option value="es">ES</option><option value="it">IT</option><option value="gr">GR</option></select>
-            </div>
-            <div class="live-ticker">BRENT:<span id="oilPrice" class="blinking">...</span> | VLSFO:<span id="vlsfoPrice">...</span> | MGO:<span id="mgoPrice">...</span><span id="dataSource" class="data-source-badge"></span></div>
-        </nav>
-
-        <!-- DASHBOARD -->
-        <div id="dashboard" class="view-section active">
-            <div class="dash-grid">
-                <aside class="panel">
-                    <div class="p-header"><i class="fa-solid fa-sliders"></i> <span data-i18n="panel_params">PARAMETERS</span></div>
-                    <div class="p-body">
-                        <div class="input-group"><label data-i18n="lbl_vessel">VESSEL CLASS</label>
-                            <select id="vType"><optgroup label="DRY BULK"><option value="HANDYSIZE">Handysize (35k)</option><option value="SUPRAMAX">Supramax (58k)</option><option value="PANAMAX">Panamax (82k)</option><option value="CAPESIZE">Capesize (180k)</option></optgroup><optgroup label="TANKER"><option value="MR_TANKER">MR Tanker (50k)</option><option value="AFRAMAX">Aframax (115k)</option><option value="VLCC">VLCC (300k)</option></optgroup><optgroup label="GAS"><option value="LNG_CONV">LNG Carrier</option></optgroup></select>
+                <!-- Quick Stats -->
+                <div class="dashboard-stats">
+                    <div class="stat-card-dash">
+                        <div class="stat-icon blue"><i class="fa-solid fa-route"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Saved Voyages</span>
                         </div>
-                        <div class="input-group"><label data-i18n="lbl_port">POSITION (PORT)</label><input type="text" id="refPort" list="portList" onchange="fillCoords()" placeholder="Type port..."></div>
-                        <div class="input-group"><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;"><input type="number" id="vLat" placeholder="Lat"><input type="number" id="vLng" placeholder="Lng"></div></div>
-                        <div class="input-group"><label data-i18n="lbl_speed">SPEED (KTS)</label><input type="number" id="vSpeed" value="13.5"></div>
-                        <div class="input-group"><label data-i18n="lbl_qty">CARGO QTY (MT)</label><input type="number" id="vQty" value="50000"></div>
-                        <div class="input-group"><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;"><div><label data-i18n="lbl_lrate">LOAD RATE</label><input type="number" id="vLoadRate" value="15000"></div><div><label data-i18n="lbl_drate">DISCH RATE</label><input type="number" id="vDischRate" value="10000"></div></div></div>
-                        <button class="btn-action" onclick="scanMarket()" data-i18n="btn_scan">SCAN MARKET</button>
-                        <div id="cargoResultList" class="cargo-list"></div>
                     </div>
-                </aside>
-                <div class="panel map-panel"><div id="map"></div></div>
-                <aside class="panel">
-                    <div class="p-header"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="panel_estim">ESTIMATION</span></div>
-                    <div class="p-body" id="analysisPanel" style="display:none;">
-                        <div class="stat-grid"><div class="stat-card"><div class="stat-val" id="dispTCE">$0</div><div class="stat-lbl">TCE / Day</div></div><div class="stat-card"><div class="stat-val" id="dispProfit" style="color:var(--success)">$0</div><div class="stat-lbl" data-i18n="stat_profit">Net Profit</div></div></div>
-                        <button class="btn-download" style="margin:10px 0;border-color:var(--neon-gold);color:var(--neon-gold);" onclick="showFinancials()" data-i18n="btn_breakdown">VIEW FULL BREAKDOWN</button>
-                        <div id="financialDetails"></div>
-                        <div class="ai-insight" id="aiOutput"></div>
+                    <div class="stat-card-dash">
+                        <div class="stat-icon gold"><i class="fa-solid fa-ship"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">3</span>
+                            <span class="stat-label">Active Listings</span>
+                        </div>
                     </div>
-                    <div class="p-body" id="emptyState" style="text-align:center;padding-top:50px;color:#555;" data-i18n="empty_state">Awaiting Inputs...</div>
-                </aside>
-            </div>
-        </div>
+                    <div class="stat-card-dash">
+                        <div class="stat-icon green"><i class="fa-solid fa-comments"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">Messages</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-dash">
+                        <div class="stat-icon purple"><i class="fa-solid fa-file-contract"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value">24</span>
+                            <span class="stat-label">Documents</span>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- MARKETPLACE -->
-        <div id="marketplace" class="view-section">
-            <div class="library-section">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid #333;padding-bottom:15px;">
-                    <div class="section-title" style="margin:0;"><i class="fa-solid fa-ship" style="color:var(--neon-gold)"></i> <span data-i18n="sec_market">GLOBAL SHIP MARKET</span></div>
-                    <button class="btn-action" style="width:auto;margin:0;" onclick="openCreateListingModal()"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_sell_charter">SELL / CHARTER</span></button>
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Market Overview -->
+                    <div class="dash-card large">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-line"></i> Market Overview</h3>
+                            <select class="card-select">
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <div class="market-overview-grid">
+                                <div class="market-item">
+                                    <div class="market-header">
+                                        <span class="market-name">Capesize</span>
+                                        <span class="market-change positive">+5.2%</span>
+                                    </div>
+                                    <span class="market-value">$18,500/day</span>
+                                    <div class="market-bar"><div class="bar-fill" style="width:75%"></div></div>
+                                </div>
+                                <div class="market-item">
+                                    <div class="market-header">
+                                        <span class="market-name">Panamax</span>
+                                        <span class="market-change positive">+3.1%</span>
+                                    </div>
+                                    <span class="market-value">$14,200/day</span>
+                                    <div class="market-bar"><div class="bar-fill" style="width:62%"></div></div>
+                                </div>
+                                <div class="market-item">
+                                    <div class="market-header">
+                                        <span class="market-name">Supramax</span>
+                                        <span class="market-change negative">-1.2%</span>
+                                    </div>
+                                    <span class="market-value">$11,800/day</span>
+                                    <div class="market-bar"><div class="bar-fill" style="width:52%"></div></div>
+                                </div>
+                                <div class="market-item">
+                                    <div class="market-header">
+                                        <span class="market-name">Handysize</span>
+                                        <span class="market-change positive">+2.8%</span>
+                                    </div>
+                                    <span class="market-value">$9,500/day</span>
+                                    <div class="market-bar"><div class="bar-fill" style="width:42%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dash-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="switchView('calculator')">
+                                    <i class="fa-solid fa-calculator"></i>
+                                    <span>Calculate Voyage</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="openCreateListingModal()">
+                                    <i class="fa-solid fa-plus"></i>
+                                    <span>List Vessel</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="switchView('document-studio')">
+                                    <i class="fa-solid fa-file-pen"></i>
+                                    <span>Create Document</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="toggleChat()">
+                                    <i class="fa-solid fa-robot"></i>
+                                    <span>Ask AI</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent News -->
+                    <div class="dash-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-newspaper"></i> Latest News</h3>
+                            <a href="#" onclick="switchView('news')" class="card-link">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="news-list">
+                                <div class="news-item-small">
+                                    <span class="news-date-small">Today</span>
+                                    <p>BDI Index reaches 18-month high amid strong demand</p>
+                                </div>
+                                <div class="news-item-small">
+                                    <span class="news-date-small">Yesterday</span>
+                                    <p>IMO announces new decarbonization targets for 2030</p>
+                                </div>
+                                <div class="news-item-small">
+                                    <span class="news-date-small">Jan 10</span>
+                                    <p>Suez Canal transit fees to increase by 15% in Q2</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voyage Calculator -->
+            <div id="calculator" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Voyage Calculator</h1>
+                        <p class="page-subtitle">Calculate TCE, voyage costs, and profitability</p>
+                    </div>
+                </div>
+                <div class="calculator-layout">
+                    <!-- Parameters Panel -->
+                    <div class="calc-panel params-panel">
+                        <div class="panel-header">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Parameters</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label>Vessel Class</label>
+                                <select id="vType" class="form-select">
+                                    <optgroup label="Dry Bulk">
+                                        <option value="HANDYSIZE">Handysize (35k DWT)</option>
+                                        <option value="SUPRAMAX">Supramax (58k DWT)</option>
+                                        <option value="PANAMAX">Panamax (82k DWT)</option>
+                                        <option value="CAPESIZE">Capesize (180k DWT)</option>
+                                    </optgroup>
+                                    <optgroup label="Tanker">
+                                        <option value="MR_TANKER">MR Tanker (50k DWT)</option>
+                                        <option value="AFRAMAX">Aframax (115k DWT)</option>
+                                        <option value="VLCC">VLCC (300k DWT)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Position</label>
+                                <input type="text" id="refPort" list="portList" class="form-input" placeholder="Enter port name..." onchange="fillCoords()">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Latitude</label>
+                                    <input type="number" id="vLat" class="form-input" placeholder="0.000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Longitude</label>
+                                    <input type="number" id="vLng" class="form-input" placeholder="0.000">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Speed (knots)</label>
+                                <input type="number" id="vSpeed" class="form-input" value="13.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo Quantity (MT)</label>
+                                <input type="number" id="vQty" class="form-input" value="50000">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Load Rate</label>
+                                    <input type="number" id="vLoadRate" class="form-input" value="15000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Disch Rate</label>
+                                    <input type="number" id="vDischRate" class="form-input" value="10000">
+                                </div>
+                            </div>
+                            <button class="btn-scan" onclick="scanMarket()">
+                                <i class="fa-solid fa-radar"></i>
+                                Scan Market
+                            </button>
+                            <div id="cargoResultList" class="cargo-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Map Panel -->
+                    <div class="calc-panel map-panel">
+                        <div id="map"></div>
+                    </div>
+
+                    <!-- Results Panel -->
+                    <div class="calc-panel results-panel">
+                        <div class="panel-header">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Estimation</span>
+                        </div>
+                        <div class="panel-body">
+                            <div id="emptyState" class="empty-state">
+                                <i class="fa-solid fa-compass"></i>
+                                <p>Enter parameters and scan market to see results</p>
+                            </div>
+                            <div id="analysisPanel" style="display:none;">
+                                <div class="result-stats">
+                                    <div class="result-stat">
+                                        <span class="result-label">TCE / Day</span>
+                                        <span class="result-value" id="dispTCE">$0</span>
+                                    </div>
+                                    <div class="result-stat highlight">
+                                        <span class="result-label">Net Profit</span>
+                                        <span class="result-value" id="dispProfit">$0</span>
+                                    </div>
+                                </div>
+                                <button class="btn-breakdown" onclick="showFinancials()">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    View Full Breakdown
+                                </button>
+                                <div id="financialDetails" class="financial-details"></div>
+                                <div class="ai-analysis" id="aiOutput"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketplace -->
+            <div id="marketplace" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Ship Marketplace</h1>
+                        <p class="page-subtitle">Buy, sell, or charter vessels globally</p>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn-page-action primary" onclick="openCreateListingModal()">
+                            <i class="fa-solid fa-plus"></i>
+                            List Your Vessel
+                        </button>
+                    </div>
                 </div>
                 <div class="marketplace-filters">
-                    <select id="filterType" class="input-dark"><option value="">All Types</option><option value="Bulk Carrier">Bulk Carrier</option><option value="Tanker">Tanker</option><option value="Container">Container</option><option value="Gas Carrier">Gas Carrier</option></select>
-                    <select id="filterPriceType" class="input-dark"><option value="">All Listings</option><option value="SALE">For Sale</option><option value="TIME_CHARTER">Time Charter</option><option value="VOYAGE_CHARTER">Voyage Charter</option></select>
-                    <input type="number" id="filterMinDwt" placeholder="Min DWT" class="input-dark" style="width:100px;">
-                    <input type="number" id="filterMaxDwt" placeholder="Max DWT" class="input-dark" style="width:100px;">
-                    <button class="btn-download" style="width:auto;" onclick="loadMarketplaceListings()"><i class="fa-solid fa-filter"></i> FILTER</button>
+                    <select id="filterType" class="filter-select">
+                        <option value="">All Types</option>
+                        <option value="Bulk Carrier">Bulk Carrier</option>
+                        <option value="Tanker">Tanker</option>
+                        <option value="Container">Container</option>
+                        <option value="Gas Carrier">Gas Carrier</option>
+                    </select>
+                    <select id="filterPriceType" class="filter-select">
+                        <option value="">All Listings</option>
+                        <option value="SALE">For Sale</option>
+                        <option value="TIME_CHARTER">Time Charter</option>
+                        <option value="VOYAGE_CHARTER">Voyage Charter</option>
+                    </select>
+                    <input type="number" id="filterMinDwt" placeholder="Min DWT" class="filter-input">
+                    <input type="number" id="filterMaxDwt" placeholder="Max DWT" class="filter-input">
+                    <button class="btn-filter" onclick="loadMarketplaceListings()">
+                        <i class="fa-solid fa-filter"></i>
+                        Apply Filters
+                    </button>
                 </div>
-                <div id="marketplaceGrid" class="docs-grid"></div>
+                <div id="marketplaceGrid" class="marketplace-grid"></div>
             </div>
-        </div>
 
-        <!-- DOCUMENT STUDIO -->
-        <div id="document-studio" class="view-section">
-            <div class="library-section">
-                <div class="section-title"><i class="fa-solid fa-file-signature"></i> DOCUMENT STUDIO</div>
-                <p style="color:#94a3b8;margin-bottom:20px;">Generate professional maritime documents with AI assistance.</p>
-                <div id="templateCategories">
-                    <div class="template-category"><h3 style="color:var(--neon-cyan);margin-bottom:15px;"><i class="fa-solid fa-cloud-showers-heavy"></i> Weather Related</h3><div class="docs-grid" id="weatherTemplates"></div></div>
-                    <div class="template-category" style="margin-top:30px;"><h3 style="color:var(--neon-gold);margin-bottom:15px;"><i class="fa-solid fa-boxes-stacked"></i> Cargo Issues</h3><div class="docs-grid" id="cargoTemplates"></div></div>
-                    <div class="template-category" style="margin-top:30px;"><h3 style="color:var(--neon-purple);margin-bottom:15px;"><i class="fa-solid fa-anchor"></i> Port/Terminal</h3><div class="docs-grid" id="portTemplates"></div></div>
-                    <div class="template-category" style="margin-top:30px;"><h3 style="color:var(--neon-green);margin-bottom:15px;"><i class="fa-solid fa-clock"></i> Laytime Disputes</h3><div class="docs-grid" id="laytimeTemplates"></div></div>
-                    <div class="template-category" style="margin-top:30px;"><h3 style="color:#f59e0b;margin-bottom:15px;"><i class="fa-solid fa-gas-pump"></i> Bunker Quality</h3><div class="docs-grid" id="bunkerTemplates"></div></div>
+            <!-- Document Studio -->
+            <div id="document-studio" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Document Studio</h1>
+                        <p class="page-subtitle">Generate professional maritime documents with AI</p>
+                    </div>
+                </div>
+                <div class="templates-container">
+                    <div class="template-category">
+                        <h3><i class="fa-solid fa-cloud-showers-heavy"></i> Weather Related</h3>
+                        <div class="templates-grid" id="weatherTemplates"></div>
+                    </div>
+                    <div class="template-category">
+                        <h3><i class="fa-solid fa-boxes-stacked"></i> Cargo Issues</h3>
+                        <div class="templates-grid" id="cargoTemplates"></div>
+                    </div>
+                    <div class="template-category">
+                        <h3><i class="fa-solid fa-anchor"></i> Port/Terminal</h3>
+                        <div class="templates-grid" id="portTemplates"></div>
+                    </div>
+                    <div class="template-category">
+                        <h3><i class="fa-solid fa-clock"></i> Laytime Disputes</h3>
+                        <div class="templates-grid" id="laytimeTemplates"></div>
+                    </div>
+                    <div class="template-category">
+                        <h3><i class="fa-solid fa-gas-pump"></i> Bunker Quality</h3>
+                        <div class="templates-grid" id="bunkerTemplates"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ACADEMY -->
-        <div id="academy" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_kb">KNOWLEDGE BASE</div><div class="docs-grid" id="academyGrid"></div></div></div>
-        <!-- REGULATIONS -->
-        <div id="regulations" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_reg">REGULATIONS</div><div class="docs-grid" id="regsGrid"></div></div></div>
-        <!-- DOCS -->
-        <div id="docs" class="view-section"><div class="library-section"><div class="section-title" data-i18n="sec_doc">DOCUMENT CENTER</div><div id="docsContainer"></div></div></div>
-        <!-- PRICING -->
-        <div id="pricing" class="view-section">
-            <div class="pricing-container">
-                <div class="price-card pro"><div class="plan-name">BROKER PRO</div><div class="plan-price">$199<span>/mo</span></div><ul class="plan-features"><li><i class="fa-solid fa-check"></i> Unlimited Scans</li><li><i class="fa-solid fa-check"></i> Live Market Data</li><li><i class="fa-solid fa-check"></i> Ship Marketplace</li><li><i class="fa-solid fa-check"></i> Document Generator</li></ul><button class="btn-plan pro">UPGRADE</button></div>
-                <div class="price-card premium"><div class="plan-name">FLEET OWNER</div><div class="plan-price">$999<span>/mo</span></div><ul class="plan-features"><li><i class="fa-solid fa-crown" style="color:var(--neon-gold)"></i> All Features + API</li><li><i class="fa-solid fa-check"></i> 24/7 Legal AI</li><li><i class="fa-solid fa-check"></i> Video Conference</li><li><i class="fa-solid fa-check"></i> Priority Support</li></ul><button class="btn-plan basic">CONTACT SALES</button></div>
+            <!-- Academy -->
+            <div id="academy" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Maritime Academy</h1>
+                        <p class="page-subtitle">Learn about shipping, chartering, and maritime law</p>
+                    </div>
+                </div>
+                <div class="content-grid" id="academyGrid"></div>
+            </div>
+
+            <!-- Regulations -->
+            <div id="regulations" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Maritime Regulations</h1>
+                        <p class="page-subtitle">International maritime rules and conventions</p>
+                    </div>
+                </div>
+                <div class="content-grid" id="regsGrid"></div>
+            </div>
+
+            <!-- News -->
+            <div id="news" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Maritime News</h1>
+                        <p class="page-subtitle">Latest updates from the shipping industry</p>
+                    </div>
+                </div>
+                <div class="news-page-grid" id="newsGrid">
+                    <p style="color:#64748b;text-align:center;padding:50px;">News content loading...</p>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div id="docs" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Document Library</h1>
+                        <p class="page-subtitle">Standard maritime contracts and forms</p>
+                    </div>
+                </div>
+                <div id="docsContainer"></div>
+            </div>
+
+            <!-- Pricing -->
+            <div id="pricing" class="view-section">
+                <div class="page-header centered">
+                    <div>
+                        <h1 class="page-title">Choose Your Plan</h1>
+                        <p class="page-subtitle">Unlock the full potential of VIYA BROKER</p>
+                    </div>
+                </div>
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <span class="plan-name">Starter</span>
+                            <div class="plan-price">Free</div>
+                            <p class="plan-desc">Perfect for getting started</p>
+                        </div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-check"></i> 5 Voyage Calculations/mo</li>
+                            <li><i class="fa-solid fa-check"></i> Basic Market Data</li>
+                            <li><i class="fa-solid fa-check"></i> AI Chat (Limited)</li>
+                            <li class="disabled"><i class="fa-solid fa-xmark"></i> Document Generator</li>
+                            <li class="disabled"><i class="fa-solid fa-xmark"></i> Marketplace Access</li>
+                        </ul>
+                        <button class="btn-plan current">Current Plan</button>
+                    </div>
+                    <div class="pricing-card popular">
+                        <span class="popular-badge">Most Popular</span>
+                        <div class="pricing-header">
+                            <span class="plan-name">Professional</span>
+                            <div class="plan-price">$199<span>/mo</span></div>
+                            <p class="plan-desc">For active brokers</p>
+                        </div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-check"></i> Unlimited Calculations</li>
+                            <li><i class="fa-solid fa-check"></i> Real-time Market Data</li>
+                            <li><i class="fa-solid fa-check"></i> Full AI Access</li>
+                            <li><i class="fa-solid fa-check"></i> Document Generator</li>
+                            <li><i class="fa-solid fa-check"></i> Marketplace Access</li>
+                        </ul>
+                        <button class="btn-plan primary">Upgrade Now</button>
+                    </div>
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <span class="plan-name">Enterprise</span>
+                            <div class="plan-price">Custom</div>
+                            <p class="plan-desc">For shipping companies</p>
+                        </div>
+                        <ul class="plan-features">
+                            <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+                            <li><i class="fa-solid fa-check"></i> API Access</li>
+                            <li><i class="fa-solid fa-check"></i> Custom Integrations</li>
+                            <li><i class="fa-solid fa-check"></i> Dedicated Support</li>
+                            <li><i class="fa-solid fa-check"></i> Fleet Management</li>
+                        </ul>
+                        <button class="btn-plan">Contact Sales</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========== MODALS ========== -->
+    
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('authModal')"></div>
+        <div class="modal-container auth-modal">
+            <button class="modal-close" onclick="closeModal('authModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="auth-header">
+                <img src="https://raw.githubusercontent.com/viyabrokerAlperen/viya-broker-system/main/viya_broker_logo.png" alt="VIYA">
+                <h2 id="authTitle">Welcome Back</h2>
+                <p id="authSubtitle">Sign in to access your account</p>
+            </div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+            </div>
+            <div id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="lEmail" class="form-input" placeholder="captain@viyabroker.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="lPass" class="form-input" placeholder="••••••••">
+                </div>
+                <button class="btn-auth" onclick="doLogin()">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Sign In
+                </button>
+            </div>
+            <div id="registerForm" class="auth-form" style="display:none;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="rName" class="form-input" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="rEmail" class="form-input" placeholder="john@company.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="rPass" class="form-input" placeholder="Min. 6 characters">
+                </div>
+                <div class="form-checkbox">
+                    <input type="checkbox" id="kvkkCheck">
+                    <label for="kvkkCheck">I agree to the <a href="#" onclick="showKVKK();return false;">Privacy Policy</a></label>
+                </div>
+                <button class="btn-auth" onclick="doRegister()">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Create Account
+                </button>
+            </div>
+            <div id="authMsg" class="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('profileModal')"></div>
+        <div class="modal-container profile-modal">
+            <button class="modal-close" onclick="closeModal('profileModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <h2 id="pName">Captain</h2>
+                <p id="pEmail">captain@viyabroker.com</p>
+                <span class="plan-badge" id="pPlan">FREE PLAN</span>
+            </div>
+            <div class="profile-actions">
+                <button class="profile-btn" onclick="viewMyListings()">
+                    <i class="fa-solid fa-ship"></i>
+                    My Listings
+                </button>
+                <button class="profile-btn" onclick="switchView('pricing');closeModal('profileModal');">
+                    <i class="fa-solid fa-crown"></i>
+                    Upgrade Plan
+                </button>
+                <button class="profile-btn danger" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Log Out
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- MODALS -->
-    <div id="docModal" class="modal"><div class="modal-content"><div class="modal-header"><span class="modal-title" id="modalTitle"></span><span class="close-btn" onclick="closeModal('docModal')">&times;</span></div><div class="modal-body" id="modalBody"></div></div></div>
-    <div id="finModal" class="modal"><div class="modal-content"><div class="modal-header"><span class="modal-title" data-i18n="modal_fin_title">FINANCIAL BREAKDOWN</span><span class="close-btn" onclick="closeModal('finModal')">&times;</span></div><div class="modal-body" id="finBody"></div></div></div>
-    
-    <!-- DOC GENERATOR MODAL -->
-    <div id="docGeneratorModal" class="modal"><div class="modal-content" style="max-width:900px;"><div class="modal-header"><span class="modal-title" id="docGenTitle">DOCUMENT GENERATOR</span><span class="close-btn" onclick="closeModal('docGeneratorModal')">&times;</span></div><div class="modal-body"><div id="docGenForm"><p style="color:#94a3b8;margin-bottom:15px;">Fill details. AI will complete:</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;"><div><label style="color:#fff;">Vessel Name</label><input type="text" id="genVesselName" placeholder="M/V VIYA STAR" class="input-dark"></div><div><label style="color:#fff;">IMO</label><input type="text" id="genIMO" placeholder="9876543" class="input-dark"></div><div><label style="color:#fff;">Load Port</label><input type="text" id="genLoadPort" placeholder="ISTANBUL" class="input-dark"></div><div><label style="color:#fff;">Discharge Port</label><input type="text" id="genDischPort" placeholder="ROTTERDAM" class="input-dark"></div><div><label style="color:#fff;">Cargo</label><input type="text" id="genCargo" placeholder="GRAIN" class="input-dark"></div><div><label style="color:#fff;">Quantity</label><input type="number" id="genQty" placeholder="50000" class="input-dark"></div></div><button class="btn-action" onclick="generateDocument()" style="margin-top:20px;width:100%;"><i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE WITH AI</button></div><div id="generatedDocArea" style="display:none;"><div style="background:#0a0a0a;border:1px solid var(--neon-cyan);padding:15px;margin-bottom:15px;"><div style="color:var(--neon-gold);font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation"></i> <strong>DISCLAIMER:</strong> Draft only. Review before use.</div></div><textarea id="docOutput" style="width:100%;height:400px;background:#0a0a0a;border:1px solid #333;color:#fff;padding:15px;font-family:monospace;"></textarea><div style="display:flex;gap:10px;margin-top:15px;"><button class="btn-download" onclick="downloadGeneratedDoc()"><i class="fa-solid fa-download"></i> DOWNLOAD</button><button class="btn-download" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i> COPY</button></div></div></div></div></div>
+    <!-- Financial Breakdown Modal -->
+    <div id="finModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('finModal')"></div>
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h2>Financial Breakdown</h2>
+                <button class="modal-close" onclick="closeModal('finModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="finBody"></div>
+        </div>
+    </div>
 
-    <!-- CREATE LISTING MODAL -->
-    <div id="createListingModal" class="modal"><div class="modal-content" style="max-width:800px;border:1px solid var(--neon-gold);"><div class="modal-header"><span class="modal-title" style="color:var(--neon-gold);"><i class="fa-solid fa-ship"></i> CREATE LISTING</span><span class="close-btn" onclick="closeModal('createListingModal')">&times;</span></div><div class="modal-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;"><div><label style="color:#fff;">Vessel Name *</label><input type="text" id="listVesselName" placeholder="M/V VIYA STAR" class="input-dark"></div><div><label style="color:#fff;">Type *</label><select id="listVesselType" class="input-dark"><option>Bulk Carrier</option><option>Tanker</option><option>Container</option><option>Gas Carrier</option><option>General Cargo</option></select></div><div><label style="color:#fff;">DWT *</label><input type="number" id="listDWT" placeholder="58000" class="input-dark"></div><div><label style="color:#fff;">Year Built *</label><input type="number" id="listYear" placeholder="2015" class="input-dark"></div><div><label style="color:#fff;">Flag *</label><input type="text" id="listFlag" placeholder="Panama" class="input-dark"></div><div><label style="color:#fff;">IMO</label><input type="text" id="listIMO" placeholder="9876543" class="input-dark"></div><div><label style="color:#fff;">Listing Type *</label><select id="listPriceType" class="input-dark" onchange="toggleCharterFields()"><option value="SALE">For Sale</option><option value="TIME_CHARTER">Time Charter</option><option value="VOYAGE_CHARTER">Voyage Charter</option></select></div><div><label style="color:#fff;" id="priceLabel">Price (USD) *</label><input type="number" id="listPrice" placeholder="15000000" class="input-dark"></div><div id="charterDurationField" style="display:none;"><label style="color:#fff;">Duration</label><input type="text" id="listCharterDuration" placeholder="6 months" class="input-dark"></div><div><label style="color:#fff;">Location</label><input type="text" id="listLocation" placeholder="Mediterranean" class="input-dark"></div></div><div style="margin-top:15px;"><label style="color:#fff;">Description</label><textarea id="listDescription" placeholder="Speed, consumption, holds, cranes..." rows="3" class="input-dark" style="width:100%;"></textarea></div><div style="margin-top:15px;border:1px dashed #444;padding:20px;text-align:center;border-radius:8px;"><p style="color:#aaa;margin-bottom:10px;"><i class="fa-solid fa-images"></i> Photos (Max 4)</p><input type="file" id="listImages" accept="image/*" multiple onchange="handleImageUpload(event)" style="color:#fff;"><div id="imagePreview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px;"></div></div><button class="btn-action" onclick="submitListing()" style="margin-top:20px;background:var(--neon-gold);color:black;width:100%;"><i class="fa-solid fa-rocket"></i> PUBLISH</button></div></div></div>
+    <!-- Document Generator Modal -->
+    <div id="docGeneratorModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('docGeneratorModal')"></div>
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h2 id="docGenTitle">Document Generator</h2>
+                <button class="modal-close" onclick="closeModal('docGeneratorModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="docGenForm">
+                    <p class="form-hint">Fill in the details below. AI will complete the document.</p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Vessel Name</label>
+                            <input type="text" id="genVesselName" class="form-input" placeholder="M/V VIYA STAR">
+                        </div>
+                        <div class="form-group">
+                            <label>IMO Number</label>
+                            <input type="text" id="genIMO" class="form-input" placeholder="9876543">
+                        </div>
+                        <div class="form-group">
+                            <label>Load Port</label>
+                            <input type="text" id="genLoadPort" class="form-input" placeholder="ISTANBUL">
+                        </div>
+                        <div class="form-group">
+                            <label>Discharge Port</label>
+                            <input type="text" id="genDischPort" class="form-input" placeholder="ROTTERDAM">
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo Type</label>
+                            <input type="text" id="genCargo" class="form-input" placeholder="GRAIN">
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity (MT)</label>
+                            <input type="number" id="genQty" class="form-input" placeholder="50000">
+                        </div>
+                    </div>
+                    <button class="btn-generate" onclick="generateDocument()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        Generate Document
+                    </button>
+                </div>
+                <div id="generatedDocArea" style="display:none;">
+                    <div class="doc-disclaimer">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>This is an AI-generated draft. Please review carefully before use.</span>
+                    </div>
+                    <textarea id="docOutput" class="doc-output"></textarea>
+                    <div class="doc-actions">
+                        <button class="btn-doc-action" onclick="downloadGeneratedDoc()">
+                            <i class="fa-solid fa-download"></i>
+                            Download
+                        </button>
+                        <button class="btn-doc-action" onclick="copyToClipboard()">
+                            <i class="fa-solid fa-copy"></i>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- VESSEL DETAIL MODAL -->
-    <div id="vesselDetailModal" class="modal"><div class="modal-content" style="max-width:900px;"><div class="modal-header"><span class="modal-title" id="vesselDetailTitle">VESSEL</span><span class="close-btn" onclick="closeModal('vesselDetailModal')">&times;</span></div><div class="modal-body" id="vesselDetailBody"></div></div></div>
+    <!-- Create Listing Modal -->
+    <div id="createListingModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('createListingModal')"></div>
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-ship"></i> List Your Vessel</h2>
+                <button class="modal-close" onclick="closeModal('createListingModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Vessel Name *</label>
+                        <input type="text" id="listVesselName" class="form-input" placeholder="M/V VIYA STAR">
+                    </div>
+                    <div class="form-group">
+                        <label>Vessel Type *</label>
+                        <select id="listVesselType" class="form-select">
+                            <option>Bulk Carrier</option>
+                            <option>Tanker</option>
+                            <option>Container</option>
+                            <option>Gas Carrier</option>
+                            <option>General Cargo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>DWT *</label>
+                        <input type="number" id="listDWT" class="form-input" placeholder="58000">
+                    </div>
+                    <div class="form-group">
+                        <label>Year Built *</label>
+                        <input type="number" id="listYear" class="form-input" placeholder="2015">
+                    </div>
+                    <div class="form-group">
+                        <label>Flag *</label>
+                        <input type="text" id="listFlag" class="form-input" placeholder="Panama">
+                    </div>
+                    <div class="form-group">
+                        <label>IMO Number</label>
+                        <input type="text" id="listIMO" class="form-input" placeholder="9876543">
+                    </div>
+                    <div class="form-group">
+                        <label>Listing Type *</label>
+                        <select id="listPriceType" class="form-select" onchange="toggleCharterFields()">
+                            <option value="SALE">For Sale</option>
+                            <option value="TIME_CHARTER">Time Charter</option>
+                            <option value="VOYAGE_CHARTER">Voyage Charter</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="priceLabel">Price (USD) *</label>
+                        <input type="number" id="listPrice" class="form-input" placeholder="15000000">
+                    </div>
+                    <div class="form-group" id="charterDurationField" style="display:none;">
+                        <label>Charter Duration</label>
+                        <input type="text" id="listCharterDuration" class="form-input" placeholder="6 months">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Location</label>
+                        <input type="text" id="listLocation" class="form-input" placeholder="Mediterranean">
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea id="listDescription" class="form-textarea" rows="3" placeholder="Speed, consumption, holds, cranes..."></textarea>
+                </div>
+                <div class="image-upload">
+                    <label>
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Upload Photos (Max 4)</span>
+                        <input type="file" id="listImages" accept="image/*" multiple onchange="handleImageUpload(event)">
+                    </label>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <button class="btn-publish" onclick="submitListing()">
+                    <i class="fa-solid fa-rocket"></i>
+                    Publish Listing
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- MESSAGING MODAL -->
-    <div id="messagingModal" class="modal"><div class="modal-content" style="max-width:600px;border:1px solid var(--neon-cyan);"><div class="modal-header"><span class="modal-title" id="chatWithName">CHAT</span><div><button onclick="startVideoCall()" style="background:var(--neon-gold);border:none;padding:5px 15px;border-radius:4px;cursor:pointer;margin-right:10px;" title="Video Call"><i class="fa-solid fa-video"></i></button><span class="close-btn" onclick="closeModal('messagingModal')">&times;</span></div></div><div class="modal-body" style="padding:0;"><div id="messageHistory" style="height:400px;overflow-y:auto;background:#050505;padding:20px;display:flex;flex-direction:column;gap:10px;"></div><div style="padding:15px;background:#111;display:flex;gap:10px;border-top:1px solid #333;"><input type="text" id="messageInput" placeholder="Message..." class="input-dark" style="flex:1;" onkeypress="if(event.key==='Enter')sendMessage();"><button class="btn-action" onclick="sendMessage()" style="width:auto;margin:0;padding:0 20px;"><i class="fa-solid fa-paper-plane"></i></button></div></div></div></div>
+    <!-- Vessel Detail Modal -->
+    <div id="vesselDetailModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('vesselDetailModal')"></div>
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h2 id="vesselDetailTitle">Vessel Details</h2>
+                <button class="modal-close" onclick="closeModal('vesselDetailModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="vesselDetailBody"></div>
+        </div>
+    </div>
 
-    <!-- INBOX MODAL -->
-    <div id="inboxModal" class="modal"><div class="modal-content" style="max-width:500px;border:1px solid var(--neon-cyan);"><div class="modal-header"><span class="modal-title"><i class="fa-solid fa-inbox"></i> INBOX</span><span class="close-btn" onclick="closeModal('inboxModal')">&times;</span></div><div class="modal-body" id="inboxContent" style="max-height:500px;overflow-y:auto;"></div></div></div>
+    <!-- Messaging Modal -->
+    <div id="messagingModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('messagingModal')"></div>
+        <div class="modal-container chat-modal">
+            <div class="modal-header">
+                <h2 id="chatWithName">Chat</h2>
+                <div class="chat-actions">
+                    <button class="btn-video" onclick="startVideoCall()" title="Start Video Call">
+                        <i class="fa-solid fa-video"></i>
+                    </button>
+                    <button class="modal-close" onclick="closeModal('messagingModal')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="messageHistory" class="message-history"></div>
+            <div class="message-input-area">
+                <input type="text" id="messageInput" class="message-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter')sendMessage();">
+                <button class="btn-send" onclick="sendMessage()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- VIDEO CALL MODAL -->
-    <div id="videoCallModal" class="modal"><div class="modal-content" style="max-width:1000px;border:1px solid var(--neon-gold);background:#000;"><div class="modal-header" style="background:rgba(0,0,0,0.8);"><span class="modal-title" style="color:var(--neon-gold);"><i class="fa-solid fa-video"></i> VIDEO CONFERENCE</span><span class="close-btn" onclick="endVideoCall()">&times;</span></div><div class="modal-body" style="padding:0;background:#000;"><div id="videoContainer" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:20px;"><div style="position:relative;"><video id="localVideo" autoplay muted playsinline style="width:100%;background:#111;border-radius:8px;border:2px solid var(--neon-cyan);"></video><span style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.7);padding:5px 10px;border-radius:4px;color:#fff;font-size:0.8rem;">You</span></div><div style="position:relative;"><video id="remoteVideo" autoplay playsinline style="width:100%;background:#111;border-radius:8px;border:2px solid var(--neon-gold);"></video><span id="remoteUserName" style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.7);padding:5px 10px;border-radius:4px;color:#fff;font-size:0.8rem;">Waiting...</span></div></div><div style="padding:20px;text-align:center;border-top:1px solid #333;"><button onclick="toggleMute()" class="video-control-btn" id="muteBtn"><i class="fa-solid fa-microphone"></i></button><button onclick="toggleVideo()" class="video-control-btn" id="videoBtn"><i class="fa-solid fa-video"></i></button><button onclick="endVideoCall()" class="video-control-btn" style="background:#ef4444;"><i class="fa-solid fa-phone-slash"></i></button><button onclick="shareScreen()" class="video-control-btn" style="background:var(--neon-purple);"><i class="fa-solid fa-desktop"></i></button></div><div id="videoRoomInfo" style="padding:10px 20px;background:#111;text-align:center;color:#94a3b8;font-size:0.85rem;">Room: <span id="currentRoomId">-</span> | <button onclick="copyRoomLink()" style="background:none;border:none;color:var(--neon-cyan);cursor:pointer;">Copy Link</button></div></div></div></div>
+    <!-- Inbox Modal -->
+    <div id="inboxModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('inboxModal')"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-inbox"></i> Messages</h2>
+                <button class="modal-close" onclick="closeModal('inboxModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="inboxContent"></div>
+        </div>
+    </div>
 
-    <!-- AUTH MODAL -->
-    <div id="authModal" class="modal" style="backdrop-filter:blur(10px);z-index:9999;"><div class="modal-content" style="max-width:400px;border:1px solid var(--neon-cyan);"><div class="modal-header"><span class="modal-title">VIYA ID</span><span class="close-btn" onclick="closeModal('authModal')">&times;</span></div><div class="auth-tabs" style="display:flex;margin-bottom:15px;border-bottom:1px solid #444;"><div class="auth-tab active" onclick="switchAuthTab('login')" style="flex:1;text-align:center;padding:10px;cursor:pointer;color:var(--neon-cyan);">LOGIN</div><div class="auth-tab" onclick="switchAuthTab('register')" style="flex:1;text-align:center;padding:10px;cursor:pointer;color:#888;">REGISTER</div></div><div id="loginForm" class="auth-form"><input type="email" id="lEmail" placeholder="E-Mail" class="input-dark" style="margin-bottom:10px;"><input type="password" id="lPass" placeholder="Password" class="input-dark" style="margin-bottom:10px;"><button class="btn-action" onclick="doLogin()" style="width:100%;">SECURE LOGIN</button></div><div id="registerForm" class="auth-form" style="display:none;"><input type="text" id="rName" placeholder="Full Name" class="input-dark" style="margin-bottom:10px;"><input type="email" id="rEmail" placeholder="E-Mail" class="input-dark" style="margin-bottom:10px;"><input type="password" id="rPass" placeholder="Password" class="input-dark" style="margin-bottom:10px;"><div style="margin:10px 0;font-size:0.8rem;color:#ccc;"><input type="checkbox" id="kvkkCheck"> <label for="kvkkCheck">I accept <a href="#" onclick="showKVKK();return false;" style="color:var(--neon-cyan)">Privacy Policy</a></label></div><button class="btn-action" onclick="doRegister()" style="width:100%;">CREATE ACCOUNT</button></div><div id="authMsg" style="text-align:center;margin-top:10px;font-size:0.8rem;height:20px;"></div></div></div>
+    <!-- Video Call Modal -->
+    <div id="videoCallModal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container video-modal">
+            <div class="video-header">
+                <span id="currentRoomId">-</span>
+                <button onclick="copyRoomLink()" class="btn-copy-link">
+                    <i class="fa-solid fa-link"></i>
+                    Copy Link
+                </button>
+            </div>
+            <div class="video-grid">
+                <div class="video-box">
+                    <video id="localVideo" autoplay muted playsinline></video>
+                    <span class="video-label">You</span>
+                </div>
+                <div class="video-box">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <span class="video-label" id="remoteUserName">Waiting...</span>
+                </div>
+            </div>
+            <div class="video-controls">
+                <button onclick="toggleMute()" class="video-btn" id="muteBtn">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button onclick="toggleVideo()" class="video-btn" id="videoBtn">
+                    <i class="fa-solid fa-video"></i>
+                </button>
+                <button onclick="shareScreen()" class="video-btn">
+                    <i class="fa-solid fa-desktop"></i>
+                </button>
+                <button onclick="endVideoCall()" class="video-btn danger">
+                    <i class="fa-solid fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- KVKK MODAL -->
-    <div id="kvkkModal" class="modal" style="z-index:10000;"><div class="modal-content"><div class="modal-header"><span class="modal-title" id="kvkkTitle">Privacy Policy</span><span class="close-btn" onclick="closeModal('kvkkModal')">&times;</span></div><div class="modal-body" id="kvkkContent" style="white-space:pre-wrap;font-size:0.9rem;max-height:400px;overflow-y:auto;"></div><div style="text-align:right;padding:15px;"><button class="btn-secondary" onclick="document.getElementById('kvkkCheck').checked=true;closeModal('kvkkModal');">I AGREE</button></div></div></div>
+    <!-- KVKK Modal -->
+    <div id="kvkkModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('kvkkModal')"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="kvkkTitle">Privacy Policy</h2>
+                <button class="modal-close" onclick="closeModal('kvkkModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="kvkkContent" class="legal-content"></div>
+                <button class="btn-agree" onclick="document.getElementById('kvkkCheck').checked=true;closeModal('kvkkModal');">
+                    I Agree
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- PROFILE MODAL -->
-    <div id="profileModal" class="modal" style="backdrop-filter:blur(10px);z-index:10001;"><div class="modal-content" style="max-width:350px;border:1px solid var(--neon-gold);text-align:center;"><div class="modal-header"><span class="modal-title">CAPTAIN'S LOG</span><span class="close-btn" onclick="closeModal('profileModal')">&times;</span></div><div style="padding:20px 0;"><div style="width:80px;height:80px;background:#222;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;border:2px solid var(--neon-cyan);"><i class="fa-solid fa-user-tie" style="font-size:40px;color:var(--neon-cyan);"></i></div><h3 id="pName" style="color:white;margin:0;">Captain</h3><p id="pEmail" style="color:#888;font-size:0.9rem;margin-top:5px;">...</p><div style="margin:15px 0;padding:5px 15px;border:1px solid var(--neon-gold);color:var(--neon-gold);border-radius:15px;display:inline-block;">MEMBERSHIP: <b id="pPlan">FREE</b></div><div style="margin-top:20px;padding-top:15px;border-top:1px solid #333;"><button class="btn-download" onclick="viewMyListings()" style="width:100%;margin-bottom:10px;"><i class="fa-solid fa-ship"></i> MY LISTINGS</button></div></div><button class="btn-action" onclick="logout()" style="width:100%;background:#ef4444;border-color:#ef4444;"><i class="fa-solid fa-right-from-bracket"></i> LOG OUT</button></div></div>
+    <!-- Content Modal -->
+    <div id="docModal" class="modal">
+        <div class="modal-backdrop" onclick="closeModal('docModal')"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modalTitle">Document</h2>
+                <button class="modal-close" onclick="closeModal('docModal')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
 
-    <!-- CHAT WIDGET -->
-    <div class="chat-btn" onclick="toggleChat()"><i class="fa-solid fa-robot"></i></div>
-    <div class="chat-window" id="chatWindow"><div class="chat-header"><span>VIYA AI</span><div><span onclick="toggleExpand()" style="cursor:pointer;margin-right:10px;"><i class="fa-solid fa-expand"></i></span><span onclick="toggleChat()" style="cursor:pointer">&times;</span></div></div><div class="chat-body" id="chatBody"><div class="msg ai" data-i18n="ai_welcome">Hello Captain! Ready to assist.</div></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="..." onkeypress="handleEnter(event)"><button class="chat-send" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button></div></div>
+    <!-- AI Chat Widget -->
+    <div class="ai-chat-widget" id="chatWindow">
+        <div class="chat-widget-header">
+            <div class="chat-widget-title">
+                <i class="fa-solid fa-robot"></i>
+                <span>VIYA AI</span>
+            </div>
+            <div class="chat-widget-actions">
+                <button onclick="toggleExpand()"><i class="fa-solid fa-expand"></i></button>
+                <button onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+        <div class="chat-widget-body" id="chatBody">
+            <div class="msg ai">Hello Captain! I'm VIYA AI, your maritime assistant. How can I help you today?</div>
+        </div>
+        <div class="chat-widget-input">
+            <input type="text" id="chatInput" placeholder="Ask me anything..." onkeypress="handleEnter(event)">
+            <button onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
     <datalist id="portList"></datalist>
     <script src="app.js"></script>
