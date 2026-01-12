@@ -16,6 +16,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import http from 'http';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -128,6 +129,68 @@ if (API_KEY) {
     genAI = new GoogleGenerativeAI(API_KEY);
     console.log(" ✅ [SYSTEM] AI Engine: ONLINE");
     console.log(" ✅ [SYSTEM] Document Generator: READY");
+}
+
+// ==========================================
+// NODEMAILER SETUP (OTP EMAIL SYSTEM)
+// ==========================================
+
+// Gmail transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER, // Gmail adresi
+        pass: process.env.EMAIL_PASS  // Gmail App Password (2FA açıksa gerekli)
+    }
+});
+
+// OTP storage (production'da Redis kullanılabilir)
+const otpStore = new Map(); // { email: { otp, userData, expiresAt } }
+
+// 6 haneli OTP üretici fonksiyon
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// OTP email gönderme fonksiyonu
+async function sendOTPEmail(email, otp) {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: '✅ VIYA BROKER - Email Doğrulama Kodu',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 10px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #0066FF; margin-bottom: 10px;">VIYA BROKER</h1>
+                    <p style="color: #6B7280;">Global Maritime Intelligence Platform</p>
+                </div>
+                <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h2 style="color: #111827; margin-bottom: 20px;">Email Doğrulama</h2>
+                    <p style="color: #4B5563; margin-bottom: 20px;">VIYA BROKER platformuna hoş geldiniz! Hesabınızı oluşturmak için aşağıdaki doğrulama kodunu kullanın:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div style="display: inline-block; background: #E6F0FF; padding: 20px 40px; border-radius: 10px; font-size: 32px; font-weight: bold; color: #0066FF; letter-spacing: 8px;">
+                            ${otp}
+                        </div>
+                    </div>
+                    <p style="color: #9CA3AF; font-size: 14px; margin-top: 20px;">⏰ Bu kod 10 dakika içinde geçerliliğini yitirecektir.</p>
+                    <p style="color: #9CA3AF; font-size: 14px;">🔒 Bu kodu kimseyle paylaşmayın.</p>
+                </div>
+                <div style="text-align: center; margin-top: 20px; color: #9CA3AF; font-size: 12px;">
+                    <p>© 2026 VIYA BROKER. Tüm hakları saklıdır.</p>
+                    <p>Bu mail otomatik olarak gönderilmiştir.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(` 📧 [OTP] Email sent to: ${email}`);
+        return true;
+    } catch (error) {
+        console.error(' ❌ [OTP] Email send error:', error);
+        return false;
+    }
 }
 
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
@@ -638,23 +701,113 @@ app.post('/api/auth/register', async (req, res) => {
         
         if (!kvkkAccepted) return res.status(400).json({ error: "KVKK onayı zorunludur." });
         if (!email || !password) return res.status(400).json({ error: "E-posta ve şifre giriniz." });
+        if (password.length < 6) return res.status(400).json({ error: "Şifre en az 6 karakter olmalı." });
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return res.status(400).json({ error: "Geçerli bir e-posta adresi giriniz." });
 
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ error: "Bu e-posta zaten kayıtlı." });
 
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        const newUser = await User.create({
-            email,
-            password: hashedPassword,
-            fullName: fullName || "Captain",
-            kvkkAccepted: true
+
+        // Generate OTP
+        const otp = generateOTP();
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 dakika
+
+        // Store OTP and user data temporarily
+        otpStore.set(email, {
+            otp,
+            userData: {
+                email,
+                password: hashedPassword,
+                fullName: fullName || "Captain",
+                kvkkAccepted: true
+            },
+            expiresAt
         });
 
-        res.json({ success: true, msg: "Kayıt başarılı! Giriş yapın." });
+        // Send OTP email
+        const emailSent = await sendOTPEmail(email, otp);
+
+        if (!emailSent) {
+            otpStore.delete(email);
+            return res.status(500).json({ error: "Email gönderilemedi. Lütfen tekrar deneyin." });
+        }
+
+        console.log(` ✅ [OTP] Generated for ${email}: ${otp} (expires in 10 min)`);
+
+        res.json({ 
+            success: true, 
+            requiresOTP: true,
+            email: email,
+            message: "Doğrulama kodu e-posta adresinize gönderildi!" 
+        });
+
     } catch (e) { 
         console.error(e);
-        res.status(500).json({ error: "Veritabanı hatası." }); 
+        res.status(500).json({ error: "Sistem hatası. Lütfen tekrar deneyin." }); 
+    }
+});
+
+// OTP Doğrulama Endpoint'i
+app.post('/api/auth/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ error: "E-posta ve OTP kodu gerekli." });
+        }
+
+        // OTP store'dan kontrol et
+        const otpData = otpStore.get(email);
+
+        if (!otpData) {
+            return res.status(400).json({ error: "Doğrulama kodu bulunamadı veya süresi dolmuş." });
+        }
+
+        // Süre kontrolü
+        if (Date.now() > otpData.expiresAt) {
+            otpStore.delete(email);
+            return res.status(400).json({ error: "Doğrulama kodunun süresi dolmuş. Lütfen tekrar kayıt olun." });
+        }
+
+        // OTP kontrolü
+        if (otpData.otp !== otp.trim()) {
+            return res.status(400).json({ error: "Hatalı doğrulama kodu." });
+        }
+
+        // OTP doğru, kullanıcıyı veritabanına kaydet
+        const newUser = await User.create(otpData.userData);
+
+        // OTP'yi temizle
+        otpStore.delete(email);
+
+        // Token oluştur
+        const token = jwt.sign({ id: newUser._id, email: newUser.email }, SECRET_KEY, { expiresIn: '24h' });
+
+        const userData = {
+            id: newUser._id,
+            email: newUser.email,
+            fullName: newUser.fullName,
+            role: newUser.role,
+            plan: newUser.plan
+        };
+
+        console.log(` ✅ [AUTH] User verified and registered: ${email}`);
+
+        res.json({ 
+            success: true, 
+            token, 
+            user: userData,
+            message: "Hesabınız başarıyla oluşturuldu!" 
+        });
+
+    } catch (e) {
+        console.error(' ❌ [OTP] Verification error:', e);
+        res.status(500).json({ error: "Doğrulama hatası. Lütfen tekrar deneyin." });
     }
 });
 

@@ -19,6 +19,7 @@ let peerConnection = null;
 let currentRoomId = null;
 let isMuted = false;
 let isVideoOff = false;
+let otpEmail = null; // OTP için email saklama
 
 const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 const LANG_NAMES = { en: "English", tr: "Turkish", de: "German", it: "Italian", fr: "French", es: "Spanish", gr: "Greek" };
@@ -1133,26 +1134,59 @@ async function doLogin() {
 }
 
 async function doRegister() {
-    const name = document.getElementById('rName').value;
-    const email = document.getElementById('rEmail').value;
+    const name = document.getElementById('rName').value.trim();
+    const email = document.getElementById('rEmail').value.trim();
     const pass = document.getElementById('rPass').value;
     const kvkk = document.getElementById('kvkkCheck').checked;
     const msg = document.getElementById('authMsg');
     
+    // Validations
+    if (!name) { msg.innerText = "Lütfen adınızı giriniz."; msg.style.color = "#ef4444"; return; }
+    if (!email) { msg.innerText = "Lütfen e-posta adresinizi giriniz."; msg.style.color = "#ef4444"; return; }
+    if (!pass) { msg.innerText = "Lütfen şifrenizi giriniz."; msg.style.color = "#ef4444"; return; }
+    if (pass.length < 6) { msg.innerText = "Şifre en az 6 karakter olmalı."; msg.style.color = "#ef4444"; return; }
     if (!kvkk) { msg.innerText = "KVKK onayı gerekli."; msg.style.color = "#ef4444"; return; }
-    msg.innerText = "Creating ID..."; msg.style.color = "yellow";
+    
+    msg.innerText = "Kayıt yapılıyor..."; msg.style.color = "#f59e0b";
     
     try {
-        const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: name, email, password: pass, kvkkAccepted: kvkk }) });
+        const res = await fetch('/api/auth/register', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ fullName: name, email, password: pass, kvkkAccepted: kvkk }) 
+        });
         const data = await res.json();
         
-        if (data.success) {
+        if (data.success && data.requiresOTP) {
+            // OTP gerekli
+            msg.innerText = data.message || "Doğrulama kodu gönderildi!"; 
+            msg.style.color = "#4ade80";
+            
+            // Email'i sakla
+            otpEmail = email;
+            
+            // Resend için geçici bilgileri sakla (sadece OTP süresi boyunca - 10 dakika)
+            sessionStorage.setItem('temp_fullName', name);
+            sessionStorage.setItem('temp_password', pass);
+            
+            // Auth modal'ı kapat, OTP modal'ı aç
+            setTimeout(() => {
+                closeModal('authModal');
+                openOTPModal(email);
+            }, 1000);
+            
+        } else if (data.success) {
+            // Direkt kayıt başarılı (eski akış)
             msg.innerText = "Hesap oluşturuldu!"; msg.style.color = "#4ade80";
             setTimeout(() => switchAuthTab('login'), 1500);
         } else {
-            msg.innerText = data.error; msg.style.color = "#ef4444";
+            msg.innerText = data.error || "Kayıt başarısız."; msg.style.color = "#ef4444";
         }
-    } catch (e) { msg.innerText = "Error"; msg.style.color = "#ef4444"; }
+    } catch (e) { 
+        console.error('Register error:', e);
+        msg.innerText = "Bağlantı hatası. Lütfen tekrar deneyin."; 
+        msg.style.color = "#ef4444"; 
+    }
 }
 
 function openProfileModal() {
@@ -1236,9 +1270,230 @@ function typeWriterEffect(text) {
 }
 
 // ==========================================
-// 12. UTILITIES
+// 12. OTP VERIFICATION FUNCTIONS
 // ==========================================
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function openOTPModal(email) {
+    document.getElementById('otpEmailDisplay').innerText = email;
+    document.getElementById('otpModal').style.display = 'block';
+    
+    // Tüm OTP inputlarını temizle
+    for (let i = 1; i <= 6; i++) {
+        document.getElementById(`otp${i}`).value = '';
+    }
+    
+    // Hata mesajını gizle
+    document.getElementById('otpErrorMsg').style.display = 'none';
+    
+    // İlk input'a focus
+    setTimeout(() => document.getElementById('otp1').focus(), 300);
+}
+
+function moveToNext(current, nextFieldId) {
+    if (current.value.length === 1) {
+        // Sadece rakam girişine izin ver
+        if (!/^\d$/.test(current.value)) {
+            current.value = '';
+            return;
+        }
+        
+        current.classList.add('filled');
+        
+        const nextField = document.getElementById(nextFieldId);
+        if (nextField) {
+            nextField.focus();
+        }
+    }
+}
+
+function moveToPrev(event, prevFieldId) {
+    if (event.key === 'Backspace' && event.target.value === '') {
+        const prevField = document.getElementById(prevFieldId);
+        if (prevField) {
+            prevField.focus();
+        }
+    }
+}
+
+function handleOTPPaste(event) {
+    event.preventDefault();
+    const pastedData = event.clipboardData.getData('text').trim();
+    
+    // Sadece 6 haneli rakam kabul et
+    if (/^\d{6}$/.test(pastedData)) {
+        for (let i = 0; i < 6; i++) {
+            document.getElementById(`otp${i + 1}`).value = pastedData[i];
+        }
+        document.getElementById('otp6').focus();
+        // Otomatik submit
+        setTimeout(() => verifyOTP(), 300);
+    }
+}
+
+function submitOTPIfComplete() {
+    let otp = '';
+    for (let i = 1; i <= 6; i++) {
+        otp += document.getElementById(`otp${i}`).value;
+    }
+    
+    if (otp.length === 6) {
+        // Son kutucuk dolduysa 500ms sonra otomatik gönder
+        setTimeout(() => verifyOTP(), 500);
+    }
+}
+
+async function verifyOTP() {
+    // OTP'yi topla
+    let otp = '';
+    for (let i = 1; i <= 6; i++) {
+        otp += document.getElementById(`otp${i}`).value;
+    }
+    
+    // Validation
+    if (otp.length !== 6) {
+        showOTPError('Lütfen 6 haneli kodu giriniz.');
+        return;
+    }
+    
+    if (!otpEmail) {
+        showOTPError('Email adresi bulunamadı. Lütfen tekrar kayıt olun.');
+        return;
+    }
+    
+    const errorDiv = document.getElementById('otpErrorMsg');
+    errorDiv.style.display = 'none';
+    
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'grid';
+    
+    try {
+        const res = await fetch('/api/auth/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: otpEmail, otp: otp })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            // Başarılı! Token ve user bilgisini kaydet
+            localStorage.setItem('viya_token', data.token);
+            localStorage.setItem('viya_user', JSON.stringify(data.user));
+            currentUser = data.user;
+            
+            // Geçici bilgileri temizle
+            sessionStorage.removeItem('temp_fullName');
+            sessionStorage.removeItem('temp_password');
+            
+            // Socket'e bağlan
+            if (socket && socket.connected) socket.emit('join_room', currentUser.id);
+            
+            // Başarı mesajı
+            showOTPSuccess('Hesabınız başarıyla oluşturuldu! Yönlendiriliyorsunuz...');
+            
+            // 1.5 saniye sonra dashboard'a yönlendir
+            setTimeout(() => {
+                closeModal('otpModal');
+                enterSystem();
+                window.location.reload();
+            }, 1500);
+            
+        } else {
+            showOTPError(data.error || 'Doğrulama başarısız. Lütfen tekrar deneyin.');
+        }
+        
+    } catch (e) {
+        console.error('OTP Verify Error:', e);
+        showOTPError('Bağlantı hatası. Lütfen tekrar deneyin.');
+    } finally {
+        if (loader) loader.style.display = 'none';
+    }
+}
+
+async function resendOTP() {
+    if (!otpEmail) {
+        showOTPError('Email adresi bulunamadı.');
+        return;
+    }
+    
+    const btn = event.target.closest('.btn-resend-otp');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+    
+    try {
+        // Register endpoint'ini tekrar çağır (aynı email)
+        const rName = sessionStorage.getItem('temp_fullName') || 'Captain';
+        const rPass = sessionStorage.getItem('temp_password') || '';
+        
+        if (!rPass) {
+            showOTPError('Kayıt bilgileri bulunamadı. Lütfen tekrar kayıt olun.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Tekrar Gönder';
+            return;
+        }
+        
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                fullName: rName, 
+                email: otpEmail, 
+                password: rPass, 
+                kvkkAccepted: true 
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success && data.requiresOTP) {
+            showOTPSuccess('✅ Yeni doğrulama kodu gönderildi!');
+            
+            // Inputları temizle
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`otp${i}`).value = '';
+            }
+            document.getElementById('otp1').focus();
+            
+        } else {
+            showOTPError(data.error || 'Kod gönderilemedi.');
+        }
+        
+    } catch (e) {
+        console.error('Resend OTP Error:', e);
+        showOTPError('Bağlantı hatası.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Tekrar Gönder';
+    }
+}
+
+function showOTPError(message) {
+    const errorDiv = document.getElementById('otpErrorMsg');
+    errorDiv.innerText = message;
+    errorDiv.style.display = 'block';
+    errorDiv.style.background = '#FEE2E2';
+    errorDiv.style.color = '#EF4444';
+}
+
+function showOTPSuccess(message) {
+    const errorDiv = document.getElementById('otpErrorMsg');
+    errorDiv.innerText = message;
+    errorDiv.style.display = 'block';
+    errorDiv.style.background = '#D1FAE5';
+    errorDiv.style.color = '#10B981';
+}
+
+// ==========================================
+// 13. UTILITIES
+// ==========================================
+function closeModal(id) { 
+    document.getElementById(id).style.display = 'none'; 
+    
+    // OTP modal kapanırken email'i temizle
+    if (id === 'otpModal') {
+        otpEmail = null;
+    }
+}
 
 window.onclick = function (event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
 

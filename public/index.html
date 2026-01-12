@@ -1366,6 +1366,45 @@
         </div>
     </div>
 
+    <!-- OTP Verification Modal -->
+    <div id="otpModal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container otp-modal">
+            <button class="modal-close" onclick="closeModal('otpModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="otp-modal-content">
+                <div class="otp-icon">
+                    <i class="fa-solid fa-envelope-circle-check"></i>
+                </div>
+                <h2 class="otp-title">Email Doğrulama</h2>
+                <p class="otp-subtitle">
+                    <span id="otpEmailDisplay"></span> adresine gönderilen 6 haneli doğrulama kodunu giriniz.
+                </p>
+                <div class="otp-input-container">
+                    <input type="text" id="otp1" class="otp-input" maxlength="1" onkeyup="moveToNext(this, 'otp2')" onpaste="handleOTPPaste(event)">
+                    <input type="text" id="otp2" class="otp-input" maxlength="1" onkeyup="moveToNext(this, 'otp3')" onkeydown="moveToPrev(event, 'otp1')">
+                    <input type="text" id="otp3" class="otp-input" maxlength="1" onkeyup="moveToNext(this, 'otp4')" onkeydown="moveToPrev(event, 'otp2')">
+                    <input type="text" id="otp4" class="otp-input" maxlength="1" onkeyup="moveToNext(this, 'otp5')" onkeydown="moveToPrev(event, 'otp3')">
+                    <input type="text" id="otp5" class="otp-input" maxlength="1" onkeyup="moveToNext(this, 'otp6')" onkeydown="moveToPrev(event, 'otp4')">
+                    <input type="text" id="otp6" class="otp-input" maxlength="1" onkeyup="submitOTPIfComplete()" onkeydown="moveToPrev(event, 'otp5')">
+                </div>
+                <div id="otpErrorMsg" class="otp-error" style="display:none;"></div>
+                <button class="btn-verify-otp" onclick="verifyOTP()">
+                    <i class="fa-solid fa-shield-check"></i>
+                    Doğrula
+                </button>
+                <div class="otp-resend">
+                    <p>Kod gelmedi mi?</p>
+                    <button class="btn-resend-otp" onclick="resendOTP()">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        Tekrar Gönder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- KVKK Modal -->
     <div id="kvkkModal" class="modal">
         <div class="modal-backdrop" onclick="closeModal('kvkkModal')"></div>
