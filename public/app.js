@@ -207,7 +207,9 @@ function switchView(id) {
         if (items[navMap[id]]) items[navMap[id]].classList.add('active');
     }
     
+    // Harita boyutunu güncelle (dashboard ve calculator için)
     if (id === 'dashboard' && map) setTimeout(() => map.invalidateSize(), 100);
+    if (id === 'calculator' && map) setTimeout(() => map.invalidateSize(), 100);
     if (id === 'marketplace') loadMarketplaceListings();
 }
 
@@ -227,6 +229,11 @@ function changeLanguage(lang) {
 const map = L.map('map', { zoomControl: false }).setView([34, 26], 3);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 10, attribution: 'VIYA MAPS' }).addTo(map);
 L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+
+// Harita boyutunu başlangıçta ayarla
+setTimeout(() => {
+    if (map) map.invalidateSize();
+}, 500);
 
 // High Risk Area
 L.polygon([[12.5, 43.5], [15.0, 55.0], [5.0, 60.0], [-5.0, 50.0], [0.0, 40.0]], {

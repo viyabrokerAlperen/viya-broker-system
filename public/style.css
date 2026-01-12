@@ -337,8 +337,8 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .panel-header { padding: 16px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: 10px; }
 .panel-header i { color: var(--primary); }
 .panel-body { padding: 20px; overflow-y: auto; flex: 1; }
-.map-panel { padding: 0; display: flex; align-items: center; justify-content: center; }
-#map { width: 100%; height: 100%; min-height: 400px; margin: 0 auto; }
+.map-panel { padding: 0 !important; width: 100% !important; height: 100% !important; position: relative; }
+#map { width: 100% !important; height: 100% !important; min-height: 500px; max-width: none !important; position: absolute !important; top: 0; left: 0; right: 0; bottom: 0; }
 
 /* Form Elements */
 .form-group { margin-bottom: 16px; }
@@ -566,6 +566,10 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 /* OTP Animation */
 @keyframes otpPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 .otp-input.filled { animation: otpPulse 0.3s ease; }
+
+/* Leaflet Map Container Fix */
+.leaflet-container { width: 100% !important; height: 100% !important; }
+.leaflet-pane { width: 100% !important; height: 100% !important; }
 
 /* AI Chat Widget */
 .ai-chat-widget { display: none; position: fixed; bottom: 24px; right: 24px; width: 380px; height: 520px; background: var(--white); border-radius: 20px; box-shadow: var(--shadow-xl); z-index: 1000; flex-direction: column; overflow: hidden; border: 1px solid var(--gray-200); }
