@@ -212,7 +212,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .contact-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .contact-form .form-group { margin-bottom: 20px; }
 .contact-form label { display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
-.contact-form input, .contact-form select, .contact-form textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--gray-200); border-radius: 10px; font-size: 15px; transition: var(--transition); }
+.contact-form input, .contact-form select, .contact-form textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--gray-200); border-radius: 10px; font-size: 15px; transition: var(--transition); background: var(--white); color: var(--gray-900); }
 .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
 .btn-submit { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px; background: var(--primary); color: var(--white); border-radius: 10px; font-weight: 600; transition: var(--transition); }
 .btn-submit:hover { background: var(--primary-dark); }
@@ -333,10 +333,10 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 
 /* Calculator Layout */
 .calculator-layout { display: grid; grid-template-columns: 320px 1fr 360px; gap: 20px; height: calc(100vh - 180px); }
-.calc-panel { background: var(--white); border-radius: 16px; border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; }
+.calc-panel { background: var(--white); border-radius: 16px; border: 1px solid var(--gray-200); overflow: hidden; display: flex; flex-direction: column; color: var(--gray-800); }
 .panel-header { padding: 16px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: 10px; }
 .panel-header i { color: var(--primary); }
-.panel-body { padding: 20px; overflow-y: auto; flex: 1; }
+.panel-body { padding: 20px; overflow-y: auto; flex: 1; color: var(--gray-800); }
 .map-panel { padding: 0 !important; width: 100% !important; height: 100% !important; position: relative; }
 #map { width: 100% !important; height: 100% !important; min-height: 500px; max-width: none !important; position: absolute !important; top: 0; left: 0; right: 0; bottom: 0; }
 
@@ -431,6 +431,15 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .btn-content { padding: 10px 16px; background: var(--gray-100); color: var(--gray-700); border-radius: 8px; font-weight: 600; font-size: 14px; transition: var(--transition); }
 .btn-content:hover { background: var(--primary); color: var(--white); }
 
+/* Doc Card (for dynamic content) */
+.doc-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gray-200); padding: 24px; transition: var(--transition); text-align: center; color: var(--gray-800); }
+.doc-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-4px); }
+.doc-icon { font-size: 36px; margin-bottom: 16px; display: block; }
+.doc-title { font-size: 18px; font-weight: 600; color: var(--gray-900); margin-bottom: 8px; }
+.doc-desc { color: var(--gray-500); font-size: 14px; margin-bottom: 16px; }
+.btn-download { width: 100%; padding: 12px; background: var(--gray-100); color: var(--gray-700); border-radius: 8px; font-weight: 600; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-download:hover { background: var(--primary); color: var(--white); }
+
 /* Pricing */
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1000px; margin: 0 auto; }
 .pricing-card { background: var(--white); border-radius: 20px; border: 1px solid var(--gray-200); padding: 40px 32px; position: relative; transition: var(--transition); }
@@ -457,16 +466,16 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 /* Modals */
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
 .modal-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-.modal-container { position: relative; background: var(--white); border-radius: 20px; max-width: 480px; margin: 80px auto; max-height: calc(100vh - 160px); overflow-y: auto; animation: modalIn 0.3s ease; }
+.modal-container { position: relative; background: var(--white); border-radius: 20px; max-width: 480px; margin: 80px auto; max-height: calc(100vh - 160px); overflow-y: auto; animation: modalIn 0.3s ease; color: var(--gray-800); }
 @keyframes modalIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 .modal-container.large-modal { max-width: 800px; }
 .modal-container.chat-modal { max-width: 500px; display: flex; flex-direction: column; height: 600px; }
-.modal-container.video-modal { max-width: 900px; background: var(--black); }
+.modal-container.video-modal { max-width: 900px; background: var(--black); color: var(--white); }
 .modal-close { position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--gray-500); transition: var(--transition); }
 .modal-close:hover { background: var(--gray-100); color: var(--gray-900); }
 .modal-header { padding: 24px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
 .modal-header h2 { font-size: 20px; font-weight: 600; color: var(--gray-900); }
-.modal-body { padding: 24px; }
+.modal-body { padding: 24px; color: var(--gray-700); }
 
 /* Auth Modal */
 .auth-modal { text-align: center; padding: 40px; }
@@ -499,8 +508,8 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 
 /* Messaging */
 .message-history { flex: 1; padding: 20px; overflow-y: auto; background: var(--gray-50); display: flex; flex-direction: column; gap: 12px; }
-.message-input-area { padding: 16px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; }
-.message-input { flex: 1; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 50px; }
+.message-input-area { padding: 16px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; background: var(--white); }
+.message-input { flex: 1; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 50px; background: var(--white); color: var(--gray-900); }
 .btn-send { width: 44px; height: 44px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); transition: var(--transition); }
 .btn-send:hover { background: var(--primary-dark); }
 .chat-actions { display: flex; gap: 8px; }
@@ -522,15 +531,16 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 /* Doc Output */
 .doc-disclaimer { padding: 16px; background: #FEF3C7; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; color: var(--gray-800); }
 .doc-disclaimer i { color: var(--warning); font-size: 20px; }
-.doc-output { width: 100%; height: 400px; padding: 20px; border: 1px solid var(--gray-200); border-radius: 10px; font-family: monospace; font-size: 14px; resize: none; }
+.doc-output { width: 100%; height: 400px; padding: 20px; border: 1px solid var(--gray-200); border-radius: 10px; font-family: monospace; font-size: 14px; resize: none; background: var(--white); color: var(--gray-900); }
 .doc-actions { display: flex; gap: 12px; margin-top: 16px; }
 .btn-doc-action { flex: 1; padding: 12px; background: var(--gray-100); color: var(--gray-700); border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); }
 .btn-doc-action:hover { background: var(--gray-200); }
 
 /* Image Upload */
 .image-upload { margin-top: 20px; }
-.image-upload label { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; border: 2px dashed var(--gray-300); border-radius: 12px; cursor: pointer; transition: var(--transition); }
+.image-upload label { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; border: 2px dashed var(--gray-300); border-radius: 12px; cursor: pointer; transition: var(--transition); color: var(--gray-700); }
 .image-upload label:hover { border-color: var(--primary); background: var(--primary-light); }
+.image-upload label span { color: var(--gray-600); font-weight: 500; }
 .image-upload i { font-size: 32px; color: var(--gray-400); }
 .image-upload input { display: none; }
 .image-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
@@ -582,13 +592,13 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .msg { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
 .msg.user { align-self: flex-end; background: var(--primary); color: var(--white); border-bottom-right-radius: 4px; }
 .msg.ai { align-self: flex-start; background: var(--gray-100); color: var(--gray-800); border-bottom-left-radius: 4px; }
-.chat-widget-input { padding: 16px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; }
-.chat-widget-input input { flex: 1; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 50px; }
+.chat-widget-input { padding: 16px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; background: var(--white); }
+.chat-widget-input input { flex: 1; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 50px; background: var(--white); color: var(--gray-900); }
 .chat-widget-input button { width: 44px; height: 44px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); }
 
 /* Finance Table */
 .fin-table { width: 100%; border-collapse: collapse; }
-.fin-table th, .fin-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-200); }
+.fin-table th, .fin-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-200); color: var(--gray-800); }
 .fin-table th { color: var(--gray-500); font-weight: 600; font-size: 13px; }
 .fin-table tr:hover { background: var(--gray-50); }
 .text-green-400 { color: var(--success); }
