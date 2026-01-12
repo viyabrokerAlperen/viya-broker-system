@@ -80,7 +80,11 @@ function enterSystem() {
             landing.style.display = 'none';
             app.style.display = 'block';
             if (map) map.invalidateSize();
-            addChatMessage('ai', TRANSLATIONS[currentLang]?.ai_welcome || "System Online");
+            // Chatbot'a başlangıç mesajı ekle (sadece bir kez)
+            const chatBody = document.getElementById('chatBody');
+            if (chatBody && chatBody.children.length === 0) {
+                addChatMessage('ai', TRANSLATIONS[currentLang]?.ai_welcome || "Hello Captain! I'm VIYA AI, your maritime assistant. How can I help you today?");
+            }
         }, 800);
     }
 }

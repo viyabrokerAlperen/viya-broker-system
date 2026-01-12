@@ -1214,7 +1214,7 @@ CRITICAL: If user didn't provide specific data for a field, use these fallbacks:
 OUTPUT: Return the filled document directly, no preamble.
 `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(aiPrompt);
         const generatedDocument = result.response.text();
 
@@ -1330,7 +1330,7 @@ app.post('/api/analyze', async (req, res) => {
             const voyage = await analyzeVoyage(loadPort, dischPort, cargo || "General Cargo", quantity, shipLat || 0, shipLng || 0);
             if(voyage && genAI) {
                  try {
-                    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                     const r = await model.generateContent(`Act as a professional shipbroker. Analyze this voyage: ${loadPort} to ${dischPort}. Cargo: ${cargo}. Expected Profit: $${Math.floor(voyage.financials.profit)}. Give a short professional comment (2-3 sentences) about market conditions and recommendation.`);
                     voyage.aiAnalysis = r.response.text();
                  } catch(e){
@@ -1426,7 +1426,7 @@ app.post('/api/chat', async (req, res) => {
         USER MESSAGE: "${message}"
         `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(systemPrompt);
         
         res.json({ reply: result.response.text() });
