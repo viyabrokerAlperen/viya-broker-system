@@ -1509,3 +1509,11 @@ function closeModal(id) {
 window.onclick = function (event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; }
 
 console.log("⚓ VIYA BROKER V18.1 - ALL SYSTEMS OPERATIONAL");
+
+function showPassword(inputId) {
+    document.getElementById(inputId).type = 'text';
+}
+
+function hidePassword(inputId) {
+    document.getElementById(inputId).type = 'password';
+}

@@ -1048,7 +1048,12 @@
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="lPass" class="form-input" placeholder="••••••••">
+                    <div class="password-wrapper">
+                        <input type="password" id="lPass" class="form-input" placeholder="••••••••">
+                        <button type="button" class="toggle-password" onmousedown="showPassword('lPass')" onmouseup="hidePassword('lPass')" onmouseleave="hidePassword('lPass')">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <button class="btn-auth" onclick="doLogin()">
                     <i class="fa-solid fa-right-to-bracket"></i>
@@ -1066,7 +1071,12 @@
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="rPass" class="form-input" placeholder="Min. 6 characters">
+                    <div class="password-wrapper">
+                        <input type="password" id="rPass" class="form-input" placeholder="Min. 6 characters">
+                        <button type="button" class="toggle-password" onmousedown="showPassword('rPass')" onmouseup="hidePassword('rPass')" onmouseleave="hidePassword('rPass')">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-checkbox">
                     <input type="checkbox" id="kvkkCheck">
