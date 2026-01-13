@@ -1625,3 +1625,49 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('resetPasswordModal').style.display = 'block';
     }
 });
+
+async function submitContactForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('contactForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Form verilerini al
+    const formData = new FormData(form);
+    const name = form.querySelector('input[type="text"]').value;
+    const email = form.querySelector('input[type="email"]').value;
+    const subject = form.querySelector('select').value;
+    const message = form.querySelector('textarea').value;
+    
+    if (!name || !email || !message) {
+        alert('Lütfen tüm alanları doldurun');
+        return;
+    }
+    
+    // Buton durumunu değiştir
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+    submitBtn.disabled = true;
+    
+    try {
+        const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, subject, message })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            alert('Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.');
+            form.reset();
+        } else {
+            alert('Bir hata oluştu: ' + (data.error || 'Bilinmeyen hata'));
+        }
+    } catch (error) {
+        alert('Bağlantı hatası. Lütfen tekrar deneyin.');
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}

@@ -936,6 +936,64 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 });
 
+// Contact Form
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        
+        if (!name || !email || !message) {
+            return res.json({ success: false, error: 'Tüm alanlar zorunlu' });
+        }
+        
+        // info@viyabroker.com'a mail gönder
+        await transporter.sendMail({
+            from: `"VIYA BROKER Contact" <${process.env.EMAIL_USER}>`,
+            to: process.env.CONTACT_EMAIL || 'info@viyabroker.com',
+            replyTo: email,
+            subject: `[Contact Form] ${subject || 'Genel Soru'} - ${name}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #0066FF, #0052CC); padding: 24px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 24px;">Yeni İletişim Formu</h1>
+                    </div>
+                    <div style="padding: 32px; background: #ffffff;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280; width: 120px;">İsim:</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 600;">${name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Email:</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 600;"><a href="mailto:${email}" style="color: #0066FF;">${email}</a></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Konu:</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 600;">${subject || 'Genel Soru'}</td>
+                            </tr>
+                        </table>
+                        <div style="margin-top: 24px;">
+                            <p style="color: #6b7280; margin-bottom: 8px; font-size: 14px;">Mesaj:</p>
+                            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border-left: 4px solid #0066FF;">
+                                <p style="color: #374151; margin: 0; white-space: pre-wrap; line-height: 1.6;">${message}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; background: #f9fafb; text-align: center; border-top: 1px solid #e5e7eb;">
+                        <p style="color: #9ca3af; font-size: 12px; margin: 0;">Bu mail VIYA BROKER iletişim formundan gönderildi.</p>
+                    </div>
+                </div>
+            `
+        });
+        
+        console.log('✅ Contact form email sent from:', email);
+        res.json({ success: true });
+        
+    } catch (error) {
+        console.error('❌ Contact form error:', error);
+        res.json({ success: false, error: 'Mail gönderilemedi' });
+    }
+});
+
 // ==========================================
 // 5. MARKETPLACE ENDPOINTS (V18 YENİ)
 // ==========================================
