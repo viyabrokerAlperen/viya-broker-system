@@ -700,7 +700,7 @@ app.get('/api/kvkk', (req, res) => {
    KVKK m.11 uyarınca verilerinizin silinmesini talep edebilirsiniz.
 
 6. İletişim:
-   privacy@viyabroker.com
+   info@viyabroker.com
 
 Bu kutuyu işaretleyerek verilerinizin işlenmesini kabul etmiş sayılırsınız.`
     });
