@@ -138,8 +138,8 @@ if (API_KEY) {
 // Titan Email transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
 const transporter = nodemailer.createTransport({
     host: 'smtp.titan.email',
-    port: 465,
-    secure: true, // SSL/TLS
+    port: 587, // STARTTLS
+    secure: false, // STARTTLS için false olmalı
     auth: {
         user: process.env.EMAIL_USER, // Titan Email adresi
         pass: process.env.EMAIL_PASS  // Titan Email şifresi
