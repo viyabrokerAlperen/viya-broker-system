@@ -140,12 +140,15 @@ console.log('📧 Mail Gönderiliyor -> Kullanıcı:', process.env.EMAIL_USER, '
 
 // Titan Email transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.titan.email',
-    port: 587, // STARTTLS
-    secure: false, // STARTTLS için false olmalı
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT) || 465,
+    secure: true,
     auth: {
-        user: process.env.EMAIL_USER, // Titan Email adresi
-        pass: process.env.EMAIL_PASS  // Titan Email şifresi
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
