@@ -135,12 +135,14 @@ if (API_KEY) {
 // NODEMAILER SETUP (OTP EMAIL SYSTEM)
 // ==========================================
 
-// Gmail transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
+// Titan Email transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.titan.email',
+    port: 465,
+    secure: true, // SSL/TLS
     auth: {
-        user: process.env.EMAIL_USER, // Gmail adresi
-        pass: process.env.EMAIL_PASS  // Gmail App Password (2FA açıksa gerekli)
+        user: process.env.EMAIL_USER, // Titan Email adresi
+        pass: process.env.EMAIL_PASS  // Titan Email şifresi
     }
 });
 
