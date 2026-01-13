@@ -17,6 +17,7 @@ import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import http from 'http';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -860,7 +861,6 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         }
         
         // Token oluştur (32 karakter hex)
-        const crypto = require('crypto');
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetExpires = Date.now() + 15 * 60 * 1000; // 15 dakika geçerli
         
