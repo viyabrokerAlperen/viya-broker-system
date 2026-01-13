@@ -58,7 +58,9 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: "user" },
     plan: { type: String, default: "FREE" },
     createdAt: { type: Date, default: Date.now },
-    kvkkAccepted: { type: Boolean, default: false }
+    kvkkAccepted: { type: Boolean, default: false },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 });
 const User = mongoose.model('User', userSchema);
 
@@ -843,6 +845,94 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (e) { 
         console.error(e);
         res.status(500).json({ error: "Giriş hatası." }); 
+    }
+});
+
+// Şifremi Unuttum - Link Gönder
+app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email: email.toLowerCase() });
+        
+        // Güvenlik: Kullanıcı bulunamasa bile aynı mesajı ver
+        if (!user) {
+            return res.json({ success: true }); 
+        }
+        
+        // Token oluştur (32 karakter hex)
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = Date.now() + 15 * 60 * 1000; // 15 dakika geçerli
+        
+        // Kullanıcıya kaydet
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = resetExpires;
+        await user.save();
+        
+        // Mail gönder
+        const resetUrl = `${process.env.FRONTEND_URL || 'https://viya-broker.onrender.com'}?reset=${resetToken}`;
+        
+        await transporter.sendMail({
+            from: `"VIYA BROKER" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Şifre Sıfırlama - VIYA BROKER',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: #0066FF; padding: 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">VIYA BROKER</h1>
+                    </div>
+                    <div style="padding: 30px; background: #f9f9f9;">
+                        <h2 style="color: #333;">Şifre Sıfırlama Talebi</h2>
+                        <p style="color: #666;">Merhaba,</p>
+                        <p style="color: #666;">Hesabınız için şifre sıfırlama talebinde bulunuldu. Aşağıdaki butona tıklayarak yeni şifrenizi belirleyebilirsiniz:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${resetUrl}" style="background: #0066FF; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">Şifremi Sıfırla</a>
+                        </div>
+                        <p style="color: #999; font-size: 14px;">Bu link 15 dakika geçerlidir.</p>
+                        <p style="color: #999; font-size: 14px;">Eğer bu talebi siz yapmadıysanız, bu maili görmezden gelebilirsiniz.</p>
+                    </div>
+                    <div style="padding: 20px; text-align: center; color: #999; font-size: 12px;">
+                        © 2026 VIYA BROKER. All rights reserved.
+                    </div>
+                </div>
+            `
+        });
+        
+        console.log('✅ Password reset email sent to:', email);
+        res.json({ success: true });
+        
+    } catch (error) {
+        console.error('❌ Forgot password error:', error);
+        res.json({ success: false, error: 'Bir hata oluştu' });
+    }
+});
+
+// Şifre Sıfırlama
+app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+        
+        if (!user) {
+            return res.json({ success: false, error: 'Geçersiz veya süresi dolmuş link' });
+        }
+        
+        // Yeni şifreyi hashle
+        user.password = await bcrypt.hash(password, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        
+        console.log('✅ Password reset successful for:', user.email);
+        res.json({ success: true });
+        
+    } catch (error) {
+        console.error('❌ Reset password error:', error);
+        res.json({ success: false, error: 'Bir hata oluştu' });
     }
 });
 

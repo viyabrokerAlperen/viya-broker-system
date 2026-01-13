@@ -656,3 +656,16 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .toggle-password:hover {
     color: #374151;
 }
+
+.forgot-password {
+    text-align: center;
+    margin-top: 16px;
+}
+.forgot-password a {
+    color: #0066FF;
+    font-size: 14px;
+    font-weight: 500;
+}
+.forgot-password a:hover {
+    text-decoration: underline;
+}

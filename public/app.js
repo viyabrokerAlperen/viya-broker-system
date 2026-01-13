@@ -1517,3 +1517,111 @@ function showPassword(inputId) {
 function hidePassword(inputId) {
     document.getElementById(inputId).type = 'password';
 }
+
+function openForgotPasswordModal() {
+    closeModal('authModal');
+    document.getElementById('forgotStep1').style.display = 'block';
+    document.getElementById('forgotStep2').style.display = 'none';
+    document.getElementById('forgotEmail').value = '';
+    document.getElementById('forgotMsg').innerText = '';
+    document.getElementById('forgotPasswordModal').style.display = 'block';
+}
+
+async function sendResetLink() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    const msg = document.getElementById('forgotMsg');
+    
+    if (!email) {
+        msg.innerText = 'Lütfen mail adresinizi girin';
+        msg.style.color = '#EF4444';
+        return;
+    }
+    
+    msg.innerText = 'Gönderiliyor...';
+    msg.style.color = '#F59E0B';
+    
+    try {
+        const res = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('forgotStep1').style.display = 'none';
+            document.getElementById('forgotStep2').style.display = 'block';
+            msg.innerText = '';
+        } else {
+            msg.innerText = data.error || 'Bir hata oluştu';
+            msg.style.color = '#EF4444';
+        }
+    } catch (e) {
+        msg.innerText = 'Bağlantı hatası';
+        msg.style.color = '#EF4444';
+    }
+}
+
+async function resetPassword() {
+    const password = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('newPasswordConfirm').value;
+    const msg = document.getElementById('resetMsg');
+    
+    if (password.length < 6) {
+        msg.innerText = 'Şifre en az 6 karakter olmalı';
+        msg.style.color = '#EF4444';
+        return;
+    }
+    
+    if (password !== confirm) {
+        msg.innerText = 'Şifreler eşleşmiyor';
+        msg.style.color = '#EF4444';
+        return;
+    }
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('reset');
+    
+    if (!token) {
+        msg.innerText = 'Geçersiz sıfırlama linki';
+        msg.style.color = '#EF4444';
+        return;
+    }
+    
+    msg.innerText = 'Kaydediliyor...';
+    msg.style.color = '#F59E0B';
+    
+    try {
+        const res = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            msg.innerText = 'Şifreniz güncellendi! Giriş yapabilirsiniz.';
+            msg.style.color = '#10B981';
+            setTimeout(() => {
+                closeModal('resetPasswordModal');
+                window.history.replaceState({}, document.title, window.location.pathname);
+                openAuthModal('login');
+            }, 2000);
+        } else {
+            msg.innerText = data.error || 'Bir hata oluştu';
+            msg.style.color = '#EF4444';
+        }
+    } catch (e) {
+        msg.innerText = 'Bağlantı hatası';
+        msg.style.color = '#EF4444';
+    }
+}
+
+// Sayfa yüklendiğinde reset token kontrolü
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('reset');
+    if (resetToken) {
+        document.getElementById('resetPasswordModal').style.display = 'block';
+    }
+});
