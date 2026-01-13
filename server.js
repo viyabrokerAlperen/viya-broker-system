@@ -135,6 +135,9 @@ if (API_KEY) {
 // NODEMAILER SETUP (OTP EMAIL SYSTEM)
 // ==========================================
 
+// Debug log
+console.log('📧 Mail Gönderiliyor -> Kullanıcı:', process.env.EMAIL_USER, 'Host: smtp.titan.email');
+
 // Titan Email transporter (kullanıcı .env dosyasına kendi bilgilerini ekleyecek)
 const transporter = nodemailer.createTransport({
     host: 'smtp.titan.email',
@@ -157,7 +160,7 @@ function generateOTP() {
 // OTP email gönderme fonksiyonu
 async function sendOTPEmail(email, otp) {
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"Viya System" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: '✅ VIYA BROKER - Email Doğrulama Kodu',
         html: `
