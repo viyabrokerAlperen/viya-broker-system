@@ -669,3 +669,24 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .forgot-password a:hover {
     text-decoration: underline;
 }
+
+/* Sidebar Toggle */
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
