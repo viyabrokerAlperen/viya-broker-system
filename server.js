@@ -687,16 +687,16 @@ app.get('/api/kvkk', (req, res) => {
    - IP adresi ve Log kayıtları
    - Gemi ilan bilgileri (satıcılar için)
 
-3. İşleme Amacı: 
+3. İşleme Amacı:
    - Üyelik işlemlerinin yapılması
    - Güvenli giriş sağlanması
    - Gemi alım-satım/kiralama işlemlerinin yürütülmesi
    - Yasal yükümlülüklerin ifası
 
-4. Aktarım: 
+4. Aktarım:
    Verileriniz yasal zorunluluklar dışında üçüncü kişilerle paylaşılmaz.
 
-5. Haklarınız: 
+5. Haklarınız:
    KVKK m.11 uyarınca verilerinizin silinmesini talep edebilirsiniz.
 
 6. İletişim:
@@ -704,6 +704,47 @@ app.get('/api/kvkk', (req, res) => {
 
 Bu kutuyu işaretleyerek verilerinizin işlenmesini kabul etmiş sayılırsınız.`
     });
+});
+
+// Maritime News API - RSS Feed'den haber çek
+app.get('/api/maritime-news', async (req, res) => {
+    try {
+        const Parser = (await import('rss-parser')).default;
+        const parser = new Parser();
+        
+        const feeds = [
+            'https://www.hellenicshippingnews.com/feed/',
+            'https://gcaptain.com/feed/',
+            'https://splash247.com/feed/'
+        ];
+        
+        let allNews = [];
+        
+        for (const feedUrl of feeds) {
+            try {
+                const feed = await parser.parseURL(feedUrl);
+                const news = feed.items.slice(0, 5).map(item => ({
+                    title: item.title,
+                    link: item.link,
+                    date: item.pubDate || item.isoDate,
+                    source: feed.title,
+                    snippet: item.contentSnippet ? item.contentSnippet.substring(0, 150) + '...' : ''
+                }));
+                allNews = allNews.concat(news);
+            } catch (e) {
+                console.log('Feed error:', feedUrl);
+            }
+        }
+        
+        // Tarihe göre sırala (en yeni önce)
+        allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        res.json({ success: true, news: allNews.slice(0, 15) });
+        
+    } catch (error) {
+        console.error('News fetch error:', error);
+        res.json({ success: false, news: [], error: 'Haberler yüklenemedi' });
+    }
 });
 
 app.post('/api/auth/register', async (req, res) => {

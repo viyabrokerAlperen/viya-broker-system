@@ -211,6 +211,7 @@ function switchView(id) {
     if (id === 'dashboard' && map) setTimeout(() => map.invalidateSize(), 100);
     if (id === 'calculator' && map) setTimeout(() => map.invalidateSize(), 100);
     if (id === 'marketplace') loadMarketplaceListings();
+    if (id === 'news') loadNews();
 }
 
 function changeLanguage(lang) {
@@ -1712,3 +1713,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Maritime News Loader
+async function loadNews() {
+    const newsGrid = document.getElementById('newsGrid');
+    if (!newsGrid) return;
+    
+    newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">Haberler yükleniyor...</p></div>';
+    
+    try {
+        const res = await fetch('/api/maritime-news');
+        const data = await res.json();
+        
+        if (!data.success || !data.news || data.news.length === 0) {
+            newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;">Haber bulunamadı.</div>';
+            return;
+        }
+        
+        newsGrid.innerHTML = '';
+        
+        data.news.forEach((item, index) => {
+            const date = new Date(item.date).toLocaleDateString('tr-TR', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            
+            const card = document.createElement('div');
+            card.className = 'news-card-item';
+            card.innerHTML = `
+                <div class="news-card-header">
+                    <span class="news-source">${item.source || 'Maritime News'}</span>
+                    <span class="news-date">${date}</span>
+                </div>
+                <h3 class="news-title">${item.title}</h3>
+                <p class="news-snippet">${item.snippet || ''}</p>
+                <a href="${item.link}" target="_blank" class="news-read-more">
+                    Devamını Oku <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            `;
+            newsGrid.appendChild(card);
+        });
+        
+    } catch (error) {
+        console.error('News error:', error);
+        newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#ef4444;">Haberler yüklenirken hata oluştu.</div>';
+    }
+}

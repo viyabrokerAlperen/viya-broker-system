@@ -832,3 +832,94 @@ body.dark-mode .msg.ai {
 .theme-toggle {
     font-size: 18px;
 }
+
+/* Maritime News Styles */
+.news-page-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.news-card-item {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: all 0.2s ease;
+}
+
+.news-card-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+}
+
+body.dark-mode .news-card-item {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.dark-mode .news-card-item:hover {
+    border-color: var(--primary);
+}
+
+.news-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.news-source {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.dark-mode .news-source {
+    background: rgba(0, 102, 255, 0.2);
+}
+
+.news-date {
+    color: var(--gray-400);
+    font-size: 13px;
+}
+
+.news-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+body.dark-mode .news-title {
+    color: #f1f5f9;
+}
+
+.news-snippet {
+    color: var(--gray-500);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+body.dark-mode .news-snippet {
+    color: #94a3b8;
+}
+
+.news-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 14px;
+    transition: gap 0.2s ease;
+}
+
+.news-read-more:hover {
+    gap: 10px;
+}
