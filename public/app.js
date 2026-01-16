@@ -1680,3 +1680,35 @@ function toggleSidebar() {
     sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('expanded');
 }
+
+// Theme Toggle Function
+function toggleTheme() {
+    const body = document.body;
+    const icon = document.getElementById('themeIcon');
+    
+    body.classList.toggle('dark-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('viya_theme', 'dark');
+    } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('viya_theme', 'light');
+    }
+}
+
+// Sayfa yüklendiğinde tema tercihini kontrol et
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('viya_theme');
+    const icon = document.getElementById('themeIcon');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        if (icon) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+    }
+});
