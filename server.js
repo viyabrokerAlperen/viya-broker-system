@@ -717,9 +717,9 @@ app.get('/api/maritime-news', async (req, res) => {
         });
         
         const feeds = [
-            'https://splash247.com/feed/',
-            'https://safety4sea.com/feed/',
-            'https://www.hellenicshippingnews.com/feed/',
+            // 1. Google News - Denizcilik & Shipping (Tüm kaynakları içerir, ASLA engellenmez)
+            'https://news.google.com/rss/search?q=maritime+shipping+industry&hl=en-US&gl=US&ceid=US:en',
+            // 2. Yedek olarak Offshore Energy (Genelde açıktır)
             'https://www.offshore-energy.biz/feed/'
         ];
         
@@ -733,7 +733,9 @@ app.get('/api/maritime-news', async (req, res) => {
                     link: item.link,
                     date: item.pubDate || item.isoDate,
                     source: feed.title,
-                    snippet: item.contentSnippet ? item.contentSnippet.substring(0, 150) + '...' : ''
+                    snippet: item.contentSnippet || item.description || item.content || ''
+                        ? (item.contentSnippet || item.description || item.content || '').substring(0, 150) + '...'
+                        : ''
                 }));
                 allNews = allNews.concat(news);
             } catch (e) {
