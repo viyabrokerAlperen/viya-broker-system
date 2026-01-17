@@ -1760,19 +1760,775 @@ async function loadRegulations() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     
     const data = [
-        { code: "SOLAS", title: "Safety of Life at Sea", summary: "Minimum safety standards", content: "Chapter I..." },
-        { code: "MARPOL", title: "Marine Pollution", summary: "Prevention of pollution", content: "Annex I..." },
-        { code: "ISM Code", title: "Safety Management", summary: "Safe ship operations", content: "Part A..." }
+        { 
+            code: "SOLAS 1974", 
+            title: "Safety of Life at Sea", 
+            summary: "International Convention - Minimum Safety Standards",
+            category: "Safety",
+            updated: "2024 Amendments",
+            content: `<h3>SOLAS 1974 - International Convention for Safety of Life at Sea</h3>
+            
+            <h4>📜 Overview</h4>
+            <p>SOLAS is the most important treaty addressing maritime safety. First version adopted in 1914 after Titanic disaster. Current version from 1974, continuously updated.</p>
+            
+            <h4>📊 14 Chapters Overview:</h4>
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <ul style="line-height:1.8;">
+                    <li><strong>Chapter I:</strong> General Provisions (application, surveys, certificates)</li>
+                    <li><strong>Chapter II-1:</strong> Construction (subdivision, stability, machinery, electrical)</li>
+                    <li><strong>Chapter II-2:</strong> Fire Protection, Detection & Extinction</li>
+                    <li><strong>Chapter III:</strong> Life-Saving Appliances (lifeboats, rafts, LSA)</li>
+                    <li><strong>Chapter IV:</strong> Radio Communications (GMDSS)</li>
+                    <li><strong>Chapter V:</strong> Navigation Safety (AIS, VDR, ECDIS, bridge design)</li>
+                    <li><strong>Chapter VI:</strong> Carriage of Cargoes (grain, dangerous goods)</li>
+                    <li><strong>Chapter VII:</strong> Dangerous Goods (IMDG Code)</li>
+                    <li><strong>Chapter VIII:</strong> Nuclear Ships</li>
+                    <li><strong>Chapter IX:</strong> ISM Code (Safety Management)</li>
+                    <li><strong>Chapter X:</strong> High Speed Craft (HSC Code)</li>
+                    <li><strong>Chapter XI-1:</strong> Special Measures - Enhanced Maritime Safety</li>
+                    <li><strong>Chapter XI-2:</strong> ISPS Code (Ship & Port Facility Security)</li>
+                    <li><strong>Chapter XIV:</strong> Polar Code (Arctic/Antarctic operations)</li>
+                </ul>
+            </div>
+            
+            <h4>🚢 Key Requirements by Vessel Size:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Requirement</th>
+                    <th style="padding:10px;border:1px solid #334155;">Applies to</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Fire Detection System</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">All vessels ≥500 GT</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">AIS (Automatic Identification System)</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">All vessels ≥300 GT + passenger ships</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">VDR (Voyage Data Recorder)</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Passenger ships + vessels ≥3,000 GT (built after 2002)</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">ECDIS (Electronic Chart Display)</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Phased in 2012-2018 for vessels ≥500 GT</td>
+                </tr>
+            </table>
+            
+            <h4>📅 Recent Amendments (2024):</h4>
+            <p>• Enhanced fire safety for vehicle/Ro-Ro spaces<br>
+            • Structural fire protection improvements<br>
+            • Updated life-saving appliance testing protocols<br>
+            • Cyber risk management mandatory in SMS (since 2021)</p>
+            
+            <h4>⚖️ Enforcement:</h4>
+            <p>Port State Control (PSC) enforces SOLAS. Non-compliance = detention, deficiencies, fines.</p>`
+        },
+        { 
+            code: "MARPOL 73/78", 
+            title: "Marine Pollution Prevention", 
+            summary: "International Convention - Oil, Garbage, Sewage, Air Emissions",
+            category: "Environment",
+            updated: "IMO 2020 Sulphur Cap",
+            content: `<h3>MARPOL 73/78 - International Convention for Prevention of Pollution from Ships</h3>
+            
+            <h4>🌊 Overview</h4>
+            <p>MARPOL = Marine Pollution. Adopted 1973, Protocol 1978. Covers all technical aspects of pollution from ships (except dumping). 159 countries, 99% of world tonnage.</p>
+            
+            <h4>📋 Six Annexes:</h4>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex I - Oil Pollution (1983)</h5>
+                <p><strong>Mandatory</strong> | Covers crude oil, fuel oil, sludge, oily bilge water</p>
+                <ul>
+                    <li>15 ppm limit for oil discharge at sea (>12nm from land)</li>
+                    <li>Oil Record Book (ORB) mandatory</li>
+                    <li>Segregated Ballast Tanks (SBT) for tankers >20,000 DWT</li>
+                    <li>Double hull requirements for oil tankers</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex II - Noxious Liquid Substances (1987)</h5>
+                <p><strong>Mandatory</strong> | Chemical tankers</p>
+                <ul>
+                    <li>Cargo Record Book required</li>
+                    <li>Categories: X (no discharge), Y (limited), Z (allowed), OS (other)</li>
+                    <li>Prewash requirements for Category X</li>
+                </ul>
+            </div>
+            
+            <div style="background:#e0e7ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex III - Harmful Substances in Packaged Form (1992)</h5>
+                <p><strong>Mandatory</strong> | IMDG Code compliance</p>
+                <ul>
+                    <li>Packaging, labeling, documentation standards</li>
+                    <li>Stowage requirements</li>
+                </ul>
+            </div>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex IV - Sewage (2003)</h5>
+                <p><strong>Mandatory</strong> | Human waste discharge</p>
+                <ul>
+                    <li>No discharge within 3nm of land (unless treated + approved system)</li>
+                    <li>12nm: Comminuted & disinfected sewage allowed</li>
+                    <li>Sewage treatment plant or holding tank required</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fce7f3;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex V - Garbage (1988, Revised 2013)</h5>
+                <p><strong>Mandatory</strong> | Solid waste management</p>
+                <ul>
+                    <li><strong>Plastics:</strong> Complete ban on discharge (anywhere, anytime)</li>
+                    <li><strong>Food waste:</strong> ≥12nm from land (comminuted: ≥3nm)</li>
+                    <li><strong>Cargo residues:</strong> ≥12nm (non-HME) / ≥25nm (HME)</li>
+                    <li>Garbage Management Plan + Record Book mandatory (≥400 GT)</li>
+                </ul>
+            </div>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Annex VI - Air Pollution (2005, Amended 2020)</h5>
+                <p><strong>Mandatory</strong> | NOx, SOx, GHG, ODS</p>
+                <ul>
+                    <li><strong>Global Sulphur Cap:</strong> 0.50% since Jan 1, 2020 (was 3.50%)</li>
+                    <li><strong>ECA Zones:</strong> 0.10% sulphur (Baltic, North Sea, North America, Caribbean)</li>
+                    <li><strong>NOx Tiers:</strong> Tier I/II/III based on build year (Tier III: 80% reduction in ECAs)</li>
+                    <li><strong>EEDI/EEXI/CII:</strong> Energy efficiency regulations</li>
+                    <li><strong>Scrubbers:</strong> Allowed as alternative to low-sulphur fuel</li>
+                </ul>
+            </div>
+            
+            <h4>💰 Compliance Costs:</h4>
+            <div style="background:#f1f5f9;padding:15px;border-radius:8px;">
+                <p><strong>IMO 2020 Sulphur Cap Impact:</strong><br>
+                VLSFO (0.5%) vs HSFO (3.5%): $150-250/MT price premium<br>
+                Scrubber installation: $2-10M depending on vessel size<br>
+                Non-compliance fine: Up to $50,000/day in some jurisdictions</p>
+            </div>
+            
+            <h4>🔍 Enforcement:</h4>
+            <p>• Port State Control inspections<br>
+            • Fuel sampling (MARPOL Annex VI)<br>
+            • ORB/Garbage Record Book audits<br>
+            • Satellite surveillance (oil spills)</p>`
+        },
+        { 
+            code: "ISM Code", 
+            title: "International Safety Management", 
+            summary: "Mandatory SMS - Chapter IX SOLAS",
+            category: "Management",
+            updated: "2024 Edition",
+            content: `<h3>ISM Code - International Safety Management Code</h3>
+            
+            <h4>📋 What is ISM?</h4>
+            <p>ISM Code became mandatory 1998 (passenger/tanker/bulk) and 2002 (all commercial ships ≥500 GT). Part of SOLAS Chapter IX. Requires documented Safety Management System (SMS).</p>
+            
+            <h4>🎯 Objectives:</h4>
+            <ol style="line-height:1.8;">
+                <li>Provide safe practices in ship operation</li>
+                <li>Provide safe working environment</li>
+                <li>Establish safeguards against identified risks</li>
+                <li>Continuously improve safety management skills</li>
+                <li>Ensure compliance with mandatory rules/regulations</li>
+            </ol>
+            
+            <h4>📊 13 Elements of ISM Code:</h4>
+            
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Element</th>
+                    <th style="padding:10px;border:1px solid #334155;">Requirement</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>1. General</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Objectives & functional requirements</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>2. Safety & Environmental Policy</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Company must establish policy signed by management</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>3. Company Responsibilities</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">DPA (Designated Person Ashore) mandatory</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>4. Designated Person(s)</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Shore-based link with direct access to management</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>5. Master's Responsibility</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Authority, overriding authority in safety matters</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>6. Resources & Personnel</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Qualified, medically fit, certified crew</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>7. Development of Plans</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Emergency procedures, drills, contingency plans</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>8. Emergency Preparedness</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Identify potential emergency scenarios</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>9. Reports & Analysis</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Non-conformities, accidents, hazards reporting</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>10. Maintenance</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Planned Maintenance System (PMS)</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>11. Documentation</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">SMS Manual, procedures, records control</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>12. Company Verification</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Internal audits (annually minimum)</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>13. Certification & Verification</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">DOC (Company) + SMC (Ship) certificates</td>
+                </tr>
+            </table>
+            
+            <h4>📜 Mandatory Certificates:</h4>
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>DOC (Document of Compliance):</strong><br>
+                • Issued to Company (not vessel)<br>
+                • Valid 5 years<br>
+                • Intermediate verification between 2nd-3rd year<br>
+                • Covers fleet managed by company</p>
+                
+                <p style="margin-top:15px;"><strong>SMC (Safety Management Certificate):</strong><br>
+                • Issued to individual vessel<br>
+                • Valid 5 years<br>
+                • Intermediate audits: 2nd & 3rd year<br>
+                • Additional audits if deficiencies found</p>
+            </div>
+            
+            <h4>🔍 ISM Audit Process:</h4>
+            <ol style="line-height:1.8;">
+                <li><strong>Initial Audit:</strong> DOC/SMC issuance (company + ship)</li>
+                <li><strong>Intermediate Audits:</strong> Between 2nd-3rd anniversary years</li>
+                <li><strong>Renewal Audit:</strong> Before certificate expiry (5 years)</li>
+                <li><strong>Additional Audits:</strong> For major non-conformities</li>
+            </ol>
+            
+            <h4>⚠️ Common Non-Conformities:</h4>
+            <ul>
+                <li>Incomplete risk assessments</li>
+                <li>Inadequate near-miss reporting system</li>
+                <li>Missing internal audit records</li>
+                <li>DPA not accessible or ineffective</li>
+                <li>Crew unfamiliar with SMS procedures</li>
+                <li>PMS not followed correctly</li>
+                <li>Emergency drills not conducted as required</li>
+            </ul>
+            
+            <h4>💡 Best Practices:</h4>
+            <p>• SMS should be user-friendly, not bureaucratic<br>
+            • Crew buy-in essential - they must understand "why"<br>
+            • Near-miss reporting culture saves lives<br>
+            • DPA must visit ships regularly<br>
+            • Management review meetings critical<br>
+            • Root Cause Analysis for incidents</p>`
+        },
+        { 
+            code: "ISPS Code", 
+            title: "Ship & Port Facility Security", 
+            summary: "SOLAS XI-2 - Maritime Security Post-9/11",
+            category: "Security",
+            updated: "Ongoing Amendments",
+            content: `<h3>ISPS Code - International Ship & Port Facility Security Code</h3>
+            
+            <h4>🔒 Background</h4>
+            <p>Adopted December 2002 (post-9/11), entered force July 1, 2004. Part of SOLAS Chapter XI-2. Addresses maritime security threats including terrorism, piracy, smuggling.</p>
+            
+            <h4>📊 Two Parts:</h4>
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>Part A - Mandatory:</strong> Governments, port authorities, shipping companies must comply</p>
+                <p><strong>Part B - Guidance:</strong> Recommendations on implementation</p>
+            </div>
+            
+            <h4>🚢 Applies To:</h4>
+            <ul style="line-height:1.8;">
+                <li>Passenger ships (international voyages)</li>
+                <li>Cargo ships ≥500 GT (international voyages)</li>
+                <li>Mobile offshore drilling units</li>
+                <li>Port facilities serving above ships</li>
+            </ul>
+            
+            <h4>📋 Three Security Levels:</h4>
+            
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Level</th>
+                    <th style="padding:10px;border:1px solid #334155;">Threat</th>
+                    <th style="padding:10px;border:1px solid #334155;">Measures</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Level 1 - Normal</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Day-to-day minimum</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">ID checks, access control, patrols</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Level 2 - Heightened</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Increased risk</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Additional checks, escorts, surveillance, reduced access</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Level 3 - Exceptional</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Specific threat</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Prepared security measures, possible evacuation</td>
+                </tr>
+            </table>
+            
+            <h4>📜 Required Documents:</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>1. Ship Security Plan (SSP)</h5>
+                <p>Vessel-specific security procedures addressing:</p>
+                <ul>
+                    <li>Security organization</li>
+                    <li>Ship security equipment</li>
+                    <li>Location of restricted areas</li>
+                    <li>Emergency procedures</li>
+                    <li>Training requirements</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>2. International Ship Security Certificate (ISSC)</h5>
+                <p>Valid 5 years<br>
+                Intermediate verifications required<br>
+                Issued after SSP approval + verification audit</p>
+            </div>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>3. Continuous Synopsis Record (CSR)</h5>
+                <p>"Passport" of ship containing:<br>
+                • Ship's history (name changes, owners, flags)<br>
+                • Updated throughout vessel's life<br>
+                • Must be on board at all times</p>
+            </div>
+            
+            <h4>👤 Key Personnel:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Company Security Officer (CSO):</strong> Shore-based, responsible for company fleet security</li>
+                <li><strong>Ship Security Officer (SSO):</strong> On board, implements SSP, reports to CSO & Master</li>
+                <li><strong>Port Facility Security Officer (PFSO):</strong> Port-side security management</li>
+            </ul>
+            
+            <h4>🔐 Physical Security Measures:</h4>
+            <ul>
+                <li>Ship Security Alert System (SSAS) - silent alarm to authorities</li>
+                <li>AIS (cannot be switched off except exceptional circumstances)</li>
+                <li>Access control (gangway watch, ID cards)</li>
+                <li>Restricted areas clearly marked</li>
+                <li>CCTV surveillance</li>
+                <li>Lighting requirements</li>
+                <li>Fencing and barriers</li>
+            </ul>
+            
+            <h4>📄 Declaration of Security (DoS):</h4>
+            <p>Agreement between ship and port/other ship when security levels differ or specific operations require it.<br>
+            Mandatory when vessel operating at Security Level 2 or 3.<br>
+            Optional at Level 1 if parties agree.</p>
+            
+            <h4>⚠️ Port State Control:</h4>
+            <p>PSC can verify ISSC validity but <strong>cannot</strong> inspect SSP details (security sensitive).<br>
+            SSP = Confidential document<br>
+            Only flag state/RSO can inspect SSP content</p>`
+        },
+        { 
+            code: "MLC 2006", 
+            title: "Maritime Labour Convention", 
+            summary: "Seafarers' Bill of Rights - Living & Working Conditions",
+            category: "Labour",
+            updated: "2024 Amendments",
+            content: `<h3>MLC 2006 - Maritime Labour Convention</h3>
+            
+            <h4>👨‍✈️ Overview</h4>
+            <p>"Seafarers' Bill of Rights" - Consolidates 68 maritime labour instruments. Entered force August 20, 2013. Applies to all commercial vessels ≥500 GT (some requirements to <500 GT).</p>
+            
+            <h4>📋 Five Titles (Principles + Rights):</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Title 1 - Minimum Requirements for Seafarers to Work on Ship</h5>
+                <ul>
+                    <li>Minimum age: 16 years (18 for hazardous work)</li>
+                    <li>Medical certificate valid (max 2 years, 1 year if under 18)</li>
+                    <li>Training and qualifications per STCW</li>
+                    <li>Recruitment through licensed agencies</li>
+                </ul>
+            </div>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Title 2 - Conditions of Employment</h5>
+                <ul>
+                    <li>Written Seafarer Employment Agreement (SEA) mandatory</li>
+                    <li>Wages paid monthly, bank transfer</li>
+                    <li>Minimum monthly wage: ILO sets floor (currently ~$658/month for AB)</li>
+                    <li>Hours of work/rest: Max 14 hours/day, 72 hours/week</li>
+                    <li>Paid annual leave: 2.5 days per month minimum</li>
+                    <li>Repatriation rights (including if ship lost)</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Title 3 - Accommodation, Recreational Facilities, Food & Catering</h5>
+                <ul>
+                    <li>Cabin size minimums (newer ships: 4.5m² single berth)</li>
+                    <li>Headroom minimum: 2.03m</li>
+                    <li>Separate facilities for men/women</li>
+                    <li>Mess rooms required</li>
+                    <li>Recreational facilities</li>
+                    <li>Food quality and variety standards</li>
+                    <li>Qualified ship's cook required (vessels with 10+ crew)</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Title 4 - Health Protection, Medical Care, Welfare & Social Security</h5>
+                <ul>
+                    <li>Medical care on board and ashore at no cost</li>
+                    <li>Minimum medical equipment/medicines per WHO guidelines</li>
+                    <li>Ship ≥100+ persons: Doctor required</li>
+                    <li>Seafarers Welfare facilities in ports</li>
+                    <li>Social security protection (sickness, injury, death)</li>
+                    <li>Financial security for abandonment, death, long-term disability</li>
+                </ul>
+            </div>
+            
+            <div style="background:#e0e7ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Title 5 - Compliance & Enforcement</h5>
+                <ul>
+                    <li>Flag state responsibilities</li>
+                    <li>Port State Control inspection (PSC)</li>
+                    <li>On-board complaint procedures</li>
+                    <li>Marine Labour Certificate + DMLC (Parts I & II)</li>
+                </ul>
+            </div>
+            
+            <h4>📜 Mandatory Certificates:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Certificate</th>
+                    <th style="padding:10px;border:1px solid #334155;">Details</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>MLC Certificate</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Valid 5 years, Intermediate inspection required</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>DMLC Part I</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">National requirements (prepared by flag state)</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>DMLC Part II</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Company measures (how compliance achieved)</td>
+                </tr>
+            </table>
+            
+            <h4>💰 Financial Security Requirements (2017 Amendments):</h4>
+            <p>Mandatory insurance/guarantee for:</p>
+            <ul>
+                <li><strong>Abandonment:</strong> 4 months wages + repatriation</li>
+                <li><strong>Death/Long-term Disability:</strong> $100,000 minimum</li>
+                <li>Certificate of financial security must be carried on board</li>
+                <li>P&I Clubs typically provide MLC Blue Cards</li>
+            </ul>
+            
+            <h4>📞 On-Board Complaint Procedure:</h4>
+            <p>Seafarers have right to lodge complaint without reprisal:<br>
+            Step 1: Master/HOD<br>
+            Step 2: Company<br>
+            Step 3: Flag state authority<br>
+            Step 4: Port state (if unresolved)</p>
+            
+            <h4>🔍 PSC Inspection:</h4>
+            <p>Inspectors can board to verify MLC compliance. Common deficiencies:<br>
+            • Expired medical certificates<br>
+            • Unpaid wages (>2 months = detention)<br>
+            • Inadequate food/water<br>
+            • Excessive working hours<br>
+            • Substandard accommodation</p>`
+        },
+        { 
+            code: "STCW 1978/2010", 
+            title: "Standards of Training, Certification & Watchkeeping", 
+            summary: "Seafarer Competency Standards - The Manila Amendments",
+            category: "Training",
+            updated: "Manila 2010 Amendments",
+            content: `<h3>STCW Convention 1978 - Standards of Training, Certification and Watchkeeping</h3>
+            
+            <h4>📚 Overview</h4>
+            <p>First adopted 1978, major revision 1995 (STCW 95), further amended 2010 (Manila Amendments). Sets minimum qualification standards for masters, officers, ratings. Applies to seafarers serving on seagoing ships entitled to fly flag of a Party.</p>
+            
+            <h4>📊 Key Components:</h4>
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <ul style="line-height:1.8;">
+                    <li><strong>Annex:</strong> Mandatory standards (6 chapters)</li>
+                    <li><strong>STCW Code:</strong> Part A (Mandatory) + Part B (Guidance)</li>
+                    <li><strong>White List:</strong> Countries proven to meet STCW standards</li>
+                </ul>
+            </div>
+            
+            <h4>📋 Six Chapters:</h4>
+            
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Chapter</th>
+                    <th style="padding:10px;border:1px solid #334155;">Coverage</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter I</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">General Provisions (quality standards, medical, training)</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter II</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Master and Deck Department</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter III</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Engine Department</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter IV</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Radio Communications (GMDSS)</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter V</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Special Training (tankers, passenger ships, etc.)</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Chapter VI</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Emergency, Occupational Safety, Medical Care, Survival</td>
+                </tr>
+            </table>
+            
+            <h4>👨‍✈️ Certificate Hierarchy (Deck):</h4>
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>Officer of the Watch (OOW) - ≥500 GT:</strong><br>
+                • 36 months seagoing service (12 months as rating)<br>
+                • Approved training<br>
+                • Watchkeeping qualification</p>
+                
+                <p style="margin-top:15px;"><strong>Chief Mate - ≥3,000 GT:</strong><br>
+                • Hold OOW certificate<br>
+                • 12 months service as OOW<br>
+                • Approved advanced training</p>
+                
+                <p style="margin-top:15px;"><strong>Master - ≥3,000 GT:</strong><br>
+                • Hold Chief Mate certificate<br>
+                • 12 months service as Chief Mate<br>
+                • Leadership & management training</p>
+            </div>
+            
+            <h4>🔧 Manila 2010 Key Amendments:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Hours of Rest:</strong> Min 10 hours/24hr period (6 consecutive + 4 can be split max 2 periods)</li>
+                <li><strong>Medical Fitness:</strong> Eyesight & hearing standards strengthened</li>
+                <li><strong>Anti-Drug/Alcohol:</strong> 0.05% BAC limit, drug testing mandatory</li>
+                <li><strong>Modern Training:</strong> ECDIS, Bridge Resource Management (BRM), Leadership</li>
+                <li><strong>Security Training:</strong> Ship security awareness mandatory for all seafarers</li>
+                <li><strong>Revalidation:</strong> Certificates valid 5 years, requires approved seagoing service or training</li>
+            </ul>
+            
+            <h4>📜 Mandatory Training Courses:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;line-height:1.6;">
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Basic Safety Training (BST):</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Fire prevention, survival, first aid, PPE</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>GMDSS (GOC/ROC):</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Radio operators</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Advanced Fire Fighting:</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Officers, fire teams</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Medical First Aid/Care:</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">All seafarers / designated persons</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>ECDIS:</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Deck officers on ECDIS-equipped ships</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Tanker Familiarization:</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Oil/Chemical/Gas tanker crew</td>
+                </tr>
+            </table>
+            
+            <h4>🎓 Competency-Based Training:</h4>
+            <p>STCW uses "competency tables" - must demonstrate ability to perform tasks to required standard. Assessed through:<br>
+            • Approved seagoing service<br>
+            • Simulator assessments<br>
+            • Practical demonstrations<br>
+            • Examinations</p>`
+        },
+        { 
+            code: "BWM Convention", 
+            title: "Ballast Water Management", 
+            summary: "Prevention of Invasive Aquatic Species Transfer",
+            category: "Environment",
+            updated: "Effective Sept 2017",
+            content: `<h3>BWM Convention 2004 - Ballast Water Management</h3>
+            
+            <h4>🌊 Background</h4>
+            <p>Adopted February 2004, entered force September 8, 2017. Addresses transfer of harmful aquatic organisms via ballast water. Estimated 3-5 billion tons of ballast water transferred globally each year.</p>
+            
+            <h4>⚓ What is Ballast Water?</h4>
+            <p>Water carried in ship's tanks to improve stability, trim, structural integrity. Ships discharge ballast from origin port and take on new ballast at destination → transfers organisms thousands of miles.</p>
+            
+            <h4>🦠 The Problem:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Zebra Mussels:</strong> From Caspian Sea to Great Lakes (billions in damage)</li>
+                <li><strong>Toxic Algae:</strong> Cholera outbreaks</li>
+                <li><strong>Comb Jellyfish:</strong> Collapsed Black Sea fisheries</li>
+                <li>10,000+ species transported daily</li>
+            </ul>
+            
+            <h4>📊 Two Standards:</h4>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Regulation D-1 (Ballast Water Exchange)</h5>
+                <p><strong>Applicable:</strong> Ships built before September 2017 (during transition)</p>
+                <p><strong>Requirement:</strong> Exchange 95% of ballast water at least 200nm from land and ≥200m depth</p>
+                <p><strong>Method:</strong> Flow-through, sequential, or dilution</p>
+            </div>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Regulation D-2 (Ballast Water Performance Standard)</h5>
+                <p><strong>Final Standard:</strong> Must treat ballast to achieve:</p>
+                <table style="width:100%;margin-top:10px;border-collapse:collapse;">
+                    <tr style="background:#1e293b;color:white;">
+                        <th style="padding:8px;border:1px solid #334155;">Organism Size</th>
+                        <th style="padding:8px;border:1px solid #334155;">Maximum Allowed</th>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">≥50 micrometers</td>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">&lt;10 viable organisms/m³</td>
+                    </tr>
+                    <tr style="background:#f9fafb;">
+                        <td style="padding:8px;border:1px solid #e5e7eb;">10-50 micrometers</td>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">&lt;10 viable organisms/ml</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">Bacteria (Vibrio cholerae)</td>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">&lt;1 cfu/100ml</td>
+                    </tr>
+                    <tr style="background:#f9fafb;">
+                        <td style="padding:8px;border:1px solid #e5e7eb;">E. coli</td>
+                        <td style="padding:8px;border:1px solid #e5e7eb;">&lt;250 cfu/100ml</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <h4>⚙️ Ballast Water Treatment Systems (BWTS):</h4>
+            <p><strong>Approved Methods:</strong></p>
+            <ul>
+                <li><strong>Filtration:</strong> Mechanical removal of organisms</li>
+                <li><strong>UV Treatment:</strong> Ultraviolet radiation kills organisms</li>
+                <li><strong>Electrolysis:</strong> Generates chlorine/hypochlorite</li>
+                <li><strong>Ozonation:</strong> Ozone injection</li>
+                <li><strong>Chemical Treatment:</strong> Approved biocides</li>
+                <li><strong>Combination Systems:</strong> Filtration + UV/Electrolysis (most common)</li>
+            </ul>
+            
+            <h4>📅 Implementation Timeline (D-2 Compliance):</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Ship Built</th>
+                    <th style="padding:10px;border:1px solid #334155;">D-2 Compliance Date</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Before 2009</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">By IOPP renewal after Sept 8, 2017 (but no later than Sept 8, 2024)</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">2009-2011</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">By first IOPP renewal after Sept 8, 2016</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">2012-2016</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">By first IOPP renewal after Sept 8, 2019</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">After Sept 8, 2017</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Immediately upon delivery</td>
+                </tr>
+            </table>
+            
+            <h4>📜 Documentation Required:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Ballast Water Management Certificate:</strong> Valid 5 years</li>
+                <li><strong>Ballast Water Management Plan:</strong> Vessel-specific procedures</li>
+                <li><strong>Ballast Water Record Book:</strong> All operations logged</li>
+                <li><strong>Type Approval Certificate:</strong> For BWTS installed</li>
+            </ul>
+            
+            <h4>💰 Costs:</h4>
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>BWTS Installation Cost:</strong><br>
+                Handysize: $500k - $1M<br>
+                Panamax: $1M - $1.5M<br>
+                Capesize: $1.5M - $3M<br>
+                VLCC: $2M - $5M</p>
+                
+                <p style="margin-top:10px;"><strong>Operating Costs:</strong><br>
+                Power consumption: 100-500 kW<br>
+                Maintenance: $50k-150k/year<br>
+                Spares & consumables</p>
+            </div>
+            
+            <h4>🔍 PSC Enforcement:</h4>
+            <p>• BWM Certificate validity<br>
+            • Record Book entries<br>
+            • BWTS operational<br>
+            • Sampling/testing (rare but increasing)<br>
+            • Non-compliance = detention + fines ($25k-100k)</p>
+            
+            <h4>🇺🇸 US VGP (Vessel General Permit):</h4>
+            <p>US has separate, stricter requirements via EPA/USCG:<br>
+            • Numeric discharge limits (similar to D-2 but some differences)<br>
+            • USCG Type Approval separate from IMO<br>
+            • Additional state requirements (California, Great Lakes)<br>
+            • Both BWM Certificate AND VGP required for US waters</p>`
+        }
     ];
     
     rGrid.innerHTML = "";
     data.forEach(reg => {
-        rGrid.innerHTML += `<div class="doc-card">
-            <i class="fa-solid fa-gavel doc-icon" style="color:var(--neon-gold)"></i>
-            <div class="doc-title">${reg.code}</div>
-            <div class="doc-desc" style="color:#fff;">${reg.title}</div>
-            <div class="doc-desc">${reg.summary}</div>
-            <button class="btn-download" onclick="openContentModal('${reg.title}', '${reg.content}')"><i class="fa-solid fa-book"></i> ${t.btn_view || 'VIEW'}</button>
+        const categoryColors = {
+            'Safety': '#EF4444',
+            'Environment': '#10B981',
+            'Management': '#0066FF',
+            'Security': '#F59E0B',
+            'Labour': '#7C3AED',
+            'Training': '#06B6D4'
+        };
+        const color = categoryColors[reg.category] || '#D4A853';
+        
+        rGrid.innerHTML += `<div class="doc-card" style="cursor:pointer;" onclick="openContentModal('${reg.title}', \`${reg.content.replace(/`/g, '\\`')}\`)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <i class="fa-solid fa-gavel doc-icon" style="color:${color};font-size:40px;"></i>
+                <span style="background:${color}20;color:${color};padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700;">${reg.category}</span>
+            </div>
+            <div class="doc-title" style="font-size:19px;margin-bottom:6px;color:${color};">${reg.code}</div>
+            <div class="doc-desc" style="color:#111827;font-weight:600;margin-bottom:8px;">${reg.title}</div>
+            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;">${reg.summary}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">
+                <i class="fa-solid fa-clock" style="margin-right:5px;"></i>${reg.updated}
+            </div>
+            <button class="btn-download" style="width:100%;"><i class="fa-solid fa-book"></i> ${t.btn_view || 'VIEW REGULATION'}</button>
         </div>`;
     });
 }

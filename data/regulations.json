@@ -94,5 +94,229 @@
     "category": "Cargo Liability",
     "summary": "Modern convention for contracts of carriage (Door-to-Door).",
     "content": "Extends carrier's responsibility period to door-to-door (if agreed). Addresses electronic documentation (e-bills of lading). Liability limit: 875 SDR per package or 3 SDR per kg. Still in the process of ratification by major trading nations."
+  },
+  {
+    "id": "REG-013",
+    "code": "COLREG 1972",
+    "title": "Convention on the International Regulations for Preventing Collisions at Sea",
+    "category": "Navigation",
+    "summary": "International rules of the road to prevent collisions between vessels at sea.",
+    "content": "Contains 38 rules divided into parts: Part A (General), Part B (Steering and Sailing Rules), Part C (Lights and Shapes), Part D (Sound and Light Signals), Part E (Exemptions). Key rules include Rule 5 (Look-out), Rule 13 (Overtaking), Rule 14 (Head-on), Rule 15 (Crossing), Rule 18 (Responsibilities between vessels)."
+  },
+  {
+    "id": "REG-014",
+    "code": "IBC CODE",
+    "title": "International Code for the Construction and Equipment of Ships Carrying Dangerous Chemicals in Bulk",
+    "category": "Cargo Safety",
+    "summary": "Requirements for the safe transport of dangerous chemicals in bulk.",
+    "content": "Made mandatory under SOLAS Chapter VII and MARPOL Annex II. Classifies products based on hazard profiles: Ship Type 1 (Maximum degree of hazard), Ship Type 2 (Medium degree), Ship Type 3 (Minimum degree). Covers ship design, construction, equipment, and operational requirements for chemical tankers."
+  },
+  {
+    "id": "REG-015",
+    "code": "IGC CODE",
+    "title": "International Code for the Construction and Equipment of Ships Carrying Liquefied Gases in Bulk",
+    "category": "Cargo Safety",
+    "summary": "Standards for gas carriers transporting LNG, LPG, and other liquefied gases.",
+    "content": "Mandatory under SOLAS Chapter VII. Addresses ship survivability, cargo containment systems, process pressure/temperature control, cargo tank materials, and cargo transfer systems. Classifies ships as Type 1G, 2G, or 2PG depending on design standards and cargo hazards. Includes requirements for inert gas systems and reliquefaction plants."
+  },
+  {
+    "id": "REG-016",
+    "code": "POLAR CODE",
+    "title": "International Code for Ships Operating in Polar Waters",
+    "category": "Navigation",
+    "summary": "Safety and environmental protection standards for ships operating in Arctic and Antarctic waters.",
+    "content": "Entered into force 2017. Covers design, construction, equipment, operational, training, search and rescue matters relevant to polar operations. Part I-A (Safety measures - mandatory under SOLAS), Part II-A (Pollution prevention - mandatory under MARPOL). Requires Polar Ship Certificate and Polar Water Operational Manual."
+  },
+  {
+    "id": "REG-017",
+    "code": "VGM REGULATION",
+    "title": "Verified Gross Mass (VGM) Regulation",
+    "category": "Cargo Safety",
+    "summary": "Mandatory weighing requirement for containers before vessel loading.",
+    "content": "SOLAS Chapter VI Regulation 2. Effective July 1, 2016. Shipper must verify and document the gross mass of a packed container. Two approved methods: Method 1 - weigh the packed container; Method 2 - weigh all contents and add tare weight. VGM must be provided to the carrier and terminal operator sufficiently in advance."
+  },
+  {
+    "id": "REG-018",
+    "code": "EU MRV",
+    "title": "EU Monitoring, Reporting and Verification Regulation",
+    "category": "Environment",
+    "summary": "EU regulation requiring shipping companies to monitor and report CO2 emissions.",
+    "content": "Applies to ships over 5,000 GT calling at EU/EEA ports. Requires monitoring of: CO2 emissions, fuel consumption, cargo carried, distance travelled. Companies must submit an annual emissions report verified by an independent accredited verifier. Aligned with IMO DCS (Data Collection System) but with additional requirements."
+  },
+  {
+    "id": "REG-019",
+    "code": "CII RATING",
+    "title": "Carbon Intensity Indicator (CII)",
+    "category": "Environment",
+    "summary": "IMO mandatory annual operational carbon intensity rating for ships.",
+    "content": "Entered into force January 2023. Applies to cargo, RoPax and cruise ships over 5,000 GT. Ships rated A (best) to E (worst) based on actual CO2 emissions vs. required performance. Ships rated D for 3 consecutive years or E for 1 year must develop a corrective action plan. Part of IMO's GHG reduction strategy."
+  },
+  {
+    "id": "REG-020",
+    "code": "EEDI",
+    "title": "Energy Efficiency Design Index",
+    "category": "Environment",
+    "summary": "Mandatory energy efficiency standard for new ships.",
+    "content": "MARPOL Annex VI Chapter 4. Measures the energy efficiency of a ship by design. Applies to new ships ≥400 GT. Calculated as CO2 emissions per transport work. Baseline established in 2008-2010, with reduction requirements becoming stricter in phases (0, 1, 2, 3). Phase 3 requires 30% improvement for most ship types."
+  },
+  {
+    "id": "REG-021",
+    "code": "SEEMP",
+    "title": "Ship Energy Efficiency Management Plan",
+    "category": "Environment",
+    "summary": "Ship-specific plan to improve operational energy efficiency.",
+    "content": "MARPOL Annex VI Regulation 22. Required for all ships ≥400 GT. Contains planning, implementation, monitoring, self-evaluation and improvement procedures. Part II (mandatory from 2023) includes methodology for calculating CII and procedures for self-assessment, evaluation, and improvement planning."
+  },
+  {
+    "id": "REG-022",
+    "code": "LL CONVENTION",
+    "title": "International Convention on Load Lines",
+    "category": "Safety",
+    "summary": "Establishes freeboard requirements to prevent overloading of ships.",
+    "content": "Adopted 1966. Specifies minimum heights of freeboard (distance from waterline to deck) which varies by ship type, season, and trading area. Plimsoll mark indicates maximum permitted loading level. Zones: Tropical, Summer, Winter, Winter North Atlantic. Ships must have valid Load Line Certificate."
+  },
+  {
+    "id": "REG-023",
+    "code": "TONNAGE CONVENTION",
+    "title": "International Convention on Tonnage Measurement of Ships",
+    "category": "Technical",
+    "summary": "Uniform system for measuring ship tonnage.",
+    "content": "Entered into force 1982. Establishes rules for calculating: Gross Tonnage (GT) - total internal volume, and Net Tonnage (NT) - cargo-carrying volume. Used for port dues, registration fees, and determining applicability of maritime regulations. Formula based on total moulded volume and various deductions."
+  },
+  {
+    "id": "REG-024",
+    "code": "HNS CONVENTION",
+    "title": "International Convention on Liability and Compensation for Damage in Connection with the Carriage of Hazardous and Noxious Substances by Sea",
+    "category": "Liability",
+    "summary": "Compensation regime for damage caused by hazardous and noxious substances at sea.",
+    "content": "Covers over 6,500 HNS substances. Two-tier compensation system: First tier - ship owner liable up to certain limits based on tonnage; Second tier - HNS Fund provides additional compensation. 2010 Protocol updated liability limits and expanded scope. Not yet in force but gaining ratifications."
+  },
+  {
+    "id": "REG-025",
+    "code": "CLC CONVENTION",
+    "title": "International Convention on Civil Liability for Oil Pollution Damage",
+    "category": "Liability",
+    "summary": "Liability and compensation regime for oil pollution damage from tankers.",
+    "content": "Establishes liability of ship owners for oil pollution from tankers. 1992 Protocol: liability limits based on tonnage (maximum ~89.77M SDR for ships >140,000 GT). Ship owner must maintain insurance. Certificate required onboard all tankers carrying >2,000 tons of oil. Strict liability with limited defenses."
+  },
+  {
+    "id": "REG-026",
+    "code": "BUNKER CONVENTION",
+    "title": "International Convention on Civil Liability for Bunker Oil Pollution Damage",
+    "category": "Liability",
+    "summary": "Liability regime for pollution damage caused by ship's bunker fuel.",
+    "content": "Adopted 2001, entered into force 2008. Ensures adequate compensation for oil pollution from ships' bunkers (fuel). Applies to all seagoing vessels and covers all bunker oil types. Registered owner strictly liable. Ships >1,000 GT must carry insurance certificate. Covers costs of clean-up and environmental damage."
+  },
+  {
+    "id": "REG-027",
+    "code": "SALVAGE CONVENTION",
+    "title": "International Convention on Salvage",
+    "category": "Commercial",
+    "summary": "Legal framework for salvage operations and salvors' rights to reward.",
+    "content": "Adopted 1989. Modernized salvage law recognizing environmental protection. No cure - no pay principle with exception for special compensation when vessel or cargo poses environmental threat. Salvage award factors: salved value, danger, skill, time, expenses. Master has authority to conclude salvage contracts on behalf of owner."
+  },
+  {
+    "id": "REG-028",
+    "code": "ARREST CONVENTION",
+    "title": "International Convention on Arrest of Ships",
+    "category": "Legal",
+    "summary": "Procedures and rules for arrest of ships for maritime claims.",
+    "content": "1999 Convention replaced 1952 Brussels Convention. Lists 22 types of maritime claims for which arrest permitted: crew wages, salvage, collision damage, cargo claims, mortgage, towage, pilotage, necessaries, construction/repair. Claimant may arrest in any jurisdiction where ship found. Owner may prevent/release arrest by providing bail."
+  },
+  {
+    "id": "REG-029",
+    "code": "SAR CONVENTION",
+    "title": "International Convention on Maritime Search and Rescue",
+    "category": "Safety",
+    "summary": "International system for coordinating search and rescue operations at sea.",
+    "content": "Adopted 1979. Divides world into 13 SAR areas with each country responsible for designated region. Requires coastal states to maintain rescue coordination centers, issue alerts, coordinate operations. Ships must render assistance to persons in distress. Recent amendments address disembarkation of rescued persons."
+  },
+  {
+    "id": "REG-030",
+    "code": "OPRC CONVENTION",
+    "title": "International Convention on Oil Pollution Preparedness, Response and Co-operation",
+    "category": "Environment",
+    "summary": "Framework for international cooperation in combating major oil pollution incidents.",
+    "content": "Entered into force 1995. Ships carrying >2,000 tons of oil must have shipboard oil pollution emergency plan (SOPEP). Ports and terminals handling oil must have oil spill contingency plans. Countries must establish national system for responding to oil spills. Provides framework for international assistance."
+  },
+  {
+    "id": "REG-031",
+    "code": "NAIROBI WRC",
+    "title": "Nairobi International Convention on the Removal of Wrecks",
+    "category": "Liability",
+    "summary": "Provides legal basis for removal of hazardous wrecks in countries' EEZ.",
+    "content": "Entered into force 2015. Applies to ships ≥300 GT in Exclusive Economic Zone (EEZ). State Party may take action to remove wreck posing hazard to navigation or marine environment. Registered owner liable for locating, marking and removing wreck. Ships >300 GT must carry insurance certificate."
+  },
+  {
+    "id": "REG-032",
+    "code": "AFS CONVENTION",
+    "title": "International Convention on the Control of Harmful Anti-fouling Systems on Ships",
+    "category": "Environment",
+    "summary": "Prohibits use of harmful anti-fouling systems on ships.",
+    "content": "Entered into force 2008. Bans organotin compounds (TBT) which harm marine life. Ships ≥400 GT engaged in international voyages and ≥24m in length must carry certificate confirming compliance. Anti-fouling system must either not contain organotin or have sealer coat to prevent leaching."
+  },
+  {
+    "id": "REG-033",
+    "code": "SHIP RECYCLING",
+    "title": "Hong Kong International Convention for the Safe and Environmentally Sound Recycling of Ships",
+    "category": "Environment",
+    "summary": "Standards for environmentally sound ship recycling and ship design.",
+    "content": "Adopted 2009, entered into force 2025. Ships must have Inventory of Hazardous Materials (IHM) listing all hazardous materials used in construction/operation. Recycling facilities must be authorized and meet specific standards. Ship owners must provide ship recycling plan. Aims to prevent marine pollution and protect workers."
+  },
+  {
+    "id": "REG-034",
+    "code": "MARITIME LIENS",
+    "title": "International Convention on Maritime Liens and Mortgages",
+    "category": "Commercial",
+    "summary": "Priority ranking of maritime liens and mortgages on vessels.",
+    "content": "1993 Convention establishes hierarchy: (1) Salvage and wreck removal costs (2) Port/canal/waterway charges (3) Crew wages (4) Personal injury/death (5) Ship mortgage (6) Other claims. Maritime lien gives creditor automatic priority claim on vessel independent of possession, enforceable through arrest and judicial sale."
+  },
+  {
+    "id": "REG-035",
+    "code": "ATHENS CONVENTION",
+    "title": "Athens Convention relating to the Carriage of Passengers and their Luggage by Sea",
+    "category": "Liability",
+    "summary": "Liability regime for passenger injury, death, and luggage loss on ships.",
+    "content": "2002 Protocol updated 1974 Convention. Carrier liable for incidents during carriage. Liability limits per passenger: 250,000 SDR (death/personal injury up to fault limit), 400,000 SDR (beyond fault limit for terrorism/war risks covered by government). Compulsory insurance for ships carrying >12 passengers."
+  },
+  {
+    "id": "REG-036",
+    "code": "FAL CONVENTION",
+    "title": "Convention on Facilitation of International Maritime Traffic",
+    "category": "Administrative",
+    "summary": "Standardizes and simplifies formalities, documents and procedures for ships' arrival, stay and departure.",
+    "content": "Aims to prevent unnecessary delays. Maximum documents required: 7 for public authorities (General Declaration, Cargo Declaration, Ship's Stores Declaration, Crew's Effects Declaration, Crew List, Passenger List, Dangerous Goods Manifest). Supports single window concept and electronic data exchange between ships and ports."
+  },
+  {
+    "id": "REG-037",
+    "code": "CSC CONVENTION",
+    "title": "International Convention for Safe Containers",
+    "category": "Safety",
+    "summary": "Uniform international safety standards for container design, construction and testing.",
+    "content": "Entered into force 1977. Containers used in international transport must have Safety Approval Plate showing compliance with testing standards: stacking, lifting from top corners, restraint, rigidity. Containers must be examined initially, periodically (every 30 months), and after repair. Aims to facilitate container movement while maintaining safety."
+  },
+  {
+    "id": "REG-038",
+    "code": "CODE OF SAFE PRACTICE",
+    "title": "Code of Safe Practice for Cargo Stowage and Securing (CSS Code)",
+    "category": "Cargo Safety",
+    "summary": "Guidelines for safe stowage and securing of different cargo types.",
+    "content": "Made mandatory under SOLAS Chapter VI. Provides practical guidance on cargo securing for various vessel types. Covers general principles, cargo securing equipment (lashings, chains, wires), stowage of containers, timber, vehicles, ro-ro cargo, heavy lifts, and other specific cargoes. Ships must have approved Cargo Securing Manual."
+  },
+  {
+    "id": "REG-039",
+    "code": "SOLAS CHAPTER XII",
+    "title": "SOLAS Chapter XII - Additional Safety Measures for Bulk Carriers",
+    "category": "Safety",
+    "summary": "Enhanced safety standards specifically for bulk carriers.",
+    "content": "Adopted 1997 after series of bulk carrier losses. Requires: Enhanced survey program, structural strength evaluation, cargo hold water ingress alarms, corrosion prevention, loading instruments showing shear forces and bending moments. Damage stability requirements. Ships must have approved loading/unloading plan. Regular inspections of critical structural areas."
+  },
+  {
+    "id": "REG-040",
+    "code": "COLREGS RULE 18",
+    "title": "COLREGS Rule 18 - Responsibilities Between Vessels",
+    "category": "Navigation",
+    "summary": "Hierarchy of right-of-way between different vessel types to prevent collisions.",
+    "content": "Power-driven vessel shall keep out of the way of: (a) vessel not under command, (b) vessel restricted in ability to maneuver, (c) vessel engaged in fishing, (d) sailing vessel. However, vessels in (a-c) shall not impede safe passage of power-driven vessel in narrow channel. Seaplane shall keep clear of all vessels."
   }
 ]
