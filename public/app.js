@@ -995,7 +995,7 @@ function loadAcademy() {
     const aGrid = document.getElementById('academyGrid');
     if (!aGrid) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-    aGrid.innerHTML = "";
+    aGrid.innerHTML = '';
     
     const data = [
         { 
@@ -1708,23 +1708,54 @@ function loadAcademy() {
         }
     ];
     
-    data.forEach(item => {
-        const colors = ['#7C3AED', '#0066FF', '#D4A853', '#10B981', '#EF4444', '#F59E0B', '#06B6D4', '#EC4899'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    // Level color mapping for badges
+    const levelColors = {
+        'Beginner': { bg: '#10B98120', color: '#10B981' },
+        'Intermediate': { bg: '#F59E0B20', color: '#F59E0B' },
+        'Advanced': { bg: '#EF444420', color: '#EF4444' },
+        'Expert': { bg: '#7C3AED20', color: '#7C3AED' }
+    };
+    
+    // Icon colors for variety
+    const iconColors = ['#0066FF', '#10B981', '#F59E0B', '#EF4444', '#7C3AED', '#EC4899', '#06B6D4', '#D97706'];
+    
+    data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.style.cursor = 'pointer';
         
-        aGrid.innerHTML += `<div class="doc-card" style="cursor:pointer;" onclick="openContentModal('${item.title}', \`${item.content.replace(/`/g, '\\`')}\`)">
+        const levelStyle = levelColors[item.level] || levelColors['Beginner'];
+        const iconColor = iconColors[index % iconColors.length];
+        
+        card.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                <i class="fa-solid ${item.icon} doc-icon" style="color:${randomColor};font-size:40px;"></i>
-                <span style="background:${randomColor}20;color:${randomColor};padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700;">${item.level}</span>
+                <i class="fa-solid ${item.icon} doc-icon" style="color:${iconColor};font-size:40px;"></i>
+                <span style="background:${levelStyle.bg};color:${levelStyle.color};padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;">
+                    ${item.level}
+                </span>
             </div>
             <div class="doc-title" style="font-size:19px;margin-bottom:8px;">${item.title}</div>
-            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;">${item.desc}</div>
-            <div style="display:flex;align-items:center;gap:15px;margin-bottom:16px;font-size:13px;color:#6b7280;">
-                <span><i class="fa-solid fa-clock" style="margin-right:5px;"></i>${item.duration}</span>
-                <span><i class="fa-solid fa-graduation-cap" style="margin-right:5px;"></i>${item.level}</span>
+            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                ${item.desc}
             </div>
-            <button class="btn-download" style="width:100%;"><i class="fa-solid fa-book-open"></i> ${t.btn_read || 'START LEARNING'}</button>
-        </div>`;
+            <div style="display:flex;align-items:center;gap:15px;margin-bottom:16px;font-size:13px;color:#6b7280;padding-top:12px;border-top:1px solid #e5e7eb;">
+                <span style="display:flex;align-items:center;gap:5px;">
+                    <i class="fa-solid fa-clock"></i>
+                    ${item.duration}
+                </span>
+                <span style="display:flex;align-items:center;gap:5px;">
+                    <i class="fa-solid fa-signal"></i>
+                    ${item.level}
+                </span>
+            </div>
+            <button class="btn-download" style="width:100%;">
+                <i class="fa-solid fa-book-open"></i> 
+                ${t.btn_read || 'START LEARNING'}
+            </button>
+        `;
+        
+        card.onclick = () => openContentModal(item.title, item.content);
+        aGrid.appendChild(card);
     });
 }
 
@@ -1758,6 +1789,7 @@ async function loadRegulations() {
     const rGrid = document.getElementById('regsGrid');
     if (!rGrid) return;
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
+    rGrid.innerHTML = '';
     
     const data = [
         { 
@@ -2505,31 +2537,60 @@ async function loadRegulations() {
         }
     ];
     
-    rGrid.innerHTML = "";
+    // Category colors for regulations
+    const categoryColors = {
+        'Safety': '#EF4444',
+        'Environment': '#10B981',
+        'Navigation': '#0066FF',
+        'Cargo Safety': '#F59E0B',
+        'Crewing': '#7C3AED',
+        'Labor Rights': '#EC4899',
+        'Cargo Liability': '#D97706',
+        'Security': '#DC2626',
+        'Safety Management': '#8B5CF6',
+        'Management': '#8B5CF6',
+        'Liability': '#B91C1C',
+        'Legal': '#991B1B',
+        'Commercial': '#059669',
+        'Technical': '#4F46E5',
+        'Administrative': '#6366F1'
+    };
+    
     data.forEach(reg => {
-        const categoryColors = {
-            'Safety': '#EF4444',
-            'Environment': '#10B981',
-            'Management': '#0066FF',
-            'Security': '#F59E0B',
-            'Labour': '#7C3AED',
-            'Training': '#06B6D4'
-        };
-        const color = categoryColors[reg.category] || '#D4A853';
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.style.cursor = 'pointer';
         
-        rGrid.innerHTML += `<div class="doc-card" style="cursor:pointer;" onclick="openContentModal('${reg.title}', \`${reg.content.replace(/`/g, '\\`')}\`)">
+        const color = categoryColors[reg.category] || '#6B7280';
+        
+        card.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
                 <i class="fa-solid fa-gavel doc-icon" style="color:${color};font-size:40px;"></i>
-                <span style="background:${color}20;color:${color};padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700;">${reg.category}</span>
+                <span style="background:${color}20;color:${color};padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;">
+                    ${reg.category}
+                </span>
             </div>
-            <div class="doc-title" style="font-size:19px;margin-bottom:6px;color:${color};">${reg.code}</div>
-            <div class="doc-desc" style="color:#111827;font-weight:600;margin-bottom:8px;">${reg.title}</div>
-            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;">${reg.summary}</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">
-                <i class="fa-solid fa-clock" style="margin-right:5px;"></i>${reg.updated}
+            <div style="font-size:15px;font-weight:700;color:${color};margin-bottom:6px;letter-spacing:0.5px;">
+                ${reg.code}
             </div>
-            <button class="btn-download" style="width:100%;"><i class="fa-solid fa-book"></i> ${t.btn_view || 'VIEW REGULATION'}</button>
-        </div>`;
+            <div class="doc-title" style="font-size:18px;margin-bottom:8px;color:#111827;">
+                ${reg.title}
+            </div>
+            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                ${reg.summary}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280;margin-bottom:16px;padding-top:12px;border-top:1px solid #e5e7eb;">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>${reg.updated}</span>
+            </div>
+            <button class="btn-download" style="width:100%;">
+                <i class="fa-solid fa-book"></i> 
+                ${t.btn_view || 'VIEW REGULATION'}
+            </button>
+        `;
+        
+        card.onclick = () => openContentModal(reg.code + ' - ' + reg.title, reg.content);
+        rGrid.appendChild(card);
     });
 }
 
