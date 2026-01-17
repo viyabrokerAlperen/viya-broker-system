@@ -1725,6 +1725,9 @@ async function loadNews() {
         const res = await fetch('/api/maritime-news');
         const data = await res.json();
         
+        // Debug: API'den gelen veriyi konsola yazdır
+        console.log('Frontend Gelen Veri:', data);
+        
         if (!data.success || !data.news || data.news.length === 0) {
             newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;">Haber bulunamadı.</div>';
             return;
@@ -1733,6 +1736,7 @@ async function loadNews() {
         newsGrid.innerHTML = '';
         
         data.news.forEach((item, index) => {
+            // Tarih formatı (Backend'den item.date geliyor)
             const date = new Date(item.date).toLocaleDateString('tr-TR', { 
                 day: 'numeric', 
                 month: 'short', 
@@ -1741,9 +1745,24 @@ async function loadNews() {
             
             const card = document.createElement('div');
             card.className = 'news-card-item';
+            
+            // Görsel HTML'i - image varsa göster, yoksa ikon göster
+            let imageHTML = '';
+            if (item.image) {
+                imageHTML = `<img src="${item.image}" alt="${item.title}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:16px;">`;
+            } else {
+                // Görsel yoksa placeholder ikon
+                imageHTML = `
+                    <div style="width:100%; height:200px; background:#f1f5f9; border-radius:8px; margin-bottom:16px; display:flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-ship" style="font-size:48px; color:#94a3b8;"></i>
+                    </div>
+                `;
+            }
+            
             card.innerHTML = `
+                ${imageHTML}
                 <div class="news-card-header">
-                    <span class="news-source">${item.source || 'Maritime News'}</span>
+                    <span class="news-source">${item.source || 'Google News'}</span>
                     <span class="news-date">${date}</span>
                 </div>
                 <h3 class="news-title">${item.title}</h3>
