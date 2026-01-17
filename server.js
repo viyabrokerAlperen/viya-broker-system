@@ -710,10 +710,14 @@ Bu kutuyu işaretleyerek verilerinizin işlenmesini kabul etmiş sayılırsını
 app.get('/api/maritime-news', async (req, res) => {
     try {
         const Parser = (await import('rss-parser')).default;
-        const parser = new Parser();
+        const parser = new Parser({
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
         
         const feeds = [
-            'https://www.maritimeexecutive.com/rss',
+            'https://www.maritime-executive.com/rss',
             'https://www.offshore-energy.biz/feed/',
             'https://www.seatrade-maritime.com/rss.xml'
         ];
@@ -732,7 +736,8 @@ app.get('/api/maritime-news', async (req, res) => {
                 }));
                 allNews = allNews.concat(news);
             } catch (e) {
-                console.log('Feed error:', feedUrl);
+                console.error('Feed error for', feedUrl, ':', e.message);
+                continue;
             }
         }
         
