@@ -717,10 +717,10 @@ app.get('/api/maritime-news', async (req, res) => {
         });
         
         const feeds = [
-            'https://gcaptain.com/feed/',
-            'https://www.marinelink.com/rss/stories',
-            'https://www.offshore-energy.biz/feed/',
-            'https://www.seatrade-maritime.com/rss.xml'
+            'https://splash247.com/feed/',
+            'https://safety4sea.com/feed/',
+            'https://www.hellenicshippingnews.com/feed/',
+            'https://www.offshore-energy.biz/feed/'
         ];
         
         let allNews = [];
