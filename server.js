@@ -713,9 +713,9 @@ app.get('/api/maritime-news', async (req, res) => {
         const parser = new Parser();
         
         const feeds = [
-            'https://www.hellenicshippingnews.com/feed/',
-            'https://gcaptain.com/feed/',
-            'https://splash247.com/feed/'
+            'https://www.maritimeexecutive.com/rss',
+            'https://www.offshore-energy.biz/feed/',
+            'https://www.seatrade-maritime.com/rss.xml'
         ];
         
         let allNews = [];
