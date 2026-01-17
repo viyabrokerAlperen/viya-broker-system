@@ -998,19 +998,732 @@ function loadAcademy() {
     aGrid.innerHTML = "";
     
     const data = [
-        { icon: "fa-scale-balanced", title: "Laytime Basics", desc: "SHINC vs SHEX", content: "Laytime is the amount of time allowed..." },
-        { icon: "fa-globe", title: "INCOTERMS 2020", desc: "FOB, CIF, CFR", content: "Incoterms define responsibilities..." },
-        { icon: "fa-ship", title: "Charter Parties", desc: "Gencon vs NYPE", content: "A charter party is a maritime contract..." },
-        { icon: "fa-anchor", title: "Demurrage", desc: "Time is money", content: "Demurrage is a charge payable..." },
-        { icon: "fa-file-contract", title: "Bills of Lading", desc: "Document of title", content: "A Bill of Lading is a legal document..." }
+        { 
+            icon: "fa-clock", 
+            title: "Laytime & Demurrage Fundamentals", 
+            desc: "SHINC, SHEX, Running Days & Time Management",
+            level: "Beginner",
+            duration: "2.5 hours",
+            content: `<h3>Laytime & Demurrage: Complete Guide</h3>
+            
+            <h4>📌 What is Laytime?</h4>
+            <p>Laytime is the permitted time allocated by the Charterer to the Shipowner for loading and discharging cargo. It represents one of the most critical commercial aspects of voyage charter parties.</p>
+            
+            <h4>⏱️ Types of Laytime Terms:</h4>
+            <ul>
+                <li><strong>SHINC (Sundays & Holidays Included):</strong> All days count including Sundays and holidays</li>
+                <li><strong>SHEX (Sundays & Holidays Excluded):</strong> These days do not count towards laytime</li>
+                <li><strong>SHEXEIU (SHEX Even If Used):</strong> Sundays/holidays excluded even if vessel works</li>
+                <li><strong>Weather Working Days (WWD):</strong> Only days when weather permits work</li>
+                <li><strong>Running Days:</strong> All days count, no exceptions (24/7 operation)</li>
+            </ul>
+            
+            <h4>💰 Demurrage & Despatch</h4>
+            <p><strong>Demurrage:</strong> Liquidated damages paid by Charterer when loading/discharging exceeds agreed laytime. Rate typically stated as USD per day or pro rata.</p>
+            <p><strong>Despatch:</strong> Bonus paid by Owner to Charterer for completing operations faster than permitted laytime. Usually calculated at 50% of demurrage rate.</p>
+            
+            <h4>🔢 Calculation Example:</h4>
+            <div style="background:#f1f5f9;padding:15px;border-radius:8px;margin:10px 0;">
+                <strong>Vessel:</strong> M/V VIYA STAR<br>
+                <strong>Cargo:</strong> 50,000 MT Grain<br>
+                <strong>Loading Rate:</strong> 15,000 MT PDPR (Per Day Per Running)<br>
+                <strong>Laytime Allowed:</strong> 50,000 ÷ 15,000 = 3.33 days<br>
+                <strong>Actual Time Used:</strong> 4.5 days<br>
+                <strong>Demurrage Rate:</strong> $25,000/day<br>
+                <strong>Demurrage Due:</strong> (4.5 - 3.33) × $25,000 = <strong>$29,250</strong>
+            </div>
+            
+            <h4>⚖️ Legal Considerations</h4>
+            <p>Laytime disputes are among the most common in shipping. Key principles established by case law (Hague Rules, Maredelanto, Darrah).</p>`
+        },
+        { 
+            icon: "fa-globe", 
+            title: "INCOTERMS® 2020", 
+            desc: "International Commercial Terms - FOB, CIF, CFR, DAP, DDP",
+            level: "Intermediate",
+            duration: "3 hours",
+            content: `<h3>INCOTERMS® 2020: Complete Reference Guide</h3>
+            
+            <h4>🌍 What are INCOTERMS?</h4>
+            <p>International Commercial Terms published by ICC (International Chamber of Commerce). Define responsibilities, costs, and risks between buyers and sellers in international trade.</p>
+            
+            <h4>📦 The 11 INCOTERMS® 2020:</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>🚢 RULES FOR ANY MODE OF TRANSPORT:</h5>
+                <ul>
+                    <li><strong>EXW (Ex Works):</strong> Seller makes goods available at their premises. Buyer bears all costs/risks.</li>
+                    <li><strong>FCA (Free Carrier):</strong> Seller delivers goods to carrier nominated by buyer.</li>
+                    <li><strong>CPT (Carriage Paid To):</strong> Seller pays freight to destination, risk transfers at delivery to carrier.</li>
+                    <li><strong>CIP (Carriage & Insurance Paid):</strong> Like CPT but seller must obtain insurance (110% value).</li>
+                    <li><strong>DAP (Delivered At Place):</strong> Seller delivers when goods available for unloading at destination.</li>
+                    <li><strong>DPU (Delivered at Place Unloaded):</strong> Seller delivers & unloads at named place.</li>
+                    <li><strong>DDP (Delivered Duty Paid):</strong> Seller bears all costs including import duties.</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>⚓ SEA & INLAND WATERWAY TRANSPORT ONLY:</h5>
+                <ul>
+                    <li><strong>FAS (Free Alongside Ship):</strong> Seller delivers when goods placed alongside vessel.</li>
+                    <li><strong>FOB (Free On Board):</strong> Seller delivers when goods pass ship's rail. Most common in bulk shipping.</li>
+                    <li><strong>CFR (Cost & Freight):</strong> Seller pays freight but risk transfers at FOB point.</li>
+                    <li><strong>CIF (Cost, Insurance & Freight):</strong> Like CFR but seller must obtain marine insurance (110% value).</li>
+                </ul>
+            </div>
+            
+            <h4>📊 FOB vs CIF Comparison Table:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Aspect</th>
+                    <th style="padding:10px;border:1px solid #334155;">FOB</th>
+                    <th style="padding:10px;border:1px solid #334155;">CIF</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Freight Payment</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Buyer pays</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Seller pays</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Insurance</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Buyer arranges</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Seller provides (110% value)</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Risk Transfer</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">When goods pass ship's rail</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">When goods pass ship's rail</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Best for</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Buyers with own freight contracts</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Buyers preferring convenience</td>
+                </tr>
+            </table>
+            
+            <h4>⚠️ Common Mistakes to Avoid:</h4>
+            <p>1. Using maritime-only terms (FOB, CFR, CIF) for containerized cargo<br>
+            2. Confusing risk transfer with cost transfer<br>
+            3. Not specifying the exact named place clearly<br>
+            4. Assuming INCOTERMS cover payment terms (they don't!)</p>`
+        },
+        { 
+            icon: "fa-file-contract", 
+            title: "Charter Party Agreements", 
+            desc: "GENCON, NYPE, SHELLVOY - Types & Clauses",
+            level: "Advanced",
+            duration: "4 hours",
+            content: `<h3>Charter Party Agreements: Master Guide</h3>
+            
+            <h4>📄 What is a Charter Party (C/P)?</h4>
+            <p>A Charter Party is a maritime contract between a Shipowner and a Charterer for the hire of a vessel. It's one of the oldest forms of commercial contracts, dating back to medieval times.</p>
+            
+            <h4>🚢 Three Main Types:</h4>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>1️⃣ VOYAGE CHARTER (VC)</h5>
+                <p><strong>Definition:</strong> Ship hired for specific voyage(s) from A to B</p>
+                <p><strong>Payment:</strong> Freight per ton or lumpsum</p>
+                <p><strong>Common Forms:</strong> GENCON 94/2015, BPVOY4</p>
+                <p><strong>Owner Responsibility:</strong> All vessel operating costs (fuel, port charges, crew)</p>
+                <p><strong>Charterer Responsibility:</strong> Cargo operations, cargo insurance, laytime/demurrage</p>
+                <p><strong>Best For:</strong> Single cargo movements, spot market</p>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>2️⃣ TIME CHARTER (TC)</h5>
+                <p><strong>Definition:</strong> Ship hired for specific period (e.g., 6 months - 5 years)</p>
+                <p><strong>Payment:</strong> Daily/monthly hire rate</p>
+                <p><strong>Common Forms:</strong> NYPE 2015, BALTIME 1939/2001</p>
+                <p><strong>Owner Responsibility:</strong> Crew, maintenance, insurance, stores</p>
+                <p><strong>Charterer Responsibility:</strong> Fuel, port charges, canal dues, cargo operations</p>
+                <p><strong>Best For:</strong> Regular trades, industrial cargo owners</p>
+            </div>
+            
+            <div style="background:#e0e7ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>3️⃣ BAREBOAT/DEMISE CHARTER (BBC)</h5>
+                <p><strong>Definition:</strong> Charterer takes complete control, like renting a car</p>
+                <p><strong>Payment:</strong> Monthly hire</p>
+                <p><strong>Common Forms:</strong> BARECON 2017</p>
+                <p><strong>Owner Responsibility:</strong> Provide empty vessel only</p>
+                <p><strong>Charterer Responsibility:</strong> Everything! (crew, insurance, maintenance, operations)</p>
+                <p><strong>Best For:</strong> Long-term arrangements, purchase financing</p>
+            </div>
+            
+            <h4>📋 Essential Charter Party Clauses:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Description Clause:</strong> Vessel name, flag, class, capacity, speed/consumption</li>
+                <li><strong>Period/Voyage Clause:</strong> Duration or voyage details</li>
+                <li><strong>Hire/Freight Clause:</strong> Rate and payment terms</li>
+                <li><strong>Off-Hire Clause:</strong> When charterer doesn't pay (TC only)</li>
+                <li><strong>Withdrawal Clause:</strong> Owner's right to withdraw vessel for non-payment</li>
+                <li><strong>Laytime Clause:</strong> Permitted loading/discharging time (VC only)</li>
+                <li><strong>Cancelling Clause:</strong> Latest delivery date</li>
+                <li><strong>War/Ice Clauses:</strong> Special circumstances provisions</li>
+                <li><strong>BIMCO Clauses:</strong> Sanctions, cyber, pandemic</li>
+            </ul>
+            
+            <h4>⚖️ GENCON vs NYPE Quick Reference:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Feature</th>
+                    <th style="padding:10px;border:1px solid #334155;">GENCON (Voyage)</th>
+                    <th style="padding:10px;border:1px solid #334155;">NYPE (Time)</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Charter Duration</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Single voyage</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Time period</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Fuel Costs</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Owner pays</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Charterer pays</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Port Charges</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Owner pays</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Charterer pays</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Commercial Control</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Owner has master</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Charterer directs</td>
+                </tr>
+            </table>
+            
+            <h4>💡 Pro Tips:</h4>
+            <p>• Always use BIMCO standard forms - widely recognized and legally tested<br>
+            • Don't alter printed clauses heavily - causes interpretation issues<br>
+            • Use typed addendums for special terms<br>
+            • "Time lost waiting for berth counts as laytime" - Wipon clause<br>
+            • NYPE 2015 > NYPE 1946/93 - more modern and balanced</p>`
+        },
+        { 
+            icon: "fa-anchor", 
+            title: "Port Operations & NOR", 
+            desc: "Notice of Readiness, Port Procedures, Statements of Facts",
+            level: "Intermediate",
+            duration: "2 hours",
+            content: `<h3>Port Operations & Notice of Readiness</h3>
+            
+            <h4>📍 Port Arrival Procedures</h4>
+            <p>When a vessel arrives at load or discharge port, a specific sequence of events must occur. Understanding this process is crucial for laytime calculation and avoiding disputes.</p>
+            
+            <h4>📝 Notice of Readiness (NOR)</h4>
+            <p><strong>Definition:</strong> Official notice from Master to Charterer/Shipper/Receiver that vessel has arrived and is ready to load/discharge in all respects.</p>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>NOR Must State:</h5>
+                <ul>
+                    <li>✓ Vessel name and flag</li>
+                    <li>✓ Date and time of tendering</li>
+                    <li>✓ Location (anchorage, berth, port limits)</li>
+                    <li>✓ Cargo details</li>
+                    <li>✓ Confirmation vessel is ready in all respects</li>
+                    <li>✓ Contact details (Master, Agent)</li>
+                </ul>
+            </div>
+            
+            <h4>⏰ When Does Laytime Start?</h4>
+            <p>Laytime typically commences when:</p>
+            <ol>
+                <li>Valid NOR tendered</li>
+                <li>Vessel arrives at specified location (berth/anchorage)</li>
+                <li>Notice period expires (e.g., "6 hours after NOR")</li>
+                <li>If WIBON clause: "Whether in berth or not"</li>
+                <li>If WCCON clause: "Whether customs cleared or not"</li>
+            </ol>
+            
+            <h4>📊 Statement of Facts (SOF)</h4>
+            <p>Detailed chronological record of all port operations. Critical document for laytime/demurrage calculations.</p>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>SOF Includes:</h5>
+                <table style="width:100%;line-height:1.8;">
+                    <tr><td><strong>Arrival Time:</strong></td><td>Date/time vessel anchored or berthed</td></tr>
+                    <tr><td><strong>NOR Tendered:</strong></td><td>When and where notice given</td></tr>
+                    <tr><td><strong>Commenced Loading:</strong></td><td>First cargo on board</td></tr>
+                    <tr><td><strong>Interruptions:</strong></td><td>Weather, breakdown, waiting time</td></tr>
+                    <tr><td><strong>Completed Loading:</strong></td><td>Last cargo loaded</td></tr>
+                    <tr><td><strong>Departure:</strong></td><td>Cast off time</td></tr>
+                </table>
+            </div>
+            
+            <h4>🚫 Common NOR Rejection Reasons:</h4>
+            <ul>
+                <li>Vessel not physically arrived at designated area</li>
+                <li>Holds not clean/cargo-worthy</li>
+                <li>Documents incomplete (customs, health certificates)</li>
+                <li>Tanks not ready (for tankers)</li>
+                <li>Vessel under repair or off-hire</li>
+                <li>Notice given outside office hours (if C/P specifies)</li>
+            </ul>
+            
+            <h4>⚖️ Key Case Law:</h4>
+            <p><strong>The Kyzikos [2008]:</strong> Vessel must be arrived ship - physically present and legally free to work<br>
+            <strong>The Tres Flores [1973]:</strong> Premature NOR invalid even if vessel eventually becomes ready<br>
+            <strong>The Mexico I [1990]:</strong> "In all respects ready" is strict requirement</p>
+            
+            <h4>💼 Best Practices:</h4>
+            <p>• Tender NOR in writing (email acceptable if C/P allows)<br>
+            • Keep copies of all tendered NORs with time stamps<br>
+            • Record weather conditions affecting operations<br>
+            • Document any delays beyond vessel's control<br>
+            • Agent should sign SOF jointly with terminal<br>
+            • Disputes? Protect through Letter of Protest (LOP)</p>`
+        },
+        { 
+            icon: "fa-file-invoice-dollar", 
+            title: "Bills of Lading (B/L)", 
+            desc: "Document of Title, Types, and Legal Implications",
+            level: "Advanced",
+            duration: "3.5 hours",
+            content: `<h3>Bills of Lading: Complete Legal Guide</h3>
+            
+            <h4>📜 What is a Bill of Lading?</h4>
+            <p>A Bill of Lading (B/L) is arguably the most important document in international trade. It serves three critical functions:</p>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>Three Functions of B/L:</h5>
+                <ol style="line-height:2;">
+                    <li><strong>📄 Receipt for Goods:</strong> Confirms carrier received cargo as described</li>
+                    <li><strong>📋 Evidence of Contract:</strong> Proves contract of carriage exists</li>
+                    <li><strong>🔑 Document of Title:</strong> Represents ownership - who holds B/L controls cargo</li>
+                </ol>
+            </div>
+            
+            <h4>📦 Types of Bills of Lading:</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>1. SHIPPED B/L (On Board B/L)</h5>
+                <p>✓ States cargo actually loaded on vessel<br>
+                ✓ Most secure for buyer<br>
+                ✓ Required for Letters of Credit<br>
+                ✓ Example: "Shipped on board M/V VIYA STAR on 15/01/2026"</p>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>2. RECEIVED FOR SHIPMENT B/L</h5>
+                <p>✓ Cargo received but not yet loaded<br>
+                ✓ Can be converted to Shipped B/L later<br>
+                ✓ Common in container shipping<br>
+                ⚠️ Banks may reject for L/C</p>
+            </div>
+            
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>3. STRAIGHT (Non-Negotiable) B/L</h5>
+                <p>✓ Consigned to named party only<br>
+                ✓ Cannot be transferred/sold<br>
+                ✓ Not a document of title<br>
+                ⚠️ Delivery without surrender possible</p>
+            </div>
+            
+            <div style="background:#e0e7ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>4. ORDER B/L (To Order)</h5>
+                <p>✓ "To Order" or "To Order of [Bank]"<br>
+                ✓ Fully negotiable instrument<br>
+                ✓ Can be endorsed and transferred<br>
+                ✓ Most common in international trade</p>
+            </div>
+            
+            <h4>⚠️ Claused vs Clean B/L:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">CLEAN B/L</th>
+                    <th style="padding:10px;border:1px solid #334155;">CLAUSED B/L</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">✓ No remarks about defective condition<br>✓ "Shipped in apparent good order"<br>✓ Acceptable for L/C payment<br>✓ Protects carrier liability</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">✗ Contains remarks/clauses<br>✗ "Bags torn", "Rusty drums"<br>✗ Banks usually reject<br>✗ Carrier protects itself</td>
+                </tr>
+            </table>
+            
+            <h4>📝 Essential B/L Information:</h4>
+            <ul style="line-height:1.8;">
+                <li><strong>Shipper:</strong> Party delivering cargo (usually seller)</li>
+                <li><strong>Consignee:</strong> Party to receive cargo (buyer or "To Order")</li>
+                <li><strong>Notify Party:</strong> Who carrier informs on arrival</li>
+                <li><strong>Vessel Name & Voyage:</strong> Identification</li>
+                <li><strong>Port of Loading/Discharge:</strong> Routing</li>
+                <li><strong>Description of Goods:</strong> Quantity, weight, marks</li>
+                <li><strong>Freight Payment:</strong> Prepaid or Collect</li>
+                <li><strong>Number of Originals:</strong> Usually 3 (one suffices for delivery)</li>
+                <li><strong>Date & Place of Issue:</strong> Critical for laytime</li>
+            </ul>
+            
+            <h4>⚖️ Legal Framework:</h4>
+            <p><strong>Hague-Visby Rules:</strong> Most common - carrier liability $500 per package or $2/kg<br>
+            <strong>Hamburg Rules:</strong> Shipper-friendly - up to $2.50/kg<br>
+            <strong>Rotterdam Rules:</strong> Modern but not widely ratified yet</p>
+            
+            <h4>🚨 Common Issues & Solutions:</h4>
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>Missing B/L (Lost at Sea/Mail):</strong><br>
+                ➜ Letter of Indemnity (LOI) from bank-backed shipper<br>
+                ➜ Court order for cargo release<br>
+                ➜ Wait for limitation period expiry (risky!)</p>
+                
+                <p><strong>Delivery Without B/L:</strong><br>
+                ➜ Carrier liable for misdelivery<br>
+                ➜ "DP World v Banyan Tree" case - $1.8M damages<br>
+                ➜ Never deliver without original B/L surrender</p>
+            </div>
+            
+            <h4>💡 Industry Trends:</h4>
+            <p><strong>Electronic B/L (eBL):</strong><br>
+            • Platforms: Bolero, essDOCS, WAVE, CargoX<br>
+            • Blockchain-based solutions emerging<br>
+            • UK COGSA 2023 recognizes eBL legally<br>
+            • Saves 5-7 days vs courier<br>
+            • Reduces fraud risk</p>
+            
+            <h4>🎯 Quick Decision Tree:</h4>
+            <p>Need negotiability? → Use "To Order" B/L<br>
+            Selling cargo in transit? → Must be Order B/L<br>
+            Letter of Credit? → Shipped, Clean B/L required<br>
+            Sister company trade? → Straight B/L acceptable<br>
+            Valuable cargo? → Ensure "freight prepaid" on 3/3 originals</p>`
+        },
+        { 
+            icon: "fa-shield-halved", 
+            title: "P&I Clubs & Marine Insurance", 
+            desc: "Protection & Indemnity, Hull & Machinery, Cargo Insurance",
+            level: "Advanced",
+            duration: "3 hours",
+            content: `<h3>Maritime Insurance: P&I Clubs & Coverage</h3>
+            
+            <h4>🛡️ What are P&I Clubs?</h4>
+            <p>Protection & Indemnity (P&I) Clubs are mutual insurance associations owned by shipowners. They cover third-party liabilities that Hull & Machinery (H&M) insurance doesn't cover.</p>
+            
+            <h4>📊 International Group of P&I Clubs:</h4>
+            <p>13 clubs providing coverage for approximately 90% of world's ocean-going tonnage:</p>
+            <ul>
+                <li>UK P&I Club (London)</li>
+                <li>Gard (Norway)</li>
+                <li>Skuld (Norway)</li>
+                <li>Swedish Club</li>
+                <li>West of England</li>
+                <li>American Club</li>
+                <li>Japan Club</li>
+                <li>And 6 more...</li>
+            </ul>
+            
+            <h4>💰 P&I Coverage (Typical):</h4>
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <ul style="line-height:1.8;">
+                    <li>✓ Crew injury/death/illness (up to $3B per incident)</li>
+                    <li>✓ Cargo damage/shortage claims</li>
+                    <li>✓ Collision liability (1/4 collision clause)</li>
+                    <li>✓ Oil pollution (CLC/Bunker Convention)</li>
+                    <li>✓ Wreck removal expenses</li>
+                    <li>✓ Stowaways and refugees</li>
+                    <li>✓ Fines (customs, environmental)</li>
+                    <li>✓ Legal costs and defense</li>
+                </ul>
+            </div>
+            
+            <h4>⚓ Hull & Machinery (H&M) Insurance:</h4>
+            <p>Covers physical damage to vessel itself:</p>
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <ul>
+                    <li>Total loss (actual or constructive)</li>
+                    <li>Partial loss (collision, grounding, fire)</li>
+                    <li>Machinery breakdown</li>
+                    <li>3/4 Collision Liability</li>
+                    <li>Salvage costs</li>
+                    <li>General Average contributions</li>
+                </ul>
+                <p><strong>Typical Premium:</strong> 0.1% - 1% of vessel value depending on age, flag, trading area</p>
+            </div>
+            
+            <h4>💼 Cargo Insurance:</h4>
+            <p>Institute Cargo Clauses (ICC) - London market standard:</p>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Coverage Type</th>
+                    <th style="padding:10px;border:1px solid #334155;">What's Covered</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>ICC (A) - All Risks</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Broadest coverage - all risks except named exclusions</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>ICC (B) - Named Perils</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Fire, explosion, vessel stranding, collision, discharge, earthquake, general average</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>ICC (C) - Minimum</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Total loss, fire/explosion, collision, general average only</td>
+                </tr>
+            </table>
+            
+            <h4>⚖️ General Average (GA):</h4>
+            <p>Ancient maritime law principle: "Voluntary sacrifice for common safety"</p>
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>Example:</strong> Ship on fire at sea. Master jettisons 100 containers to save vessel, crew, and remaining cargo.</p>
+                <p><strong>Result:</strong> Loss shared proportionally among all parties (shipowner, all cargo owners) based on saved values.</p>
+                <p><strong>Process:</strong> Average Adjuster appointed → Security provided → Settlement (can take years)</p>
+                <p><strong>York-Antwerp Rules 2016:</strong> Governs GA worldwide</p>
+            </div>`
+        },
+        { 
+            icon: "fa-gavel", 
+            title: "Maritime Law & Arbitration", 
+            desc: "COGSA, Hague Rules, London/New York Arbitration",
+            level: "Expert",
+            duration: "5 hours",
+            content: `<h3>Maritime Law & Dispute Resolution</h3>
+            
+            <h4>⚖️ Key International Conventions:</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>1. Hague-Visby Rules (1968)</h5>
+                <p>Governs carrier liability for cargo damage/loss:</p>
+                <ul>
+                    <li>Carrier liability: SDR 666.67 per package or SDR 2 per kg (whichever higher)</li>
+                    <li>1-year time bar for claims</li>
+                    <li>Burden of proof on carrier for due diligence</li>
+                    <li>17 excepted perils (Act of God, perils of sea, etc.)</li>
+                </ul>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>2. Hamburg Rules (1992)</h5>
+                <p>More shipper-friendly but less adopted:</p>
+                <ul>
+                    <li>Higher liability: SDR 835 per package or 2.5 per kg</li>
+                    <li>2-year time bar</li>
+                    <li>Carrier must prove exercised due diligence</li>
+                    <li>Only 41 countries ratified vs 100+ for Hague-Visby</li>
+                </ul>
+            </div>
+            
+            <div style="background:#d1fae5;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>3. Rotterdam Rules (2009)</h5>
+                <p>Modern "door-to-door" regime but minimal adoption:</p>
+                <ul>
+                    <li>Covers multimodal transport</li>
+                    <li>Electronic transport documents recognized</li>
+                    <li>Only 5 countries ratified (needs 20 to enter force)</li>
+                    <li>Industry resistance due to uncertainty</li>
+                </ul>
+            </div>
+            
+            <h4>🗂️ US COGSA 1936:</h4>
+            <p>US Carriage of Goods by Sea Act - based on Hague Rules but with differences:</p>
+            <ul>
+                <li>$500 per package limitation (unless higher declared)</li>
+                <li>Applies "tackle-to-tackle" (loading to discharge)</li>
+                <li>Mandatory for US import/export by sea</li>
+                <li>Clause Paramount incorporates COGSA into B/L</li>
+            </ul>
+            
+            <h4>🤝 Maritime Arbitration:</h4>
+            
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">London Maritime Arbitration</th>
+                    <th style="padding:10px;border:1px solid #334155;">New York (SMA)</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">
+                        • LMAA Terms (2021)<br>
+                        • English law (usually)<br>
+                        • 3 arbitrators typical<br>
+                        • Costs follow event rule<br>
+                        • Appeals to High Court (limited)<br>
+                        • ~75% of maritime arbitration
+                    </td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">
+                        • SMA Rules<br>
+                        • US law or chosen law<br>
+                        • 3 arbitrators<br>
+                        • Each party pays own costs<br>
+                        • Very limited court intervention<br>
+                        • Strong in tanker trades
+                    </td>
+                </tr>
+            </table>
+            
+            <h4>💡 Other Arbitration Seats:</h4>
+            <ul>
+                <li><strong>Singapore (SCMA):</strong> Growing, Asia-Pacific focus</li>
+                <li><strong>Hong Kong (HKMAG):</strong> China trade gateway</li>
+                <li><strong>Tokyo (TOMAC):</strong> Japanese market</li>
+                <li><strong>Dubai (DMCA):</strong> Middle East hub</li>
+            </ul>
+            
+            <h4>📋 Dispute Resolution Clauses:</h4>
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <p><strong>Arbitration Clause Example:</strong></p>
+                <p style="font-style:italic;">"Any dispute arising out of this Charter Party shall be referred to arbitration in London in accordance with the Arbitration Act 1996 and the LMAA Terms current at the time. English law to apply."</p>
+                
+                <p style="margin-top:15px;"><strong>Jurisdiction Clause Example:</strong></p>
+                <p style="font-style:italic;">"The Courts of England shall have exclusive jurisdiction over any dispute arising under this contract and English law shall apply."</p>
+            </div>
+            
+            <h4>⏱️ Time Bars - Critical Deadlines:</h4>
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;line-height:1.8;">
+                <tr><td><strong>Cargo Claims:</strong></td><td>1 year from delivery (Hague-Visby)</td></tr>
+                <tr style="background:#f9fafb;"><td><strong>Collision Claims:</strong></td><td>2 years from incident</td></tr>
+                <tr><td><strong>Personal Injury:</strong></td><td>3 years (UK law)</td></tr>
+                <tr style="background:#f9fafb;"><td><strong>Pollution Claims:</strong></td><td>3 years from damage occurred</td></tr>
+                <tr><td><strong>Salvage:</strong></td><td>2 years from completion</td></tr>
+            </table>
+            
+            <h4>🎯 Pro Tips for Avoiding Disputes:</h4>
+            <ol>
+                <li>Use BIMCO standard forms - battle-tested clauses</li>
+                <li>Clear laytime definitions and demurrage rates</li>
+                <li>Specify arbitration seat and governing law</li>
+                <li>Time bar tracking system essential</li>
+                <li>Letter of Protest within 24 hours of incident</li>
+                <li>Contemporaneous records (logs, emails, photos)</li>
+                <li>Engage P&I Club early - they provide defense</li>
+            </ol>`
+        },
+        { 
+            icon: "fa-leaf", 
+            title: "Green Shipping & Decarbonization", 
+            desc: "IMO 2030/2050 Targets, Alternative Fuels, CII, EEXI",
+            level: "Intermediate",
+            duration: "2.5 hours",
+            content: `<h3>Green Shipping & IMO Environmental Regulations</h3>
+            
+            <h4>🌍 IMO Decarbonization Strategy:</h4>
+            <div style="background:#d1fae5;padding:20px;border-radius:8px;margin:15px 0;">
+                <h5>🎯 Key Targets:</h5>
+                <ul style="line-height:2;">
+                    <li><strong>2030:</strong> 40% reduction in carbon intensity (vs 2008 baseline)</li>
+                    <li><strong>2050:</strong> 50% reduction in total GHG emissions</li>
+                    <li><strong>2050:</strong> Phase out GHG emissions entirely (revised 2023 target)</li>
+                </ul>
+            </div>
+            
+            <h4>📊 New Regulatory Framework:</h4>
+            
+            <div style="background:#e6f0ff;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>1. EEXI (Energy Efficiency Existing Ship Index)</h5>
+                <p><strong>Effective:</strong> January 1, 2023</p>
+                <p><strong>Applies to:</strong> Vessels ≥400 GT</p>
+                <p><strong>Purpose:</strong> Technical/design efficiency standard</p>
+                <p><strong>Compliance:</strong> Engine power limitation, energy-saving devices, shaft generators</p>
+                <p><strong>One-time certification required</strong></p>
+            </div>
+            
+            <div style="background:#fef3c7;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>2. CII (Carbon Intensity Indicator)</h5>
+                <p><strong>Effective:</strong> January 1, 2023</p>
+                <p><strong>Applies to:</strong> Vessels ≥5,000 GT</p>
+                <p><strong>Purpose:</strong> Operational efficiency - annual rating</p>
+                <p><strong>Rating:</strong> A (best) to E (worst)</p>
+                <p><strong>Consequence:</strong> 3 consecutive D or 1 E = corrective action plan required</p>
+                <p><strong>Formula:</strong> CO₂ emissions ÷ (DWT × distance traveled)</p>
+            </div>
+            
+            <h4>⚡ Alternative Fuels:</h4>
+            
+            <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                <tr style="background:#1e293b;color:white;">
+                    <th style="padding:10px;border:1px solid #334155;">Fuel Type</th>
+                    <th style="padding:10px;border:1px solid #334155;">GHG Reduction</th>
+                    <th style="padding:10px;border:1px solid #334155;">Status</th>
+                    <th style="padding:10px;border:1px solid #334155;">Challenges</th>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>LNG</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">20-25%</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">✓ Commercially available</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Methane slip, infrastructure limited</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Methanol</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">10-15%</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">✓ Growing adoption (Maersk)</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Toxic, corrosive, lower energy density</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Ammonia</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">80-100%</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">⏳ Testing phase (2025-2027)</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Highly toxic, NOx emissions, storage</td>
+                </tr>
+                <tr style="background:#f9fafb;">
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Hydrogen</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">100%</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">⏳ R&D stage</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Storage (cryogenic), production cost, safety</td>
+                </tr>
+                <tr>
+                    <td style="padding:10px;border:1px solid #e5e7eb;"><strong>Biofuels</strong></td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">70-90%</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">✓ Drop-in solution</td>
+                    <td style="padding:10px;border:1px solid #e5e7eb;">Supply limited, sustainability concerns</td>
+                </tr>
+            </table>
+            
+            <h4>💰 Market-Based Measures:</h4>
+            
+            <div style="background:#fee2e2;padding:15px;border-radius:8px;margin:15px 0;">
+                <h5>EU ETS (Emissions Trading System) for Shipping</h5>
+                <p><strong>Phase-in:</strong> 2024-2026</p>
+                <ul>
+                    <li>2024: 40% of emissions covered</li>
+                    <li>2025: 70% of emissions covered</li>
+                    <li>2026: 100% of emissions covered</li>
+                </ul>
+                <p><strong>Applies to:</strong> Vessels >5,000 GT calling EU ports</p>
+                <p><strong>Coverage:</strong> 50% of emissions from voyages to/from EU, 100% within EU</p>
+                <p><strong>Estimated Cost:</strong> €20-30 per tonne of CO₂ initially (rising to €100+)</p>
+            </div>
+            
+            <h4>🔧 Operational Measures to Improve CII:</h4>
+            <ol style="line-height:1.8;">
+                <li><strong>Slow Steaming:</strong> Reduce speed 10% = 20% fuel savings (cubic relationship)</li>
+                <li><strong>Weather Routing:</strong> Optimize routes using weather data</li>
+                <li><strong>Hull Cleaning:</strong> Reduce biofouling - up to 10% savings</li>
+                <li><strong>Propeller Polishing:</strong> 3-5% efficiency gain</li>
+                <li><strong>Just-in-Time Arrival:</strong> Reduce port waiting at anchor</li>
+                <li><strong>Digital Twins:</strong> AI-powered performance monitoring</li>
+            </ol>
+            
+            <h4>🚀 Emerging Technologies:</h4>
+            <ul>
+                <li><strong>Wind-Assisted Propulsion:</strong> Rotor sails, wing sails (5-20% savings)</li>
+                <li><strong>Air Lubrication:</strong> Bubble carpet under hull (5-10% savings)</li>
+                <li><strong>Shore Power:</strong> Use grid electricity at berth (zero emissions in port)</li>
+                <li><strong>Nuclear Propulsion:</strong> Zero emissions but regulatory/public acceptance issues</li>
+            </ul>
+            
+            <h4>📈 Financial Impact:</h4>
+            <p><strong>Example Capesize Bulk Carrier:</strong></p>
+            <div style="background:#f1f5f9;padding:15px;border-radius:8px;margin:10px 0;">
+                <p>Annual fuel consumption: 10,000 MT<br>
+                CO₂ emissions: ~31,000 tonnes<br>
+                EU ETS cost (2026, €80/tonne): €2.48M/year<br>
+                CII Rating D → IMO corrective plan + charter rate penalties<br>
+                Methanol retrofit: $10-15M capex + 10% higher opex</p>
+            </div>`
+        }
     ];
     
     data.forEach(item => {
-        aGrid.innerHTML += `<div class="doc-card">
-            <i class="fa-solid ${item.icon} doc-icon" style="color:var(--neon-purple)"></i>
-            <div class="doc-title">${item.title}</div>
-            <div class="doc-desc">${item.desc}</div>
-            <button class="btn-download" onclick="openContentModal('${item.title}', '${item.content.replace(/'/g, "\\'")}')"><i class="fa-solid fa-book-open"></i> ${t.btn_read || 'READ'}</button>
+        const colors = ['#7C3AED', '#0066FF', '#D4A853', '#10B981', '#EF4444', '#F59E0B', '#06B6D4', '#EC4899'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        aGrid.innerHTML += `<div class="doc-card" style="cursor:pointer;" onclick="openContentModal('${item.title}', \`${item.content.replace(/`/g, '\\`')}\`)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <i class="fa-solid ${item.icon} doc-icon" style="color:${randomColor};font-size:40px;"></i>
+                <span style="background:${randomColor}20;color:${randomColor};padding:4px 10px;border-radius:50px;font-size:11px;font-weight:700;">${item.level}</span>
+            </div>
+            <div class="doc-title" style="font-size:19px;margin-bottom:8px;">${item.title}</div>
+            <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;">${item.desc}</div>
+            <div style="display:flex;align-items:center;gap:15px;margin-bottom:16px;font-size:13px;color:#6b7280;">
+                <span><i class="fa-solid fa-clock" style="margin-right:5px;"></i>${item.duration}</span>
+                <span><i class="fa-solid fa-graduation-cap" style="margin-right:5px;"></i>${item.level}</span>
+            </div>
+            <button class="btn-download" style="width:100%;"><i class="fa-solid fa-book-open"></i> ${t.btn_read || 'START LEARNING'}</button>
         </div>`;
     });
 }
