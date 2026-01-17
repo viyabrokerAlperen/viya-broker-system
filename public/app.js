@@ -1717,8 +1717,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Maritime News Loader
 async function loadNews() {
     const newsGrid = document.getElementById('newsGrid');
+    console.log('newsGrid element:', newsGrid);
+    
     if (!newsGrid) {
-        console.log('❌ newsGrid elementi bulunamadı!');
+        console.error('newsGrid bulunamadı!');
         return;
     }
     
@@ -1729,14 +1731,11 @@ async function loadNews() {
         const res = await fetch('/api/maritime-news');
         const data = await res.json();
         
-        // Debug: API'den gelen veriyi konsola yazdır
         console.log('Frontend Gelen Veri:', data);
-        console.log('data.news dizisi:', data.news);
         console.log('data.news uzunluğu:', data.news ? data.news.length : 0);
         
-        // Basitleştirilmiş kontrol
         if (!data.news || !Array.isArray(data.news) || data.news.length === 0) {
-            console.log('⚠️ Haber bulunamadı veya dizi boş');
+            console.log('⚠️ Haber bulunamadı');
             newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;">Haber bulunamadı.</div>';
             return;
         }
@@ -1747,7 +1746,6 @@ async function loadNews() {
         data.news.forEach((item, index) => {
             console.log(`Haber ${index + 1}:`, item.title);
             
-            // Tarih formatı (Backend'den item.date geliyor)
             const date = new Date(item.date).toLocaleDateString('tr-TR', { 
                 day: 'numeric', 
                 month: 'short', 
@@ -1757,12 +1755,10 @@ async function loadNews() {
             const card = document.createElement('div');
             card.className = 'news-card-item';
             
-            // Görsel HTML'i - image varsa göster, yoksa ikon göster
             let imageHTML = '';
             if (item.image) {
                 imageHTML = `<img src="${item.image}" alt="${item.title}" style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:16px;">`;
             } else {
-                // Görsel yoksa placeholder ikon
                 imageHTML = `
                     <div style="width:100%; height:200px; background:#f1f5f9; border-radius:8px; margin-bottom:16px; display:flex; align-items:center; justify-content:center;">
                         <i class="fa-solid fa-ship" style="font-size:48px; color:#94a3b8;"></i>
