@@ -716,49 +716,37 @@ app.get('/api/maritime-news', async (req, res) => {
             }
         });
         
-        const feeds = [
-            // 1. Google News - Denizcilik & Shipping (Tüm kaynakları içerir, ASLA engellenmez)
-            'https://news.google.com/rss/search?q=maritime+shipping+industry&hl=en-US&gl=US&ceid=US:en',
-            // 2. Yedek olarak Offshore Energy (Genelde açıktır)
-            'https://www.offshore-energy.biz/feed/'
-        ];
+        // SADECE Google News RSS
+        const feedUrl = 'https://news.google.com/rss/search?q=maritime+shipping+industry&hl=en-US&gl=US&ceid=US:en';
         
-        // Varsayılan denizcilik görseli
-        const defaultImage = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+        const feed = await parser.parseURL(feedUrl);
         
-        let allNews = [];
+        // Debug için raw items sayısını yazdır
+        console.log('Google News Raw Items:', feed.items.length);
         
-        for (const feedUrl of feeds) {
-            try {
-                const feed = await parser.parseURL(feedUrl);
-                const news = feed.items.slice(0, 5).map(item => {
-                    // İçerik öncelik sırası: contentSnippet > description > content
-                    const content = item.contentSnippet || item.description || item.content || '';
-                    const snippet = content ? content.substring(0, 150) + '...' : '';
-                    
-                    // Görsel öncelik sırası: enclosure > media:content > varsayılan görsel
-                    let image = defaultImage;
-                    if (item.enclosure && item.enclosure.url) {
-                        image = item.enclosure.url;
-                    } else if (item['media:content'] && item['media:content'].$ && item['media:content'].$.url) {
-                        image = item['media:content'].$.url;
-                    }
-                    
-                    return {
-                        title: item.title,
-                        link: item.link,
-                        date: item.pubDate || item.isoDate,
-                        source: feed.title,
-                        snippet: snippet,
-                        image: image
-                    };
-                });
-                allNews = allNews.concat(news);
-            } catch (e) {
-                console.error('Feed error for', feedUrl, ':', e.message);
-                continue;
+        // Tüm haberleri olduğu gibi map et - FİLTRELEME YOK
+        const allNews = feed.items.map(item => {
+            // İçerik öncelik sırası: content > contentSnippet > description
+            const content = item.content || item.contentSnippet || item.description || '';
+            const snippet = content ? content.substring(0, 150) + '...' : '';
+            
+            // Görsel varsa kullan, yoksa null bırak - HABERİ ATLAMA
+            let image = null;
+            if (item.enclosure && item.enclosure.url) {
+                image = item.enclosure.url;
+            } else if (item['media:content'] && item['media:content'].$ && item['media:content'].$.url) {
+                image = item['media:content'].$.url;
             }
-        }
+            
+            return {
+                title: item.title,
+                link: item.link,
+                date: item.pubDate || item.isoDate,
+                source: feed.title || 'Google News',
+                snippet: snippet,
+                image: image
+            };
+        });
         
         // Tarihe göre sırala (en yeni önce)
         allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
