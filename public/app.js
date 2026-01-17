@@ -1717,8 +1717,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // Maritime News Loader
 async function loadNews() {
     const newsGrid = document.getElementById('newsGrid');
-    if (!newsGrid) return;
+    if (!newsGrid) {
+        console.log('❌ newsGrid elementi bulunamadı!');
+        return;
+    }
     
+    console.log('✅ newsGrid bulundu, haberler yükleniyor...');
     newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">Haberler yükleniyor...</p></div>';
     
     try {
@@ -1727,15 +1731,22 @@ async function loadNews() {
         
         // Debug: API'den gelen veriyi konsola yazdır
         console.log('Frontend Gelen Veri:', data);
+        console.log('data.news dizisi:', data.news);
+        console.log('data.news uzunluğu:', data.news ? data.news.length : 0);
         
-        if (!data.success || !data.news || data.news.length === 0) {
+        // Basitleştirilmiş kontrol
+        if (!data.news || !Array.isArray(data.news) || data.news.length === 0) {
+            console.log('⚠️ Haber bulunamadı veya dizi boş');
             newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#64748b;">Haber bulunamadı.</div>';
             return;
         }
         
+        console.log(`✅ ${data.news.length} haber işlenecek...`);
         newsGrid.innerHTML = '';
         
         data.news.forEach((item, index) => {
+            console.log(`Haber ${index + 1}:`, item.title);
+            
             // Tarih formatı (Backend'den item.date geliyor)
             const date = new Date(item.date).toLocaleDateString('tr-TR', { 
                 day: 'numeric', 
@@ -1774,8 +1785,10 @@ async function loadNews() {
             newsGrid.appendChild(card);
         });
         
+        console.log(`✅ ${data.news.length} haber DOM'a eklendi!`);
+        
     } catch (error) {
-        console.error('News error:', error);
+        console.error('❌ News error:', error);
         newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#ef4444;">Haberler yüklenirken hata oluştu.</div>';
     }
 }
