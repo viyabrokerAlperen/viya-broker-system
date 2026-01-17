@@ -723,20 +723,36 @@ app.get('/api/maritime-news', async (req, res) => {
             'https://www.offshore-energy.biz/feed/'
         ];
         
+        // Varsayılan denizcilik görseli
+        const defaultImage = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+        
         let allNews = [];
         
         for (const feedUrl of feeds) {
             try {
                 const feed = await parser.parseURL(feedUrl);
-                const news = feed.items.slice(0, 5).map(item => ({
-                    title: item.title,
-                    link: item.link,
-                    date: item.pubDate || item.isoDate,
-                    source: feed.title,
-                    snippet: item.contentSnippet || item.description || item.content || ''
-                        ? (item.contentSnippet || item.description || item.content || '').substring(0, 150) + '...'
-                        : ''
-                }));
+                const news = feed.items.slice(0, 5).map(item => {
+                    // İçerik öncelik sırası: contentSnippet > description > content
+                    const content = item.contentSnippet || item.description || item.content || '';
+                    const snippet = content ? content.substring(0, 150) + '...' : '';
+                    
+                    // Görsel öncelik sırası: enclosure > media:content > varsayılan görsel
+                    let image = defaultImage;
+                    if (item.enclosure && item.enclosure.url) {
+                        image = item.enclosure.url;
+                    } else if (item['media:content'] && item['media:content'].$ && item['media:content'].$.url) {
+                        image = item['media:content'].$.url;
+                    }
+                    
+                    return {
+                        title: item.title,
+                        link: item.link,
+                        date: item.pubDate || item.isoDate,
+                        source: feed.title,
+                        snippet: snippet,
+                        image: image
+                    };
+                });
                 allNews = allNews.concat(news);
             } catch (e) {
                 console.error('Feed error for', feedUrl, ':', e.message);
@@ -747,7 +763,10 @@ app.get('/api/maritime-news', async (req, res) => {
         // Tarihe göre sırala (en yeni önce)
         allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        res.json({ success: true, news: allNews.slice(0, 15) });
+        const newsItems = allNews.slice(0, 15);
+        console.log('Frontend\'e gönderilen toplam haber sayısı:', newsItems.length);
+        
+        res.json({ success: true, news: newsItems });
         
     } catch (error) {
         console.error('News fetch error:', error);
