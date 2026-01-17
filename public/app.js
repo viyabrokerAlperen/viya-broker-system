@@ -1754,6 +1754,7 @@ async function loadNews() {
             
             const card = document.createElement('div');
             card.className = 'news-card-item';
+            card.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;';
             
             let imageHTML = '';
             if (item.image) {
