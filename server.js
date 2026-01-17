@@ -717,7 +717,8 @@ app.get('/api/maritime-news', async (req, res) => {
         });
         
         const feeds = [
-            'https://www.maritime-executive.com/rss',
+            'https://gcaptain.com/feed/',
+            'https://www.marinelink.com/rss/stories',
             'https://www.offshore-energy.biz/feed/',
             'https://www.seatrade-maritime.com/rss.xml'
         ];
