@@ -987,7 +987,7 @@ function copyToClipboard() {
 // ==========================================
 function openContentModal(title, content) {
     document.getElementById('modalTitle').innerText = title;
-    document.getElementById('modalBody').innerText = content;
+    document.getElementById('modalBody').innerHTML = content;
     document.getElementById('docModal').style.display = 'block';
 }
 
