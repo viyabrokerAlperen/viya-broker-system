@@ -1765,19 +1765,961 @@ async function loadDocs() {
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
     
     const data = [
-        { category: "Standard Contracts", items: [{ title: "GENCON 94", desc: "Voyage Charter", content: "PART I..." }, { title: "NYPE 2015", desc: "Time Charter", content: "Time Charter..." }] },
-        { category: "Bill of Ladings", items: [{ title: "Congenbill 2016", desc: "For Charter Parties", content: "Shipper..." }] }
+        {
+            category: "Charter Party Forms",
+            items: [
+                {
+                    title: "GENCON 94",
+                    desc: "General Purpose Voyage Charter Party",
+                    content: `<h3>CODE NAME: "GENCON 94"</h3>
+<p><strong>THE BALTIC AND INTERNATIONAL MARITIME COUNCIL (BIMCO)</strong><br>
+UNIFORM GENERAL CHARTER (AS REVISED 1922, 1976 and 1994)</p>
+
+<h4>PART I</h4>
+<p><strong>1. Shipbroker:</strong> [BROKER_NAME]</p>
+<p><strong>2. Place and Date:</strong> [PLACE], [DATE]</p>
+<p><strong>3. Owners/Disponent Owners:</strong> [OWNERS_NAME]<br>Place of business: [ADDRESS]</p>
+<p><strong>4. Charterers:</strong> [CHARTERERS_NAME]<br>Place of business: [ADDRESS]</p>
+<p><strong>5. Vessel's name:</strong> [VESSEL_NAME]</p>
+<p><strong>6. GT/NT:</strong> [GT] / [NT]</p>
+<p><strong>7. DWT:</strong> [DWT] metric tons (abt) on summer freeboard</p>
+<p><strong>8. Present position:</strong> [POSITION]</p>
+<p><strong>9. Expected ready to load (abt):</strong> [DATE]</p>
+<p><strong>10. Loading port or place:</strong> [LOAD_PORT]</p>
+<p><strong>11. Discharging port or place:</strong> [DISCHARGE_PORT]</p>
+<p><strong>12. Cargo:</strong> [CARGO_TYPE]<br>Quantity (abt): [QUANTITY] metric tons</p>
+<p><strong>13. Freight rate:</strong> [RATE] per metric ton</p>
+<p><strong>14. Freight payment:</strong> Prepaid / On right delivery<br>Final payment: [TERMS]</p>
+<p><strong>15. Loading rate:</strong> [RATE] MT per WWD of 24 hours</p>
+<p><strong>16. Discharging rate:</strong> [RATE] MT per WWD of 24 hours</p>
+<p><strong>17. Laytime:</strong> Commence at [TIME] on [CONDITIONS]</p>
+<p><strong>18. Demurrage:</strong> USD [AMOUNT] per day pro rata</p>
+<p><strong>19. Despatch:</strong> [%] of demurrage rate</p>
+<p><strong>20. General Average:</strong> York-Antwerp Rules [YEAR]</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<strong>⚠️ TEMPLATE DOCUMENT</strong><br>
+This is a template for reference only. Professional legal review required before execution.
+</div>`
+                },
+                {
+                    title: "NYPE 2015",
+                    desc: "New York Produce Exchange Time Charter",
+                    content: `<h3>CODE NAME: "NYPE 2015"</h3>
+<p><strong>NEW YORK PRODUCE EXCHANGE TIME CHARTER</strong> (As amended 2015)</p>
+
+<h4>PART I</h4>
+<p><strong>1. Shipbroker:</strong> [BROKER_NAME]</p>
+<p><strong>2. Place and Date:</strong> [PLACE], [DATE]</p>
+<p><strong>3. Owners:</strong> [OWNERS_NAME] | Email: [EMAIL]</p>
+<p><strong>4. Charterers:</strong> [CHARTERERS_NAME] | Email: [EMAIL]</p>
+<p><strong>5. Vessel's Name:</strong> [VESSEL_NAME]</p>
+<p><strong>6. GT/NT:</strong> [GT] / [NT]</p>
+<p><strong>7. DWT:</strong> [DWT] metric tons on summer draft</p>
+<p><strong>8. Grain capacity:</strong> [CAPACITY] cubic meters</p>
+<p><strong>9. Delivery Port:</strong> [DELIVERY_PORT]</p>
+<p><strong>10. Date of Delivery:</strong> [DATE] (Cancelling: [DATE])</p>
+<p><strong>11. Redelivery Port:</strong> [REDELIVERY_PORT]</p>
+<p><strong>12. Period:</strong> [MONTHS] months +/- [OPTIONS]</p>
+<p><strong>13. Hire Rate:</strong> USD [AMOUNT] per day</p>
+<p><strong>14. Payment:</strong> Semi-monthly in advance</p>
+<p><strong>15. Trading Limits:</strong> [TRADING_AREA]</p>
+<p><strong>16. Speed & Consumption:</strong><br>
+- Laden: About [SPEED] kts on about [CONS] mt IFO/day<br>
+- Ballast: About [SPEED] kts on about [CONS] mt IFO/day<br>
+- Idle: About [CONS] mt IFO/day</p>
+<p><strong>17. Bunkers on Delivery:</strong> About [QTY] mt IFO, [QTY] mt MGO</p>
+<p><strong>18. Cargo Exclusions:</strong> [EXCLUDED_CARGOES]</p>
+
+<h4>KEY CLAUSES</h4>
+<p><strong>1. Description:</strong> Owners guarantee class, speed, consumption<br>
+<strong>2. Period:</strong> Charter period as Box 12<br>
+<strong>3. Payment:</strong> Hire payable semi-monthly advance<br>
+<strong>4. Off-hire:</strong> Vessel off-hire when unable to perform<br>
+<strong>5. Withdrawal:</strong> Owners may withdraw for non-payment</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<strong>⚠️ TEMPLATE DOCUMENT</strong><br>
+Legal review mandatory before execution.
+</div>`
+                },
+                {
+                    title: "BALTIME 2001",
+                    desc: "Uniform Time Charter Party",
+                    content: `<h3>CODE NAME: "BALTIME 2001"</h3>
+<p><strong>UNIFORM TIME CHARTER PARTY (BIMCO)</strong></p>
+
+<h4>PART I - BOX LAYOUT</h4>
+<p><strong>Vessel:</strong> [VESSEL_NAME] | <strong>DWT:</strong> [DWT] MT<br>
+<strong>Owners:</strong> [OWNERS_NAME]<br>
+<strong>Charterers:</strong> [CHARTERERS_NAME]<br>
+<strong>Period:</strong> [MONTHS] months from delivery<br>
+<strong>Hire:</strong> USD [AMOUNT] per day<br>
+<strong>Delivery:</strong> [PORT] on/about [DATE]<br>
+<strong>Trading Limits:</strong> Worldwide excluding war risk zones</p>
+
+<p><strong>Speed & Consumption:</strong><br>
+About [SPEED] knots on about [CONS] tons fuel oil per day</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<strong>⚠️ TEMPLATE</strong> - Professional review required
+</div>`
+                },
+                {
+                    title: "SHELLVOY 6",
+                    desc: "Shell Tanker Voyage Charter Party",
+                    content: `<h3>CODE NAME: "SHELLVOY 6"</h3>
+<p><strong>SHELL TANKER VOYAGE CHARTER PARTY</strong></p>
+
+<h4>MAIN TERMS</h4>
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>DWT:</strong> [DWT] MT on [DRAFT]m draft<br>
+<strong>Cargo:</strong> [CARGO_TYPE] - [QUANTITY] MT<br>
+<strong>Load Port:</strong> [LOAD_PORT]<br>
+<strong>Discharge Port:</strong> [DISCHARGE_PORT]<br>
+<strong>Freight:</strong> USD [RATE] per MT Worldscale [WS_RATE]<br>
+<strong>Laytime:</strong> [HOURS] hours SHINC<br>
+<strong>Demurrage:</strong> USD [RATE] per hour</p>
+
+<p><strong>Special Provisions:</strong><br>
+- ISPS/MTSA compliance required<br>
+- Vessel Vetting approval mandatory<br>
+- SIRE report within 6 months</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<strong>⚠️ TEMPLATE</strong> - Tanker-specific terms apply
+</div>`
+                },
+                {
+                    title: "BPVOY 4",
+                    desc: "BP Voyage Charter Party",
+                    content: `<h3>CODE NAME: "BPVOY 4"</h3>
+<p><strong>BP VOYAGE CHARTER PARTY (Edition 4)</strong></p>
+
+<h4>PARTICULARS</h4>
+<p><strong>Owners:</strong> [OWNERS]<br>
+<strong>Charterers:</strong> BP Shipping Limited<br>
+<strong>Vessel:</strong> [VESSEL_NAME] | DWT: [DWT]<br>
+<strong>Cargo:</strong> [CRUDE_OIL/PRODUCTS]<br>
+<strong>Quantity:</strong> [QTY] MT +/- 5%<br>
+<strong>Freight:</strong> Worldscale [WS] = USD [RATE]/MT</p>
+
+<p><strong>Vetting:</strong> Valid SIRE required<br>
+<strong>Laytime:</strong> 24 hours SHINC port time<br>
+<strong>Demurrage/Despatch:</strong> USD [RATE]/hour</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "ASBATANKVOY",
+                    desc: "American Tanker Voyage Charter",
+                    content: `<h3>ASBATANKVOY</h3>
+<p><strong>AMERICAN STANDARD TANKER VOYAGE CHARTER</strong></p>
+
+<p><strong>Vessel/Cargo:</strong> [VESSEL] / [CARGO] [QTY]MT<br>
+<strong>Route:</strong> [LOAD] → [DISCHARGE]<br>
+<strong>Freight:</strong> USD [RATE] per MT<br>
+<strong>Laytime:</strong> 72 hours total<br>
+<strong>Demurrage:</strong> USD [RATE]/day</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "BARECON 2017",
+                    desc: "Bareboat Charter Party",
+                    content: `<h3>CODE NAME: "BARECON 2017"</h3>
+<p><strong>BAREBOAT CHARTER (BIMCO Standard Form)</strong></p>
+
+<h4>TERMS</h4>
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>Hire:</strong> USD [AMOUNT] per month<br>
+<strong>Period:</strong> [YEARS] years<br>
+<strong>Delivery:</strong> [PORT] [DATE]<br>
+<strong>Insurance:</strong> Charterers' responsibility<br>
+<strong>Maintenance:</strong> Charterers' responsibility</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "SUPPLYTIME 2017",
+                    desc: "Offshore Supply Vessel Time Charter",
+                    content: `<h3>CODE NAME: "SUPPLYTIME 2017"</h3>
+<p><strong>OFFSHORE SUPPLY VESSEL TIME CHARTER</strong></p>
+
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>Type:</strong> PSV/AHTS/DSV<br>
+<strong>Hire:</strong> USD [RATE] per day<br>
+<strong>Period:</strong> [MONTHS] months<br>
+<strong>Trading Area:</strong> [OFFSHORE_AREA]</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                }
+            ]
+        },
+        {
+            category: "Bills of Lading",
+            items: [
+                {
+                    title: "CONGENBILL 2016",
+                    desc: "BIMCO General Purpose Bill of Lading",
+                    content: `<h3>BILL OF LADING - CODE NAME: "CONGENBILL 2016"</h3>
+
+<p><strong>Shipper:</strong> [SHIPPER_NAME], [ADDRESS]</p>
+<p><strong>Consignee:</strong> [CONSIGNEE or "TO ORDER"]</p>
+<p><strong>Notify Party:</strong> [NOTIFY_NAME], [ADDRESS], [EMAIL]</p>
+
+<p><strong>Port of Loading:</strong> [LOAD_PORT]<br>
+<strong>Port of Discharge:</strong> [DISCHARGE_PORT]<br>
+<strong>Vessel:</strong> [VESSEL_NAME] | Voyage: [VOY_NO]</p>
+
+<h4>PARTICULARS FURNISHED BY SHIPPER</h4>
+<table>
+<tr><th>Marks & Numbers</th><th>Packages</th><th>Description</th><th>Weight</th><th>Measurement</th></tr>
+<tr><td>[MARKS]</td><td>[NO]</td><td>[DESC]</td><td>[KGS]</td><td>[CBM]</td></tr>
+</table>
+
+<p><strong>Freight:</strong> [PREPAID / COLLECT] - USD [AMOUNT]</p>
+<p><strong>No. of Original B/Ls:</strong> THREE (3)</p>
+
+<p><strong>Shipped on board:</strong> [DATE]</p>
+
+<h4>TERMS & CONDITIONS</h4>
+<p><strong>1. Carrier's Responsibility:</strong> Port to Port (Tackle to Tackle)<br>
+<strong>2. Applicable Law:</strong> Hague-Visby Rules apply<br>
+<strong>3. Limitation:</strong> SDR 666.67 per package or SDR 2 per kg<br>
+<strong>4. Notice:</strong> Loss/damage notice within 3 days<br>
+<strong>5. Time Bar:</strong> 1 year from delivery</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<strong>⚠️ STANDARD TEMPLATE</strong><br>
+Subject to complete T&Cs on reverse.
+</div>`
+                },
+                {
+                    title: "CONLINEBILL 2016",
+                    desc: "BIMCO Liner Bill of Lading",
+                    content: `<h3>LINER BILL OF LADING - "CONLINEBILL 2016"</h3>
+
+<p><strong>Carrier:</strong> [LINER_COMPANY]<br>
+<strong>Service:</strong> [SERVICE_NAME]</p>
+
+<p><strong>Shipper/Consignee/Notify:</strong><br>
+[DETAILS]</p>
+
+<p><strong>Place of Receipt:</strong> [PLACE]<br>
+<strong>Port of Loading:</strong> [PORT]<br>
+<strong>Port of Discharge:</strong> [PORT]<br>
+<strong>Place of Delivery:</strong> [PLACE]</p>
+
+<h4>CONTAINER DETAILS</h4>
+<table>
+<tr><th>Container No.</th><th>Seal No.</th><th>Packages</th><th>Description</th><th>Weight</th></tr>
+<tr><td>[CONT_NO]</td><td>[SEAL]</td><td>[PKGS]</td><td>[DESC]</td><td>[KGS]</td></tr>
+</table>
+
+<p><strong>Freight:</strong> [PREPAID/COLLECT]</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "MULTIDOC 95",
+                    desc: "Multimodal Transport B/L (BIMCO)",
+                    content: `<h3>MULTIDOC 95 - MULTIMODAL TRANSPORT B/L</h3>
+
+<p><strong>Place of Receipt:</strong> [PLACE]<br>
+<strong>Place of Delivery:</strong> [PLACE]<br>
+<strong>Vessel/Voyage:</strong> [VESSEL] / [VOY]</p>
+
+<p><strong>Transport Modes:</strong> Sea + Road/Rail/Air</p>
+
+<table>
+<tr><th>Container</th><th>Seal</th><th>Packages</th><th>Weight</th></tr>
+<tr><td>[CONT]</td><td>[SEAL]</td><td>[PKGS]</td><td>[KGS]</td></tr>
+</table>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "SEA WAYBILL",
+                    desc: "Non-negotiable Sea Waybill",
+                    content: `<h3>SEA WAYBILL (Non-negotiable)</h3>
+
+<p><strong>Carrier:</strong> [CARRIER]<br>
+<strong>Shipper:</strong> [SHIPPER]<br>
+<strong>Consignee:</strong> [CONSIGNEE] (Named - Non-negotiable)</p>
+
+<p><strong>Vessel:</strong> [VESSEL] | Voyage: [VOY]<br>
+<strong>Port of Loading:</strong> [LOAD_PORT]<br>
+<strong>Port of Discharge:</strong> [DISCHARGE_PORT]</p>
+
+<table>
+<tr><th>Description</th><th>Quantity</th><th>Weight</th></tr>
+<tr><td>[DESC]</td><td>[QTY]</td><td>[KGS]</td></tr>
+</table>
+
+<p><strong>⚠️ NON-NEGOTIABLE DOCUMENT</strong><br>
+Cargo deliverable to named Consignee without presentation of original.</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>⚠️ TEMPLATE</strong>
+</div>`
+                },
+                {
+                    title: "MATE'S RECEIPT",
+                    desc: "Mate's Receipt Template",
+                    content: `<h3>MATE'S RECEIPT</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Port:</strong> [PORT] | Date: [DATE]</p>
+
+<p><strong>Received from:</strong> [SHIPPER]<br>
+<strong>For account of:</strong> [ACCOUNT]</p>
+
+<h4>CARGO RECEIVED</h4>
+<table>
+<tr><th>Marks</th><th>Packages</th><th>Description</th><th>Weight</th></tr>
+<tr><td>[MARKS]</td><td>[PKGS]</td><td>[DESC]</td><td>[KGS]</td></tr>
+</table>
+
+<p><strong>Condition:</strong> [GOOD ORDER / EXCEPTIONS NOTED]</p>
+
+<p><strong>Exceptions/Remarks:</strong><br>
+[ANY_DAMAGE_OR_EXCEPTIONS]</p>
+
+<p><strong>Signed by:</strong><br>
+Chief Officer: ________________<br>
+Date/Time: [DATE] [TIME]</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>Note:</strong> This receipt to be exchanged for Bill of Lading.
+</div>`
+                },
+                {
+                    title: "SWITCH B/L",
+                    desc: "Switch Bill of Lading Template",
+                    content: `<h3>SWITCH BILL OF LADING</h3>
+
+<p><strong>Original B/L No:</strong> [ORIGINAL_BL_NO]<br>
+<strong>Switch B/L No:</strong> [SWITCH_BL_NO]<br>
+<strong>Issue Date:</strong> [DATE]</p>
+
+<p><strong>Original Shipper:</strong> [ORIGINAL_SHIPPER]<br>
+<strong>New Shipper:</strong> [NEW_SHIPPER]</p>
+
+<p><strong>Original Consignee:</strong> [ORIGINAL]<br>
+<strong>New Consignee:</strong> [NEW]</p>
+
+<p><strong>Vessel/Voyage:</strong> [VESSEL] / [VOY]<br>
+<strong>Cargo:</strong> [DESCRIPTION]</p>
+
+<p><strong>Original B/L surrendered:</strong> [YES/NO]</p>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
+<strong>⚠️ IMPORTANT:</strong> All original B/Ls must be surrendered before issuing switch B/L. Subject to carrier's approval and local law.
+</div>`
+                }
+            ]
+        },
+        {
+            category: "Notices & Statements",
+            items: [
+                {
+                    title: "NOTICE OF READINESS (NOR)",
+                    desc: "Notice of Readiness Template",
+                    content: `<h3>NOTICE OF READINESS</h3>
+
+<p><strong>To:</strong> [CHARTERERS/RECEIVERS/SHIPPERS]<br>
+[ADDRESS]</p>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Voyage:</strong> [VOYAGE_NO]<br>
+<strong>Port:</strong> [PORT_NAME]</p>
+
+<p><strong>Date:</strong> [DATE]<br>
+<strong>Time:</strong> [TIME] (Local Time)</p>
+
+<p>Dear Sirs,</p>
+
+<p>We hereby give you <strong>NOTICE</strong> that the above vessel arrived at [LOCATION] and is now <strong>READY IN ALL RESPECTS</strong> to [LOAD/DISCHARGE] cargo per Charter Party dated [CP_DATE].</p>
+
+<h4>VESSEL DETAILS</h4>
+<ul>
+<li>IMO: [IMO_NUMBER] | Flag: [FLAG]</li>
+<li>GT/NT: [GT]/[NT] | DWT: [DWT] MT</li>
+<li>LOA: [LENGTH]m | Draft: [DRAFT]m</li>
+</ul>
+
+<p><strong>Cargo:</strong> [CARGO_TYPE] - [QUANTITY] MT</p>
+
+<h4>VESSEL STATUS</h4>
+<p>✓ Anchored at designated anchorage<br>
+✓ Free pratique granted<br>
+✓ All holds cleaned and inspected<br>
+✓ Cargo gear tested and ready<br>
+✓ All documentation complete<br>
+✓ No repairs affecting operations</p>
+
+<p><strong>Customs/Health:</strong> COMPLETED</p>
+
+<p>We are ready to commence immediately upon berth allocation.</p>
+
+<p>Yours faithfully,</p>
+
+<p>_______________________<br>
+Master, M/V [VESSEL_NAME]</p>
+
+<p><strong>Time NOR Tendered:</strong> [DATE] [TIME] Local<br>
+<strong>NOR Accepted:</strong> __________ (Receivers)</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+<strong>Note:</strong> Valid subject to C/P terms regarding time counting.
+</div>`
+                },
+                {
+                    title: "STATEMENT OF FACTS (SOF)",
+                    desc: "Port Operations Time Sheet",
+                    content: `<h3>STATEMENT OF FACTS</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME] | Voyage: [VOY]<br>
+<strong>Port:</strong> [PORT] | Operation: [LOAD/DISCHARGE]<br>
+<strong>Charter Party:</strong> [CP] dated [DATE]<br>
+<strong>Cargo:</strong> [CARGO] - [QTY] MT</p>
+
+<h4>CHRONOLOGY</h4>
+<table>
+<tr><th>Date</th><th>Time</th><th>Event</th></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Arrived pilot station</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Pilot on board</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>All fast / Anchored</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>NOR tendered</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>NOR accepted</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Free Pratique</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Operations commenced</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Operations completed</td></tr>
+<tr><td>[DD/MM]</td><td>[HH:MM]</td><td>Vessel sailed</td></tr>
+</table>
+
+<h4>CARGO SUMMARY</h4>
+<p>Total: [QTY] MT<br>
+B/L Figure: [BL_QTY] MT<br>
+Shore Figure: [SHORE_QTY] MT<br>
+Ship Figure: [SHIP_QTY] MT</p>
+
+<p><strong>Rate Achieved:</strong> [RATE] MT/hour</p>
+
+<h4>DELAYS</h4>
+<p>[DATE] [TIME-TIME] [DURATION] [REASON]</p>
+
+<p><strong>Prepared by:</strong><br>
+Master: _____ | Agent: _____ | Terminal: _____</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+Signed without prejudice, subject to verification.
+</div>`
+                },
+                {
+                    title: "TIME SHEET",
+                    desc: "Laytime Calculation Statement",
+                    content: `<h3>LAYTIME STATEMENT / TIME SHEET</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Port:</strong> [PORT] | Cargo: [CARGO] [QTY]MT<br>
+<strong>C/P:</strong> [CP_NAME] dated [DATE]<br>
+<strong>Terms:</strong> [SHINC/SHEX/WWD]</p>
+
+<h4>CALCULATION</h4>
+
+<p><strong>1. NOR:</strong><br>
+Tendered: [DATE] [TIME]<br>
+Accepted: [DATE] [TIME]</p>
+
+<p><strong>2. LAYTIME START:</strong> [DATE] [TIME]</p>
+
+<p><strong>3. TIME USED:</strong><br>
+Ops Start: [DATE] [TIME]<br>
+Ops End: [DATE] [TIME]<br>
+Gross Time: [X]h [Y]m</p>
+
+<p><strong>4. DEDUCTIONS:</strong></p>
+
+<p>A. Sundays/Holidays (SHEX): [HOURS]h<br>
+B. Weather (WWD): [HOURS]h<br>
+C. Charterers' Time: [HOURS]h<br>
+D. Exceptions: [HOURS]h</p>
+
+<p>Total Deductions: [X]h [Y]m</p>
+
+<p><strong>5. NET TIME USED:</strong><br>
+Gross: [X]h [Y]m<br>
+Less Deductions: [X]h [Y]m<br>
+<strong>NET: [X.XX] days</strong></p>
+
+<p><strong>6. TIME ALLOWED:</strong><br>
+[QTY] MT ÷ [RATE] MT/day = <strong>[X.XX] days</strong></p>
+
+<p><strong>7. RESULT:</strong><br>
+Used: [X.XX] days | Allowed: [X.XX] days</p>
+
+<p>☐ <strong>DESPATCH:</strong> [X.XX] days × USD [RATE] = USD [AMOUNT]<br>
+☐ <strong>DEMURRAGE:</strong> [X.XX] days × USD [RATE] = USD [AMOUNT]</p>
+
+<h4>PAYMENT</h4>
+<p>Within [X] days to:<br>
+Bank: [BANK] | Account: [ACCOUNT] | SWIFT: [SWIFT]</p>
+
+<p><strong>Prepared by:</strong> [NAME], [DATE]</p>
+
+<div style="background:#f3f4f6;padding:12px;margin:15px 0;">
+Subject to verification and C/P arbitration clause.
+</div>`
+                },
+                {
+                    title: "LETTER OF INDEMNITY (LOI)",
+                    desc: "Letter of Indemnity for delivering without B/L",
+                    content: `<h3>LETTER OF INDEMNITY</h3>
+
+<p><strong>To:</strong> [CARRIER_NAME] (The Carrier)<br>
+<strong>Date:</strong> [DATE]</p>
+
+<p><strong>RE: Vessel:</strong> M/V [VESSEL_NAME] | Voyage: [VOY]<br>
+<strong>Cargo:</strong> [DESCRIPTION]<br>
+<strong>B/L No:</strong> [BL_NUMBER]</p>
+
+<p>Dear Sirs,</p>
+
+<p>We, the undersigned [REQUESTOR_NAME], hereby request you to deliver the above cargo to [RECEIVER_NAME] at [PORT] <strong>WITHOUT PRODUCTION OF THE ORIGINAL BILL OF LADING</strong>.</p>
+
+<p>In consideration of your complying with our request, we hereby agree:</p>
+
+<p><strong>1.</strong> To indemnify you and hold you harmless against all consequences of delivering without original B/L;</p>
+
+<p><strong>2.</strong> To pay on demand all claims, losses, damages, costs, and expenses;</p>
+
+<p><strong>3.</strong> To provide security if required by your P&I Club;</p>
+
+<p><strong>4.</strong> This indemnity covers all parties including vessel owners, time/voyage charterers, agents, and servants;</p>
+
+<p><strong>5.</strong> This indemnity governed by [GOVERNING_LAW] and jurisdiction of [JURISDICTION].</p>
+
+<p><strong>For and on behalf of [COMPANY]:</strong></p>
+
+<p>_______________________<br>
+Authorized Signatory<br>
+Name: [NAME]<br>
+Title: [TITLE]<br>
+Date: [DATE]</p>
+
+<p><strong>COUNTER-SIGNED BY BANK:</strong></p>
+
+<p>_______________________<br>
+[BANK_NAME]<br>
+[BANK_STAMP]</p>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
+<strong>⚠️ WARNING:</strong> This LOI must be counter-signed by acceptable bank and approved by P&I Club before delivery.
+</div>`
+                },
+                {
+                    title: "LETTER OF UNDERTAKING (LOU)",
+                    desc: "P&I Club Guarantee",
+                    content: `<h3>LETTER OF UNDERTAKING</h3>
+
+<p><strong>From:</strong> [P&I_CLUB_NAME]<br>
+<strong>To:</strong> [CLAIMANT/AUTHORITY]<br>
+<strong>Date:</strong> [DATE]</p>
+
+<p><strong>RE: M/V [VESSEL_NAME]</strong><br>
+<strong>IMO:</strong> [IMO_NO] | <strong>Flag:</strong> [FLAG]<br>
+<strong>Owner:</strong> [OWNER_NAME]</p>
+
+<p>Dear Sirs,</p>
+
+<p>We, [P&I_CLUB_NAME], hereby <strong>UNDERTAKE</strong> to pay on behalf of the Owners of the above vessel:</p>
+
+<p><strong>Amount:</strong> Up to USD [AMOUNT]</p>
+
+<p><strong>In respect of:</strong> [CLAIM_DESCRIPTION]</p>
+
+<p>This undertaking is subject to:</p>
+
+<p>1. Our liability limited to USD [AMOUNT]<br>
+2. Payment within [DAYS] days of receiving evidence of loss<br>
+3. Governed by [LAW] and jurisdiction [COURT]<br>
+4. Valid until [EXPIRY_DATE]</p>
+
+<p>Yours faithfully,</p>
+
+<p>_______________________<br>
+[P&I_CLUB_NAME]<br>
+Authorized Claims Manager<br>
+[CONTACT_DETAILS]</p>
+
+<div style="background:#d1fae5;padding:12px;margin:15px 0;border-left:4px solid #10b981;">
+<strong>✓ CLUB GUARANTEE:</strong> This LOU issued by recognized P&I Club.
+</div>`
+                }
+            ]
+        },
+        {
+            category: "Cargo Documents",
+            items: [
+                {
+                    title: "COMMERCIAL INVOICE",
+                    desc: "Commercial Invoice Template",
+                    content: `<h3>COMMERCIAL INVOICE</h3>
+
+<p><strong>Invoice No:</strong> [INV_NUMBER]<br>
+<strong>Date:</strong> [DATE]</p>
+
+<p><strong>Exporter/Seller:</strong><br>
+[COMPANY_NAME]<br>
+[ADDRESS]<br>
+Tax ID: [TAX_ID]</p>
+
+<p><strong>Importer/Buyer:</strong><br>
+[BUYER_NAME]<br>
+[ADDRESS]<br>
+Tax ID: [TAX_ID]</p>
+
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>Port of Loading:</strong> [LOAD_PORT]<br>
+<strong>Port of Discharge:</strong> [DISCHARGE_PORT]<br>
+<strong>Payment Terms:</strong> [TERMS]</p>
+
+<h4>GOODS DESCRIPTION</h4>
+<table>
+<tr><th>Item</th><th>HS Code</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+<tr><td>1</td><td>[HS_CODE]</td><td>[DESC]</td><td>[QTY]</td><td>[PRICE]</td><td>[TOTAL]</td></tr>
+</table>
+
+<p><strong>Subtotal:</strong> USD [SUBTOTAL]<br>
+<strong>Freight:</strong> USD [FREIGHT]<br>
+<strong>Insurance:</strong> USD [INSURANCE]<br>
+<strong>Total CIF:</strong> USD [TOTAL]</p>
+
+<p>_______________________<br>
+Authorized Signature</p>`
+                },
+                {
+                    title: "PACKING LIST",
+                    desc: "Packing List Template",
+                    content: `<h3>PACKING LIST</h3>
+
+<p><strong>Ref:</strong> [REF_NO] | <strong>Date:</strong> [DATE]</p>
+
+<p><strong>Shipper:</strong> [SHIPPER]<br>
+<strong>Consignee:</strong> [CONSIGNEE]<br>
+<strong>Invoice:</strong> [INV_NO]</p>
+
+<h4>PACKING DETAILS</h4>
+<table>
+<tr><th>Package No.</th><th>Type</th><th>Contents</th><th>Qty</th><th>Net Wt</th><th>Gross Wt</th><th>CBM</th></tr>
+<tr><td>1-10</td><td>Carton</td><td>[ITEM]</td><td>[QTY]</td><td>[NET]kg</td><td>[GROSS]kg</td><td>[CBM]</td></tr>
+</table>
+
+<p><strong>Total Packages:</strong> [TOTAL]<br>
+<strong>Total Gross Weight:</strong> [WEIGHT] kg<br>
+<strong>Total Volume:</strong> [CBM] CBM</p>`
+                },
+                {
+                    title: "CERTIFICATE OF ORIGIN",
+                    desc: "Certificate of Origin",
+                    content: `<h3>CERTIFICATE OF ORIGIN</h3>
+
+<p><strong>Certificate No:</strong> [CERT_NO]<br>
+<strong>Issue Date:</strong> [DATE]</p>
+
+<p><strong>Exporter:</strong> [EXPORTER_NAME], [COUNTRY]</p>
+
+<p><strong>Consignee:</strong> [CONSIGNEE], [COUNTRY]</p>
+
+<p><strong>Goods Description:</strong><br>
+[DESCRIPTION]</p>
+
+<p><strong>HS Code:</strong> [HS_CODE]<br>
+<strong>Quantity:</strong> [QTY]<br>
+<strong>Value:</strong> USD [VALUE]</p>
+
+<p>We hereby certify that the goods originated in <strong>[COUNTRY_OF_ORIGIN]</strong>.</p>
+
+<p>_______________________<br>
+Chamber of Commerce<br>
+[STAMP]</p>`
+                },
+                {
+                    title: "FUMIGATION CERTIFICATE",
+                    desc: "Fumigation Certificate",
+                    content: `<h3>FUMIGATION CERTIFICATE</h3>
+
+<p><strong>Certificate No:</strong> [CERT_NO]<br>
+<strong>Date:</strong> [DATE]</p>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Location:</strong> [PORT]</p>
+
+<p><strong>Fumigant Used:</strong> [CHEMICAL]<br>
+<strong>Concentration:</strong> [CONCENTRATION]<br>
+<strong>Exposure Time:</strong> [HOURS] hours<br>
+<strong>Temperature:</strong> [TEMP]°C</p>
+
+<p><strong>Areas Treated:</strong> [HOLDS/SPACES]</p>
+
+<p>This certifies that fumigation was performed according to ISPM-15 standards.</p>
+
+<p><strong>Valid Until:</strong> [EXPIRY_DATE]</p>
+
+<p>_______________________<br>
+Licensed Fumigator<br>
+License No: [LICENSE]</p>`
+                }
+            ]
+        },
+        {
+            category: "Vessel Certificates",
+            items: [
+                {
+                    title: "DOC/SMC",
+                    desc: "Document of Compliance / Safety Management Certificate",
+                    content: `<h3>SAFETY MANAGEMENT CERTIFICATE (SMC)</h3>
+
+<p><strong>Issued under ISM CODE (SOLAS Chapter IX)</strong></p>
+
+<p><strong>Vessel Name:</strong> [VESSEL_NAME]<br>
+<strong>IMO Number:</strong> [IMO_NO]<br>
+<strong>Type of Ship:</strong> [TYPE]<br>
+<strong>GT:</strong> [GT]<br>
+<strong>Flag:</strong> [FLAG]</p>
+
+<p><strong>Company:</strong> [COMPANY_NAME]<br>
+<strong>Address:</strong> [ADDRESS]</p>
+
+<p><strong>DOC No:</strong> [DOC_NUMBER]<br>
+<strong>SMC No:</strong> [SMC_NUMBER]</p>
+
+<p>This certificate is valid until <strong>[EXPIRY_DATE]</strong></p>
+
+<p>Intermediate verification due: [DATE]</p>
+
+<p><strong>Issued by:</strong><br>
+[FLAG_STATE / RO_NAME]<br>
+Date: [DATE]<br>
+Place: [PORT]</p>
+
+<div style="background:#d1fae5;padding:12px;margin:15px 0;border-left:4px solid #10b981;">
+<strong>✓ ISM COMPLIANT:</strong> Safety Management System verified
+</div>`
+                },
+                {
+                    title: "TONNAGE CERTIFICATE",
+                    desc: "International Tonnage Certificate",
+                    content: `<h3>INTERNATIONAL TONNAGE CERTIFICATE (1969)</h3>
+
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>IMO:</strong> [IMO_NO]<br>
+<strong>Port of Registry:</strong> [PORT]<br>
+<strong>Flag:</strong> [FLAG]</p>
+
+<p><strong>TONNAGES:</strong><br>
+Gross Tonnage: <strong>[GT]</strong><br>
+Net Tonnage: <strong>[NT]</strong></p>
+
+<p>Issued under the International Convention on Tonnage Measurement of Ships, 1969.</p>
+
+<p><strong>Issued:</strong> [DATE]<br>
+<strong>Expires:</strong> PERMANENT</p>
+
+<p>_______________________<br>
+[FLAG_STATE]</p>`
+                },
+                {
+                    title: "LOAD LINE CERTIFICATE",
+                    desc: "Load Line Certificate",
+                    content: `<h3>INTERNATIONAL LOAD LINE CERTIFICATE</h3>
+
+<p><strong>Vessel:</strong> [VESSEL_NAME] | <strong>IMO:</strong> [IMO]<br>
+<strong>Type:</strong> [TYPE] | <strong>Flag:</strong> [FLAG]</p>
+
+<p><strong>FREEBOARD:</strong><br>
+Summer: [S]mm<br>
+Winter: [W]mm<br>
+Tropical: [T]mm<br>
+Fresh Water: [F]mm</p>
+
+<p><strong>Issue Date:</strong> [DATE]<br>
+<strong>Valid Until:</strong> [EXPIRY]</p>
+
+<p><strong>Annual Surveys:</strong><br>
+1st: [DATE] | 2nd: [DATE] | 3rd: [DATE] | 4th: [DATE]</p>
+
+<p>_______________________<br>
+Classification Society / Flag State</p>`
+                },
+                {
+                    title: "CLASS CERTIFICATE",
+                    desc: "Classification Certificate",
+                    content: `<h3>CERTIFICATE OF CLASSIFICATION</h3>
+
+<p><strong>Classification Society:</strong> [CLASS_SOCIETY]<br>
+(e.g., Lloyd's Register, DNV, ABS, Bureau Veritas)</p>
+
+<p><strong>Vessel:</strong> [VESSEL_NAME]<br>
+<strong>IMO:</strong> [IMO_NO]<br>
+<strong>Hull No:</strong> [HULL_NO]</p>
+
+<p><strong>Class Notation:</strong><br>
+<strong>[CLASS_NOTATION]</strong><br>
+(e.g., ✠ 100A1 Ice Class 1A)</p>
+
+<p><strong>Built:</strong> [YEAR] at [SHIPYARD]</p>
+
+<p><strong>Valid Until:</strong> [DATE]</p>
+
+<p><strong>Next Special Survey:</strong> [DATE]<br>
+<strong>Next Annual Survey:</strong> [DATE]</p>
+
+<p>This vessel maintains class in good standing.</p>
+
+<p>_______________________<br>
+[CLASS_SOCIETY]<br>
+Surveyor: [NAME]</p>`
+                }
+            ]
+        },
+        {
+            category: "Operational Forms",
+            items: [
+                {
+                    title: "CARGO STOWAGE PLAN",
+                    desc: "Stowage Plan / Cargo Plan",
+                    content: `<h3>CARGO STOWAGE PLAN</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Voyage:</strong> [VOYAGE_NO]<br>
+<strong>Load Port:</strong> [PORT] | <strong>Date:</strong> [DATE]</p>
+
+<h4>HOLD ALLOCATION</h4>
+<table>
+<tr><th>Hold</th><th>Cargo</th><th>Quantity (MT)</th><th>Destination</th></tr>
+<tr><td>Hold 1</td><td>[CARGO_TYPE]</td><td>[QTY]</td><td>[PORT]</td></tr>
+<tr><td>Hold 2</td><td>[CARGO_TYPE]</td><td>[QTY]</td><td>[PORT]</td></tr>
+<tr><td>Hold 3</td><td>[CARGO_TYPE]</td><td>[QTY]</td><td>[PORT]</td></tr>
+</table>
+
+<p><strong>Total Cargo:</strong> [TOTAL] MT<br>
+<strong>Departure Draft:</strong> Fwd [FWD]m / Aft [AFT]m<br>
+<strong>GM:</strong> [GM] meters</p>
+
+<p><strong>Segregation:</strong> [DETAILS]</p>
+
+<p>Prepared by Chief Officer: _______<br>
+Approved by Master: _______</p>`
+                },
+                {
+                    title: "OIL RECORD BOOK",
+                    desc: "Oil Record Book (Part I/II)",
+                    content: `<h3>OIL RECORD BOOK - PART I (MACHINERY)</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME] | <strong>IMO:</strong> [IMO]</p>
+
+<p><strong>Date:</strong> [DATE] | <strong>Time:</strong> [TIME]<br>
+<strong>Position:</strong> [LAT]/[LONG] | <strong>Port:</strong> [PORT]</p>
+
+<h4>OPERATION CODE</h4>
+<p>☐ (A) Ballasting/cleaning of fuel oil tanks<br>
+☐ (B) Discharge of ballast from fuel oil tanks<br>
+☐ (C) Collection/disposal of oil residues<br>
+☐ (D) Disposal of bilge water<br>
+☐ (E) Bunkering operations</p>
+
+<p><strong>Code:</strong> [CODE] - [DESCRIPTION]</p>
+
+<p><strong>Quantity:</strong> [QUANTITY] liters<br>
+<strong>Method:</strong> [METHOD]<br>
+<strong>Tank:</strong> [TANK_NAME]</p>
+
+<p><strong>Remarks:</strong><br>
+[DETAILS]</p>
+
+<p>Signed: ______ (Chief Engineer)<br>
+Counter-signed: ______ (Master)</p>`
+                },
+                {
+                    title: "DECK LOG BOOK",
+                    desc: "Deck Log Book Template",
+                    content: `<h3>DECK LOG BOOK</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Date:</strong> [DATE]<br>
+<strong>Position at Noon:</strong> [LAT]/[LONG]</p>
+
+<h4>0800-1200 WATCH</h4>
+<table>
+<tr><th>Time</th><th>Course</th><th>Speed</th><th>Log</th><th>Event</th></tr>
+<tr><td>0800</td><td>[COURSE]°</td><td>[SPEED]kts</td><td>[LOG]nm</td><td>Watch commenced</td></tr>
+<tr><td>0900</td><td>[COURSE]°</td><td>[SPEED]kts</td><td>[LOG]nm</td><td>[EVENT]</td></tr>
+</table>
+
+<p><strong>Weather:</strong> Wind [DIR] [FORCE]BF, Sea [STATE], Visibility [VIS]nm<br>
+<strong>Barometer:</strong> [PRESSURE]mb | <strong>Temp:</strong> [TEMP]°C</p>
+
+<p><strong>Distance Run:</strong> [DISTANCE]nm<br>
+<strong>Remarks:</strong> [REMARKS]</p>
+
+<p>Officer of Watch: _______</p>`
+                },
+                {
+                    title: "ENGINE LOG BOOK",
+                    desc: "Engine Room Log Template",
+                    content: `<h3>ENGINE ROOM LOG</h3>
+
+<p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
+<strong>Date:</strong> [DATE] | <strong>Watch:</strong> [WATCH_HOURS]</p>
+
+<h4>MAIN ENGINE</h4>
+<p>Running Hours: [HOURS]<br>
+RPM: [RPM]<br>
+Load: [LOAD]%<br>
+Fuel Consumption: [CONS] MT/day</p>
+
+<h4>TEMPERATURES & PRESSURES</h4>
+<table>
+<tr><th>Parameter</th><th>Reading</th><th>Normal Range</th></tr>
+<tr><td>Lub Oil Inlet</td><td>[TEMP]°C</td><td>40-50°C</td></tr>
+<tr><td>Cooling Water</td><td>[TEMP]°C</td><td>75-85°C</td></tr>
+<tr><td>Exhaust Gas</td><td>[TEMP]°C</td><td>300-400°C</td></tr>
+</table>
+
+<p><strong>Fuel Oil ROB:</strong> [QTY] MT<br>
+<strong>Remarks:</strong> [REMARKS]</p>
+
+<p>Engineer on Watch: _______</p>`
+                }
+            ]
+        }
     ];
     
     container.innerHTML = "";
     data.forEach(cat => {
         let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
         cat.items.forEach(item => {
+            const safeContent = item.content.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
             html += `<div class="doc-card">
                 <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
                 <div class="doc-title">${item.title}</div>
                 <div class="doc-desc">${item.desc}</div>
-                <button class="btn-download" onclick="openContentModal('${item.title}', '${item.content}')"><i class="fa-solid fa-eye"></i> ${t.btn_read || 'READ'}</button>
+                <button class="btn-download" onclick='openContentModal("${item.title}", \`${safeContent}\`)'><i class="fa-solid fa-eye"></i> ${t.btn_read || 'READ'}</button>
             </div>`;
         });
         html += '</div>';
