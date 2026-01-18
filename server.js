@@ -666,6 +666,1622 @@ Master / Chief Engineer
 M/V [VESSEL_NAME]
 
 cc: Owners, P&I Club, Flag State, ISO 8217 Testing Laboratory`
+        },
+        
+        // ===== WEATHER RELATED (5 new) =====
+        "ice_conditions": {
+            title: "Letter of Protest - Ice Conditions",
+            category: "Weather Related",
+            template: `LETTER OF PROTEST - ICE CONDITIONS
+
+To: [CHARTERERS_NAME]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: PROTEST - ICE CONDITIONS / NAVIGATION RESTRICTIONS
+
+We formally protest regarding delays caused by ice conditions encountered by M/V [VESSEL_NAME].
+
+VESSEL DETAILS:
+- Vessel: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+- Flag: [FLAG], DWT: [DWT] MT
+- Ice Class: [ICE_CLASS]
+
+INCIDENT DETAILS:
+On [DATE] at position [LAT]/[LONG], the vessel encountered:
+- Ice concentration: [PERCENTAGE]%
+- Ice thickness: Approximately [THICKNESS] meters
+- Visibility: [VISIBILITY]
+
+Due to safety concerns and following SOLAS regulations, Master reduced speed to [SPEED] knots.
+
+ICEBREAKER ASSISTANCE:
+- Requested: [DATE_TIME]
+- Arrived: [DATE_TIME] (delay: [HOURS] hours)
+- Escort commenced: [DATE_TIME]
+
+TIME LOST:
+- Total delay: [HOURS] hours
+- Distance covered at reduced speed: [DISTANCE] nm
+
+This delay was entirely beyond Owners' control and constitutes force majeure.
+
+We reserve all rights under Charter Party.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Ice Pilot, P&I Club`
+        },
+        "typhoon_cyclone": {
+            title: "Letter of Protest - Typhoon/Cyclone",
+            category: "Weather Related",
+            template: `LETTER OF PROTEST - TYPHOON/CYCLONE AVOIDANCE
+
+To: [CHARTERERS_NAME]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: PROTEST - DEVIATION DUE TO TROPICAL CYCLONE
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+METEOROLOGICAL EVENT:
+- System Name: Typhoon/Cyclone [NAME]
+- Category: [CATEGORY] ([WIND_SPEED] knots)
+- Track: [DIRECTION]
+- Issued warnings: [WARNING_SOURCE] dated [WARNING_DATE]
+
+DEVIATION DETAILS:
+Original route: [ORIGINAL_WAYPOINT] → [DESTINATION]
+Diverted route: [DEVIATION_WAYPOINT] → [SAFE_AREA]
+- Deviation distance: [DISTANCE] nm
+- Additional steaming time: [HOURS] hours
+- Safe speed maintained: [SPEED] knots
+
+POSITION DATA:
+- Position when warning received: [LAT]/[LONG]
+- Closest approach to cyclone: [CLOSEST_DISTANCE] nm
+- Shelter taken at: [SHELTER_LOCATION]
+
+This deviation was mandatory for safety of vessel, crew, and cargo per SOLAS Chapter V and sound seamanship.
+
+TIME & COST IMPACT:
+- Delay: [HOURS] hours
+- Additional fuel: [FUEL_MT] MT
+- Estimated cost: USD [COST]
+
+All rights reserved. This constitutes force majeure.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Owners, Weather Routing Service, P&I Club`
+        },
+        "lightning_strike": {
+            title: "Letter of Protest - Lightning Strike",
+            category: "Weather Related",
+            template: `LETTER OF PROTEST - LIGHTNING STRIKE DAMAGE
+
+To: [OWNERS_NAME] / [INSURERS_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - LIGHTNING STRIKE INCIDENT
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+INCIDENT SUMMARY:
+Date/Time: [DATE] at [TIME] hours
+Position: [LAT]/[LONG]
+Weather: Severe thunderstorm, multiple lightning strikes observed
+
+LIGHTNING STRIKE:
+At approximately [TIME], vessel was struck by lightning. Visible strike location: [LOCATION_ON_VESSEL]
+
+DAMAGE ASSESSMENT:
+Navigation Equipment:
+- Radar: [STATUS]
+- GPS: [STATUS]
+- AIS: [STATUS]
+- ECDIS: [STATUS]
+- Communication equipment: [STATUS]
+
+Other Systems:
+- Main engine: [STATUS]
+- Auxiliary systems: [STATUS]
+- Cargo systems: [STATUS]
+
+IMMEDIATE ACTIONS:
+1. Damage control survey conducted
+2. Backup systems activated
+3. Classification society notified
+4. [OTHER_ACTIONS]
+
+OPERATIONAL IMPACT:
+- Repairs required: [REPAIR_LIST]
+- ETA affected: [YES/NO] (Delay: [HOURS] hours)
+- Port call necessary: [PORT_NAME]
+
+Class surveyor [SURVEYOR_NAME] attended on [DATE]. Survey report attached.
+
+This incident was beyond Owners' control. All rights reserved under H&M and P&I insurance.
+
+Respectfully submitted,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Class Society, P&I Club, H&M Underwriters`
+        },
+        "heavy_swell": {
+            title: "Letter of Protest - Heavy Swell/Sea State",
+            category: "Weather Related",
+            template: `LETTER OF PROTEST - HEAVY SWELL CONDITIONS
+
+To: [CHARTERERS_NAME]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: PROTEST - CARGO OPERATIONS SUSPENDED DUE TO HEAVY SWELL
+
+VESSEL: M/V [VESSEL_NAME] at [PORT_NAME]
+
+SWELL CONDITIONS:
+Date: [DATE]
+Swell height: [HEIGHT] meters
+Swell period: [PERIOD] seconds
+Wind: [WIND_SPEED] knots from [DIRECTION]
+
+OPERATIONS SUSPENDED:
+Cargo operation: [LOADING/DISCHARGING]
+Suspension time: [START_TIME] to [END_TIME]
+Duration: [HOURS] hours
+
+REASON FOR SUSPENSION:
+Heavy swell caused:
+- Excessive vessel movement ([ROLL_ANGLE] degrees roll)
+- Unsafe cargo handling conditions
+- Risk of cargo damage and personnel injury
+- [OTHER_REASONS]
+
+CHARTER PARTY PROVISIONS:
+Per C/P clause [CLAUSE]: "Weather Working Days" / "Weather permitting"
+
+Master's decision to suspend was based on:
+1. Safety of personnel
+2. Safety of cargo
+3. Safety of vessel and shore installations
+4. Terminal Master/Port Authority recommendation
+
+TIME TO BE EXCLUDED:
+These [HOURS] hours should be excluded from laytime calculation as "weather time" per Charter Party terms.
+
+All rights reserved.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Port Authority, Owners, Stevedore`
+        },
+        "sandstorm": {
+            title: "Letter of Protest - Sandstorm/Dust Storm",
+            category: "Weather Related",
+            template: `LETTER OF PROTEST - SANDSTORM/DUST STORM
+
+To: [CHARTERERS_NAME] / [PORT_AUTHORITY]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - CARGO OPERATIONS SUSPENDED DUE TO SANDSTORM
+
+VESSEL: M/V [VESSEL_NAME]
+CARGO: [CARGO_TYPE]
+OPERATION: [LOADING/DISCHARGING]
+
+WEATHER EVENT:
+Date/Time: [DATE] at [TIME]
+Visibility: Less than [METERS] meters
+Wind speed: [WIND_SPEED] knots
+Sand/dust density: [DESCRIPTION]
+
+IMPACT ON OPERATIONS:
+1. Cargo contamination risk - particularly for [SENSITIVE_CARGO]
+2. Safety hazard - zero visibility, sand ingress to machinery
+3. Hatch covers could not be opened/closed safely
+4. Personnel safety compromised
+
+OPERATIONS SUSPENDED:
+- From: [START_TIME]
+- To: [END_TIME]
+- Duration: [HOURS] hours
+
+PROTECTIVE MEASURES:
+- All hatches sealed
+- Ventilation systems shut down
+- Personnel confined to accommodation
+- Cargo operations fully suspended
+
+CHARTER PARTY:
+Per C/P, weather delays are excluded from laytime. This sandstorm constituted force majeure preventing safe cargo operations.
+
+TIME IMPACT:
+[HOURS] hours to be excluded from laytime calculation.
+
+We protest any attempt by Charterers to count this time against laytime.
+
+All rights reserved.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Owners, Port Authority, Cargo Surveyor`
+        },
+        
+        // ===== CARGO ISSUES (5 new) =====
+        "cargo_contamination": {
+            title: "Letter of Protest - Cargo Contamination",
+            category: "Cargo Issues",
+            template: `LETTER OF PROTEST - CARGO CONTAMINATION
+
+To: [SHIPPERS_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - CONTAMINATED CARGO DISCOVERED
+
+VESSEL & CARGO:
+- M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+- Cargo: [CARGO_TYPE]
+- B/L: [BL_NUMBER]
+- Hold: No. [HOLD_NUMBER]
+
+CONTAMINATION DISCOVERED:
+During [LOADING/DISCHARGE] operations on [DATE], contamination was discovered:
+- Type of contamination: [DESCRIPTION]
+- Estimated affected quantity: [QUANTITY] MT
+- Possible source: [SOURCE]
+
+EVIDENCE:
+- Samples taken: [NUMBER] samples
+- Photographs: [NUMBER] photos
+- Surveyor: [SURVEYOR_NAME]
+- Hold inspection report: Attached
+
+PREVIOUS CARGO:
+- Last cargo: [PREVIOUS_CARGO]
+- Discharge port: [PORT]
+- Hold cleaning: [DATE] (Certificate: [CERT_NUMBER])
+
+Holds were inspected and approved by [INSPECTOR_NAME] on [DATE] prior to loading.
+
+We protest that this contamination was NOT due to any fault of the vessel and likely originated from shore facilities or the cargo itself.
+
+All rights reserved. Owners accept no liability.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: P&I Club, Cargo Surveyor`
+        },
+        "cargo_shortage": {
+            title: "Letter of Protest - Cargo Shortage on Discharge",
+            category: "Cargo Issues",
+            template: `LETTER OF PROTEST - CARGO SHORTAGE CLAIM
+
+To: [RECEIVERS_NAME] / [CHARTERERS_NAME]
+Date: [DATE]
+Port: [DISCHARGE_PORT]
+
+Dear Sirs,
+
+RE: PROTEST - CARGO SHORTAGE CLAIM DISPUTED
+
+VESSEL: M/V [VESSEL_NAME]
+B/L: [BL_NUMBER]
+CARGO: [CARGO_TYPE]
+
+LOADED QUANTITY:
+- B/L quantity: [BL_QUANTITY] MT
+- Load port draft survey: [DRAFT_SURVEY_QUANTITY] MT
+- Certificate: [CERT_NUMBER]
+
+DISCHARGED QUANTITY:
+- Receivers' outturn: [OUTTURN_QUANTITY] MT
+- Discharge port draft survey: [DISCHARGE_DRAFT_QTY] MT
+- Claimed shortage: [SHORTAGE] MT
+
+VESSEL'S POSITION:
+We DISPUTE this shortage claim on following grounds:
+
+1. LOADING ACCURACY:
+   - Independent surveyor at load port: [SURVEYOR_NAME]
+   - Shore tanks calibrated: [DATE]
+   - Loading supervised throughout
+
+2. VESSEL CONDITIONS:
+   - No holds opened during voyage
+   - All seals intact on arrival (Seal Nos: [SEAL_NUMBERS])
+   - No cargo leakage/spillage observed
+   - Weather conditions normal throughout voyage
+
+3. DISCHARGE OPERATIONS:
+   - Receivers' equipment: [DESCRIPTION]
+   - Weighing system last calibrated: [DATE]
+   - [DISCREPANCY_REASONS]
+
+4. POSSIBLE CAUSES:
+   - Shore tank measurement errors
+   - Temperature/density variations
+   - Moisture content differences
+   - [OTHER_REASONS]
+
+OUTTURN SURVEY:
+We request independent joint survey by [PREFERRED_SURVEYOR]. Any shortage must be verified by mutually agreed surveyor.
+
+Cargo was carried with due care. Vessel's holds were tight and cargo-worthy. Any discrepancy is due to shore measurement differences, not vessel fault.
+
+Owners accept NO liability. All rights reserved under B/L and Hague-Visby Rules.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: P&I Club, Owners, Cargo Surveyor`
+        },
+        "cargo_wetness": {
+            title: "Letter of Protest - Wet Damaged Cargo",
+            category: "Cargo Issues",
+            template: `LETTER OF PROTEST - WET CARGO DAMAGE
+
+To: [RECEIVERS_NAME]
+Date: [DATE]
+Port: [DISCHARGE_PORT]
+
+Dear Sirs,
+
+RE: PROTEST - WET DAMAGE TO CARGO CLAIM
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+CARGO: [CARGO_TYPE]
+B/L: [BL_NUMBER]
+HOLD(S): [HOLD_NUMBERS]
+
+WETNESS CLAIM:
+Receivers allege wet damage to cargo in Hold No. [HOLD_NUMBER].
+Claimed damaged quantity: [QUANTITY] MT / [PERCENTAGE]%
+
+VESSEL'S EVIDENCE - CARGO DRY ON LOADING:
+1. Pre-loading hold inspection certificate: [CERT_NUMBER] dated [DATE]
+2. Hold conditions: "Clean, dry, and cargo-worthy"
+3. Bilges dry and clean
+4. Moisture meter readings at loading: [READINGS]%
+5. Shipper's Certificate of Quality confirms moisture: [MOISTURE]%
+
+VESSEL CONDITIONS DURING VOYAGE:
+- All hatches properly secured and battened down
+- Hatch cover ultrasonic testing: [DATE] (Certificate: [CERT_NUMBER])
+- No heavy weather encountered (refer to Deck Log Book)
+- Hold ventilation: [VENTILATION_DETAILS]
+- Bilge soundings daily: ALL DRY throughout voyage
+- No seawater ingress detected
+
+WEATHER CONDITIONS:
+- Route: [LOAD_PORT] to [DISCHARGE_PORT]
+- Max wind: [WIND] Beaufort
+- Max sea state: [SEA_STATE]
+- No green seas, no water on deck
+
+DISCHARGE CONDITIONS:
+- Hatches opened: [DATE] at [TIME]
+- Weather at discharge port: [WEATHER]
+- Any rain during discharge: [YES/NO]
+
+CONCLUSION:
+If any wetness exists, possible causes:
+1. Cargo loaded with inherent moisture
+2. Condensation due to temperature differential
+3. Rain water ingress during discharge operations
+4. Improper shore storage
+
+Vessel's holds were tight, weathertight, and cargo-worthy. All due diligence exercised.
+
+Owners deny liability. All rights reserved under Hague-Visby Rules.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: P&I Club, Owners, Hold Inspector`
+        },
+        "cargo_temperature": {
+            title: "Letter of Protest - Temperature Damage",
+            category: "Cargo Issues",
+            template: `LETTER OF PROTEST - CARGO TEMPERATURE DAMAGE CLAIM
+
+To: [CARGO_INTERESTS]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - TEMPERATURE DAMAGE CLAIM DISPUTED
+
+VESSEL: M/V [VESSEL_NAME]
+CARGO: [CARGO_TYPE] (Temperature-sensitive)
+B/L: [BL_NUMBER]
+Container/Hold: [REFERENCE]
+
+TEMPERATURE CLAIM:
+Receivers claim cargo damaged due to temperature deviation during carriage.
+
+VESSEL'S TEMPERATURE RECORDS:
+Refrigeration unit: [UNIT_ID]
+Set point: [SET_TEMP]°C
+Monitoring: Continuous data logger
+
+TEMPERATURE LOG:
+Date        Time    Recorded Temp    Status
+[DATE_1]    [TIME]  [TEMP]°C        OK
+[DATE_2]    [TIME]  [TEMP]°C        OK
+[DATE_3]    [TIME]  [TEMP]°C        OK
+(Full log available on request)
+
+EQUIPMENT CERTIFICATION:
+- Reefer unit PTI test: PASSED on [DATE]
+- Last service: [DATE] by [TECHNICIAN]
+- Calibration certificate: [CERT_NUMBER]
+- Alarm system: FUNCTIONAL
+
+LOADING CONDITIONS:
+- Cargo temperature at loading: [TEMP]°C
+- Pre-cooling: [DETAILS]
+- Shipper's temperature certificate: [ATTACHED/NOT PROVIDED]
+
+VOYAGE MONITORING:
+- Temperature checks: Every [FREQUENCY] hours
+- All readings within acceptable range ±[TOLERANCE]°C
+- No alarms triggered
+- No power failures
+- Refrigeration unit operated continuously
+
+POSSIBLE ALTERNATIVE CAUSES:
+1. Cargo loaded above specified temperature
+2. Inadequate pre-cooling by shipper
+3. Temperature rise during discharge operations
+4. Improper handling at destination
+5. Inherent vice of cargo
+
+CONCLUSION:
+Vessel maintained contracted temperature throughout voyage. Temperature-sensitive cargo was carried with utmost care.
+
+Owners deny liability. All rights reserved.
+
+Yours faithfully,
+_______________________
+Chief Engineer / Master
+M/V [VESSEL_NAME]
+
+cc: Reefer Surveyor, P&I Club`
+        },
+        "cargo_infestation": {
+            title: "Letter of Protest - Cargo Infestation",
+            category: "Cargo Issues",
+            template: `LETTER OF PROTEST - CARGO INFESTATION CLAIM
+
+To: [RECEIVERS_NAME] / [PORT_HEALTH_AUTHORITY]
+Date: [DATE]
+Port: [DISCHARGE_PORT]
+
+Dear Sirs,
+
+RE: PROTEST - INFESTATION CLAIM (INSECTS/RODENTS)
+
+VESSEL: M/V [VESSEL_NAME]
+CARGO: [CARGO_TYPE]
+HOLD: No. [HOLD_NUMBER]
+
+INFESTATION ALLEGATION:
+Receivers/Port Health Authority allege infestation found in cargo:
+- Type: [INSECTS/RODENTS/OTHER]
+- Species identified: [SPECIES]
+- Location: Hold No. [HOLD_NUMBER]
+
+VESSEL'S POSITION - NOT VESSEL-RELATED:
+
+1. FUMIGATION RECORDS:
+   - Last fumigation: [DATE] at [PORT]
+   - Fumigant: [CHEMICAL_NAME]
+   - Certificate: [CERT_NUMBER]
+   - Valid until: [EXPIRY_DATE]
+
+2. PRE-LOADING INSPECTION:
+   - Hold inspected: [DATE]
+   - Condition: "Clean, dry, free from previous cargo residue"
+   - No infestation detected
+   - Inspector: [INSPECTOR_NAME]
+
+3. VESSEL PEST CONTROL:
+   - Ship Sanitation Certificate: [CERT_NUMBER], valid until [DATE]
+   - Pest control service provider: [COMPANY]
+   - Last treatment: [DATE]
+   - No rodents/insects reported onboard
+
+4. LOADING SUPERVISION:
+   - Cargo condition at loading: [DESCRIPTION]
+   - Shipper's quality certificate: [ATTACHED/NOT PROVIDED]
+   - Any evidence of infestation pre-loading: [YES/NO]
+
+5. HOLD SECURITY DURING VOYAGE:
+   - Hatches sealed throughout voyage
+   - No holds opened between loading and discharge
+   - Bilge access secured
+
+PROBABLE SOURCE:
+Based on evidence, infestation likely originated from:
+- Cargo already infested at time of loading
+- Shore storage facilities
+- Bags/packaging materials already contaminated
+- [OTHER_SOURCE]
+
+CONCLUSION:
+Vessel was properly fumigated, clean, and pest-free. Infestation pre-existed in cargo before loading or originated from shore sources.
+
+Owners deny liability. All claims rejected.
+
+Respectfully submitted,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Port Health Authority, P&I Club, Fumigation Company`
+        },
+        
+        // ===== PORT/TERMINAL (5 new) =====
+        "unsafe_berth": {
+            title: "Letter of Protest - Unsafe Berth",
+            category: "Port/Terminal",
+            template: `LETTER OF PROTEST - UNSAFE BERTH
+
+To: [CHARTERERS_NAME]
+    [PORT_AUTHORITY]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - UNSAFE BERTH CONDITIONS
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+BERTH ALLOCATION:
+Berth: [BERTH_NAME/NUMBER]
+Date allocated: [DATE]
+
+UNSAFE CONDITIONS IDENTIFIED:
+1. [UNSAFE_CONDITION_1]
+   Example: Insufficient depth (Charted: [DEPTH_CHARTED]m, Actual: [DEPTH_ACTUAL]m, Vessel draft: [VESSEL_DRAFT]m)
+
+2. [UNSAFE_CONDITION_2]
+   Example: Exposed berth, heavy swell ([HEIGHT]m), excessive vessel movement
+
+3. [UNSAFE_CONDITION_3]
+   Example: Inadequate fendering, risk of damage to vessel's hull
+
+4. [UNSAFE_CONDITION_4]
+   Example: Strong current ([SPEED] knots), inadequate mooring arrangements
+
+CHARTER PARTY WARRANTY:
+C/P clause [CLAUSE] guarantees: "One safe port, one safe berth, always afloat"
+
+MASTER'S ASSESSMENT:
+Based on prudent seamanship and following ISM Code procedures, Master determines this berth is UNSAFE for following reasons:
+- [REASON_1]
+- [REASON_2]
+
+SUPPORTING EVIDENCE:
+- Pilot's remarks: [PILOT_COMMENTS]
+- Port Authority notification: [REFERENCE]
+- Weather forecast: [FORECAST]
+- Damage risk assessment: [HIGH/MEDIUM/LOW]
+
+MASTER'S DECISION:
+Vessel refuses to berth until:
+1. [SAFETY_REQUIREMENT_1]
+2. [SAFETY_REQUIREMENT_2]
+3. [SAFETY_REQUIREMENT_3]
+
+TIME IMPACT:
+Vessel remains at anchorage: [HOURS] hours (and continuing)
+This time is for Charterers' account due to breach of safe port warranty.
+
+ALTERNATIVE:
+Master requests alternative berth: [SUGGESTED_BERTH]
+
+All rights reserved. Charterers liable for delays and any additional expenses.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Owners, P&I Club, Port Authority, Pilot Station`
+        },
+        "equipment_failure": {
+            title: "Letter of Protest - Shore Equipment Failure",
+            category: "Port/Terminal",
+            template: `LETTER OF PROTEST - SHORE EQUIPMENT FAILURE
+
+To: [TERMINAL_OPERATOR]
+    [CHARTERERS_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - SHORE EQUIPMENT BREAKDOWN DELAYS
+
+VESSEL: M/V [VESSEL_NAME]
+OPERATION: [LOADING/DISCHARGING]
+CARGO: [CARGO_TYPE]
+
+EQUIPMENT FAILURES:
+1. Equipment: [CRANE/CONVEYOR/LOADER]
+   - Breakdown time: [DATE] at [TIME]
+   - Duration: [HOURS] hours
+   - Reason: [MECHANICAL_FAILURE]
+
+2. Equipment: [EQUIPMENT_2]
+   - Breakdown time: [DATE] at [TIME]
+   - Duration: [HOURS] hours
+
+TOTAL DELAYS:
+- Total time lost: [HOURS] hours
+- Cargo operations suspended: [START] to [END]
+
+IMPACT ON LAYTIME:
+Charter Party rate: [RATE] MT/day
+With working equipment, estimated completion: [EXPECTED_TIME]
+Actual completion: [ACTUAL_TIME]
+Delay: [HOURS] hours = [DAYS] days
+
+TERMINAL'S RESPONSIBILITY:
+Per Terminal Tariff and Charter Party, terminal guarantees:
+- Equipment in good working order
+- Adequate capacity to maintain agreed loading/discharge rates
+- Backup equipment available
+
+These failures were entirely due to terminal's equipment inadequacy/poor maintenance.
+
+FINANCIAL IMPACT:
+- Laytime exceeded by: [HOURS] hours
+- Demurrage accruing: USD [RATE]/day
+- Potential demurrage claim: USD [AMOUNT]
+
+Vessel was ready, willing, and able to work. Delay was solely due to shore equipment failure beyond Owners' control.
+
+TIME TO BE EXCLUDED:
+[HOURS] hours must be excluded from laytime calculation per Charter Party exception clause.
+
+All rights reserved. We hold terminal and charterers liable.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Charterers, Owners, Terminal Manager`
+        },
+        "stevedore_negligence": {
+            title: "Letter of Protest - Stevedore Negligence",
+            category: "Port/Terminal",
+            template: `LETTER OF PROTEST - STEVEDORE NEGLIGENCE
+
+To: [STEVEDORE_COMPANY]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - NEGLIGENT CARGO HANDLING / VESSEL DAMAGE
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+INCIDENT DATE/TIME: [DATE] at [TIME]
+LOCATION: Hold No. [HOLD] / Deck area [LOCATION]
+
+NEGLIGENT ACTS:
+During cargo operations under your stevedores' control, the following negligence occurred:
+
+1. [INCIDENT_1]
+   Example: Crane hook dropped cargo unit weighing [WEIGHT] MT onto hatch coaming, causing dent
+
+2. [INCIDENT_2]
+   Example: Forklift collision with vessel's accommodation ladder
+
+3. [INCIDENT_3]
+   Example: Excessive cargo draft causing hold bottom plate damage
+
+DAMAGE TO VESSEL:
+- Item damaged: [ITEM]
+- Extent: [DESCRIPTION]
+- Photographs: [NUMBER] photos taken
+- Estimated repair cost: USD [COST]
+
+DAMAGE TO CARGO:
+- Description: [CARGO_DAMAGE]
+- Quantity affected: [QUANTITY]
+- Estimated value: USD [VALUE]
+
+WITNESSES:
+- Ship's Officer on duty: [NAME, RANK]
+- Stevedore foreman: [NAME]
+- Independent surveyor: [SURVEYOR_NAME]
+
+PREVIOUS WARNINGS:
+Master/Chief Officer warned stevedores at [TIME] regarding:
+- [WARNING_1]
+- [WARNING_2]
+
+Warnings were ignored, resulting in this damage.
+
+LIABILITY:
+Damage was caused solely by stevedores' negligence and unsafe working practices. Stevedoring company is fully liable under applicable stevedoring contract and maritime law.
+
+CLAIMS NOTIFIED:
+- Vessel damage claim: USD [AMOUNT]
+- Cargo damage claim: USD [AMOUNT] (Cargo interests)
+- Delay claim: [HOURS] hours
+
+Class surveyor [SURVEYOR_NAME] will attend to assess permanent repairs required.
+
+We reserve all rights including lien over cargo if necessary.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: P&I Club, Owners, Cargo Interests, Class Society`
+        },
+        "customs_delay": {
+            title: "Letter of Protest - Customs/Quarantine Delay",
+            category: "Port/Terminal",
+            template: `LETTER OF PROTEST - CUSTOMS/QUARANTINE DELAYS
+
+To: [CUSTOMS_AUTHORITY] / [CHARTERERS_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - UNREASONABLE CUSTOMS/QUARANTINE DELAYS
+
+VESSEL: M/V [VESSEL_NAME]
+
+ARRIVAL & DOCUMENTATION:
+- Vessel arrived: [DATE] at [TIME]
+- All documents submitted: [DATE] at [TIME]
+- Documents submitted:
+  * Cargo manifest
+  * Crew list
+  * Ship's stores list
+  * Maritime Declaration of Health
+  * [OTHER_DOCUMENTS]
+
+CUSTOMS/QUARANTINE PROCESS:
+- Customs boarding: [DATE] at [TIME] (Delay: [HOURS] hours)
+- Inspection commenced: [TIME]
+- Free Pratique granted: [DATE] at [TIME] (Delay: [HOURS] hours)
+- Customs clearance: [DATE] at [TIME] (Delay: [HOURS] hours)
+
+TOTAL DELAY: [HOURS] hours
+
+REASONS FOR DELAY (as stated by authorities):
+- [REASON_1]
+- [REASON_2]
+
+VESSEL'S POSITION:
+All documentation was in order. No contraband, no health issues, no irregularities found. Delay was due to:
+- Insufficient customs staff
+- [ADMINISTRATIVE_DELAYS]
+- [OTHER_REASONS]
+
+These delays were entirely beyond vessel's control.
+
+CHARTER PARTY IMPACT:
+- Laytime counting: NOR could not be tendered until Free Pratique granted
+- Time lost: [HOURS] hours
+- This time is for Charterers'/Port's account
+
+FAL CONVENTION:
+Per IMO FAL Convention, streamlined procedures should apply. These delays contradict Convention provisions.
+
+FINANCIAL IMPACT:
+- Delay cost: USD [COST]
+- Port charges accumulating: USD [AMOUNT]
+- Bunker consumption: [FUEL_MT] MT
+
+We protest these unreasonable delays and hold [CHARTERERS/PORT AUTHORITY] responsible.
+
+All rights reserved.
+
+Respectfully,
+_______________________
+Master / Agent
+M/V [VESSEL_NAME]
+
+cc: Owners, Flag State, IMO (if pattern persists)`
+        },
+        "strike_lockout": {
+            title: "Letter of Protest - Strike/Industrial Action",
+            category: "Port/Terminal",
+            template: `LETTER OF PROTEST - STRIKE / INDUSTRIAL ACTION
+
+To: [CHARTERERS_NAME]
+    [PORT_AUTHORITY]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - DELAYS DUE TO STRIKE/INDUSTRIAL ACTION
+
+VESSEL: M/V [VESSEL_NAME]
+CARGO: [CARGO_TYPE]
+OPERATION: [LOADING/DISCHARGING]
+
+STRIKE/INDUSTRIAL ACTION:
+- Type: [STRIKE/LOCKOUT/WORK-TO-RULE/GO-SLOW]
+- Affected workers: [DOCKERS/CRANE OPERATORS/TRUCK DRIVERS/OTHER]
+- Union: [UNION_NAME]
+- Strike commenced: [DATE] at [TIME]
+- Strike ended: [DATE] at [TIME] (or ONGOING)
+
+IMPACT ON VESSEL:
+- Cargo operations suspended: [DATE] at [TIME]
+- Reason: [NO LABOR AVAILABLE]
+- Operations resumed: [DATE] at [TIME] (or NOT YET RESUMED)
+- Total time lost: [HOURS] hours / [DAYS] days
+
+VESSEL'S POSITION:
+- Vessel ready in all respects
+- NOR validly tendered: [DATE]
+- Laytime commenced: [DATE]
+- Cargo operations impossible due to strike
+
+CHARTER PARTY PROVISIONS:
+C/P clause [CLAUSE]: Strike clause / Force Majeure provisions
+
+Under C/P strike clause:
+- [STRIKE TIME EXCLUDED FROM LAYTIME], or
+- [LAYTIME CONTINUES BUT DEMURRAGE SUSPENDED], or
+- [OTHER_PROVISION]
+
+ALTERNATIVE PORTS:
+Master requested orders for alternative discharge port on [DATE]. Charterers responded: [RESPONSE]
+
+FINANCIAL IMPACT (preliminary):
+- Port charges accumulating: USD [AMOUNT]
+- Bunker consumption: [FUEL_MT] MT
+- Crew wages: USD [AMOUNT]
+- Opportunity cost: USD [AMOUNT]
+
+We protest that this time should be [EXCLUDED FROM LAYTIME / COUNTED AS LAYTIME WITH DEMURRAGE SUSPENDED] per Charter Party strike clause.
+
+If strike continues beyond [DATE], vessel may be compelled to sail for alternative orders to mitigate losses.
+
+All rights reserved under Charter Party and common law.
+
+Yours faithfully,
+_______________________
+Master / Owners' Representative
+M/V [VESSEL_NAME]
+
+cc: Owners, P&I Club, Port Authority, Local Agent`
+        },
+        
+        // ===== VESSEL OPERATIONS (3 new) =====
+        "machinery_breakdown": {
+            title: "Letter of Protest - Main Engine/Machinery Breakdown",
+            category: "Vessel Operations",
+            template: `LETTER OF PROTEST - MACHINERY BREAKDOWN
+
+To: [OWNERS_NAME] / [CHARTERERS_NAME]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: NOTICE - MAIN ENGINE/MACHINERY BREAKDOWN
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+BREAKDOWN DETAILS:
+Date/Time: [DATE] at [TIME]
+Position: [LAT]/[LONG]
+Equipment: [MAIN_ENGINE/AUXILIARY/STEERING/OTHER]
+
+INCIDENT DESCRIPTION:
+[DETAILED_DESCRIPTION]
+
+Example: Main engine sudden shutdown due to [CAUSE]. Alarm: [ALARM_DESCRIPTION]
+
+IMMEDIATE ACTIONS:
+1. Emergency procedures activated
+2. Auxiliary systems: [STATUS]
+3. Vessel's status: [ANCHORED/DRIFTING/UNDER TOW]
+4. Safety: All crew safe, no pollution
+
+TECHNICAL ASSESSMENT:
+Fault identified: [TECHNICAL_ISSUE]
+Cause: [ROOT_CAUSE]
+Parts required: [SPARE_PARTS_LIST]
+
+REPAIR PLAN:
+- Onboard repair possible: [YES/NO]
+- Estimated repair time: [HOURS/DAYS]
+- Shore assistance required: [YES/NO]
+- Port call necessary: [PORT_NAME]
+- Class surveyor: [SURVEYOR_NAME] notified
+
+IMPACT:
+- ETA delay: [HOURS] hours
+- Speed reduction: [FROM_SPEED] to [TO_SPEED] knots
+- Charter Party: Time Charter - OFF-HIRE from [DATE_TIME]
+
+NOTIFICATIONS SENT:
+- Classification Society: [DATE/TIME]
+- Flag State: [DATE/TIME]
+- Nearest Coast Guard: [DATE/TIME]
+- P&I Club: [DATE/TIME]
+
+INSURANCE:
+- H&M claim reference: [CLAIM_NUMBER]
+- LoF (Lloyd's Open Form) salvage: [IF_APPLICABLE]
+
+This incident was beyond vessel's control. All due diligence in maintenance was exercised.
+
+Regular updates will follow.
+
+Respectfully,
+_______________________
+Master / Chief Engineer
+M/V [VESSEL_NAME]
+
+cc: Class Society, P&I Club, H&M Underwriters`
+        },
+        "collision_grounding": {
+            title: "Letter of Protest - Collision/Grounding",
+            category: "Vessel Operations",
+            template: `LETTER OF PROTEST - COLLISION/GROUNDING INCIDENT
+
+To: [OWNERS_NAME]
+    [P&I_CLUB]
+    [FLAG_STATE]
+Date: [DATE]
+
+URGENT: MARINE CASUALTY REPORT
+
+Dear Sirs,
+
+RE: [COLLISION/GROUNDING] - M/V [VESSEL_NAME]
+
+INCIDENT CLASSIFICATION: [COLLISION/GROUNDING/CONTACT]
+
+VESSEL PARTICULARS:
+- M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+- Flag: [FLAG], Class: [CLASS_SOCIETY]
+- Master: [MASTER_NAME]
+- P&I Club: [PI_CLUB]
+
+INCIDENT DETAILS:
+Date/Time: [DATE] at [TIME] (Local Time: [LOCAL_TIME])
+Position: [LAT]/[LONG]
+Location: [DETAILED_LOCATION]
+
+COLLISION DETAILS (if collision):
+- Other vessel: [VESSEL_NAME], IMO [IMO], Flag [FLAG]
+- Type: [VESSEL_TYPE]
+- Relative positions: [DESCRIPTION]
+- Point of impact: [LOCATION_ON_VESSEL]
+- COLREGs complian: [ANALYSIS]
+
+GROUNDING DETAILS (if grounding):
+- Type: [SOFT/HARD] grounding
+- Bottom: [MUD/SAND/ROCK]
+- Tide: [HIGH/LOW/FALLING/RISING]
+- Depth: Charted [DEPTH]m, Vessel draft [DRAFT]m
+
+IMMEDIATE ACTIONS:
+1. Emergency stations manned
+2. Damage assessment: [INITIAL_ASSESSMENT]
+3. Watertight integrity: [STATUS]
+4. Pollution risk: [ASSESSMENT]
+5. Crew status: [ALL_SAFE/INJURIES]
+
+DAMAGE ASSESSMENT (preliminary):
+- Hull: [DAMAGE_DESCRIPTION]
+- Machinery: [STATUS]
+- Cargo: [STATUS]
+- Stability: [ASSESSMENT]
+- Seaworthiness: [COMPROMISED/MAINTAINED]
+
+NOTIFICATIONS MADE:
+- Flag State: [TIME]
+- Coast Guard: [TIME]
+- Port State Control: [TIME]
+- VTS/Harbor Master: [TIME]
+- Classification Society: [TIME]
+- P&I Club: [TIME]
+
+ASSISTANCE:
+- Tugs: [NUMBER] tugs responding
+- Salvors: [SALVAGE_COMPANY] contacted
+- LOF signed: [YES/NO]
+
+CASUALTIES/POLLUTION:
+- Injuries: [NUMBER/NONE]
+- Fatalities: [NUMBER/NONE]
+- Pollution: [YES/NO - DETAILS]
+
+PRELIMINARY CAUSE:
+[INITIAL_ASSESSMENT - subject to investigation]
+
+SALVAGE/REFLOATING:
+- Self-refloating: [ATTEMPTED/SUCCESSFUL/NOT_POSSIBLE]
+- Salvage company: [COMPANY_NAME]
+- ETA salvage tugs: [TIME]
+
+This is preliminary notice. Full incident report will follow within 24 hours.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+URGENT COPY TO: Flag State Administration, Class Society, P&I Club, H&M Underwriters, Local Authorities`
+        },
+        "anchoring_incident": {
+            title: "Letter of Protest - Dragging Anchor/Anchoring Incident",
+            category: "Vessel Operations",
+            template: `LETTER OF PROTEST - DRAGGING ANCHOR INCIDENT
+
+To: [PORT_AUTHORITY] / [OWNERS]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: INCIDENT - DRAGGING ANCHOR
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+ANCHORAGE DETAILS:
+- Anchorage: [ANCHORAGE_NAME]
+- Position anchored: [LAT]/[LONG]
+- Depth: [DEPTH] meters
+- Anchor: [PORT/STARBOARD/BOTH]
+- Cable: [SHACKLES] shackles in water
+- Bottom: [MUD/SAND/ROCK/CORAL]
+
+INCIDENT:
+Date/Time: [DATE] at [TIME]
+
+WEATHER CONDITIONS:
+- Wind: [SPEED] knots from [DIRECTION]
+- Gusts: [GUST_SPEED] knots
+- Sea state: [DESCRIPTION]
+- Current: [SPEED] knots
+
+DRAGGING INCIDENT:
+- Dragging detected: [TIME]
+- Detection method: [GPS_ALARM/VISUAL/RADAR]
+- Distance dragged: [DISTANCE] meters
+- Direction: Toward [HAZARD/SHALLOW_WATER/OTHER_VESSELS]
+
+ACTIONS TAKEN:
+1. Main engine started immediately
+2. Additional anchor: [DEPLOYED/NOT_DEPLOYED]
+3. More cable veered: [SHACKLES] additional shackles
+4. Engine used to reduce strain
+5. [OTHER_ACTIONS]
+
+ANCHOR RE-SECURED:
+- New position: [LAT]/[LONG]
+- Distance from original position: [DISTANCE] meters
+- Anchor holding: [STATUS]
+
+HAZARDS AVOIDED:
+- Shallow water: [DISTANCE] meters
+- Other vessels: M/V [NAME] at [DISTANCE] meters
+- Shore installations: [DETAILS]
+- Submarine cables/pipelines: [DETAILS]
+
+NOTIFICATIONS:
+- VTS/Port Control: [TIME]
+- Nearby vessels: [VHF_WARNING_SENT]
+- Coast Guard: [TIME]
+
+INVESTIGATION:
+Probable cause: [SUDDEN_WIND_INCREASE/POOR_HOLDING_GROUND/INSUFFICIENT_CABLE/OTHER]
+
+ANCHOR EQUIPMENT INSPECTION:
+- Windlass: [CONDITION]
+- Chain: [CONDITION]
+- Anchor: [CONDITION]
+- Brake: [CONDITION]
+
+PORT AUTHORITY ATTENDANCE:
+Pilot/Inspector: [NAME] attended at [TIME]
+Report: [ATTACHED/PENDING]
+
+No damage to vessel, other vessels, or port installations. Situation now under control. Anchor holding well in new position.
+
+All rights reserved if third-party claims arise.
+
+Respectfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Port Authority, VTS, Owners, P&I Club`
+        },
+        
+        // ===== CHARTER PARTY DISPUTES (3 new) =====
+        "unsafe_cargo": {
+            title: "Letter of Protest - Unsafe/Undeclared Cargo",
+            category: "Charter Party Disputes",
+            template: `LETTER OF PROTEST - UNSAFE/UNDECLARED CARGO
+
+To: [CHARTERERS_NAME] / [SHIPPERS_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - DANGEROUS/UNDECLARED CARGO
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+CARGO PRESENTED:
+B/L Description: [BL_DESCRIPTION]
+Declared: [AS_DECLARED]
+
+ACTUAL CARGO DISCOVERED:
+During loading/inspection, discovered:
+- [ACTUAL_CARGO_DESCRIPTION]
+- Characteristics: [CHARACTERISTICS]
+
+DANGEROUS GOODS:
+- IMDG Class: [CLASS]
+- UN Number: [UN_NUMBER]
+- Flash Point: [TEMP]°C
+- Proper Shipping Name: [PSN]
+- Marine Pollutant: [YES/NO]
+
+NON-COMPLIANCE:
+1. NOT declared as dangerous goods
+2. No MSDS (Material Safety Data Sheet) provided
+3. No IMDG Code compliance
+4. No proper packaging/labeling
+5. NO Certificate of Approval from Flag State
+6. Stowage requirements NOT met
+
+SAFETY IMPLICATIONS:
+- Incompatible with other cargo: [YES/NO - DETAILS]
+- Fire risk: [ASSESSMENT]
+- Explosion risk: [ASSESSMENT]
+- Toxic risk: [ASSESSMENT]
+- Pollution risk: [ASSESSMENT]
+
+SOLAS/MARPOL VIOLATIONS:
+- SOLAS Chapter VII violated
+- MARPOL Annex III violated
+- IMDG Code Section [SECTION] violated
+
+VESSEL'S POSITION:
+Master REFUSES to load this cargo unless:
+1. Proper dangerous goods declaration provided
+2. MSDS submitted
+3. Flag State approval obtained
+4. Cargo re-packaged/labeled per IMDG Code
+5. Proper stowage plan approved
+6. Additional insurance arranged
+
+EXISTING CARGO ON BOARD:
+Risk of contamination/incompatibility with:
+- [CARGO_IN_HOLD_X]
+- [CARGO_IN_HOLD_Y]
+
+DELAY:
+Loading suspended: [HOURS] hours (continuing)
+This delay is entirely Charterers'/Shippers' fault.
+
+LEGAL CONSEQUENCES:
+- Master has authority under ISM Code to refuse unsafe cargo
+- Charterers in breach of Charter Party
+- Criminal penalties possible under Flag State law
+- Port State Control may detain vessel
+
+If Charterers insist on loading without proper compliance, Owners will terminate Charter Party for breach of safety provisions.
+
+All rights reserved.
+
+Yours faithfully,
+_______________________
+Master, M/V [VESSEL_NAME]
+
+cc: Flag State, Port State Control, P&I Club, Classification Society`
+        },
+        "deviation_orders": {
+            title: "Letter of Protest - Unreasonable Deviation Orders",
+            category: "Charter Party Disputes",
+            template: `LETTER OF PROTEST - UNREASONABLE DEVIATION ORDERS
+
+To: [CHARTERERS_NAME]
+Date: [DATE]
+
+Dear Sirs,
+
+RE: PROTEST - UNREASONABLE VOYAGE ORDERS
+
+VESSEL: M/V [VESSEL_NAME] - Time Charter
+
+ORIGINAL ORDERS:
+Date: [DATE]
+Orders: Proceed [LOAD_PORT] → [DISCHARGE_PORT]
+Cargo: [CARGO_TYPE]
+ETA: [ESTIMATED_DATE]
+
+DEVIATION ORDERS RECEIVED:
+Date: [DATE]
+New orders: [NEW_ORDERS]
+
+UNREASONABLE ASPECTS:
+1. Additional distance: [DISTANCE] nm
+2. Additional steaming time: [DAYS] days
+3. Additional bunker consumption: [FUEL_MT] MT
+4. Additional port calls: [NUMBER]
+
+OBJECTIONS:
+These orders are unreasonable because:
+
+1. UNECONOMICAL:
+   - Extra fuel cost: USD [FUEL_COST]
+   - Port charges: USD [PORT_CHARGES]
+   - Total extra cost: USD [TOTAL_COST]
+
+2. DELAYS:
+   - Next fixture commitment: [DATE] at [PORT]
+   - Risk of missing fixture: HIGH
+   - Liquidated damages exposure: USD [AMOUNT]
+
+3. SAFETY CONCERNS:
+   - Route through: [DANGEROUS_AREA]
+   - Piracy risk area: [YES/NO]
+   - War risk area: [YES/NO]
+   - Additional W&S premium: USD [AMOUNT]
+
+4. CHARTER PARTY TERMS:
+   C/P clause [CLAUSE]: "...within Institute War and Strikes Limits"
+   C/P clause [CLAUSE]: "Trading limits: [LIMITS]"
+   These orders exceed trading limits
+
+5. CREW WELFARE:
+   - Extended voyage: [ADDITIONAL_DAYS] days
+   - Crew beyond maximum tour: [YES/NO]
+   - MLC compliance risk: [DETAILS]
+
+OWNERS' POSITION:
+Owners refuse these unreasonable orders unless:
+1. Charterers compensate for all additional costs
+2. Extra time paid as freight/hire bonus
+3. War risk insurance arranged and paid by Charterers
+4. Next fixture extended or canceled without penalty
+
+ALTERNATIVE:
+Owners request reasonable orders: [SUGGESTED_ORDERS]
+
+If Charterers insist on these orders without compensation, Owners may:
+1. Claim damages
+2. Exercise lien on cargo/sub-freights
+3. Withdraw vessel for breach of Charter Party
+
+Time is of the essence. Urgent response required within 24 hours.
+
+All rights reserved.
+
+Yours faithfully,
+_______________________
+Owners / Owners' Operator
+Per M/V [VESSEL_NAME]
+
+cc: P&I Club, Owners' Lawyers`
+        },
+        "payment_dispute": {
+            title: "Letter of Protest - Non-Payment of Hire/Freight",
+            category: "Charter Party Disputes",
+            template: `LETTER OF PROTEST - NON-PAYMENT OF HIRE/FREIGHT
+
+To: [CHARTERERS_NAME]
+    [CHARTERERS_ADDRESS]
+Date: [DATE]
+
+URGENT - FORMAL NOTICE
+
+Dear Sirs,
+
+RE: NON-PAYMENT OF HIRE - NOTICE OF WITHDRAWAL
+
+VESSEL: M/V [VESSEL_NAME]
+CHARTER PARTY: [CP_TYPE] dated [CP_DATE]
+
+PAYMENT DEFAULT:
+Payment due date: [DUE_DATE]
+Payment amount due: USD [AMOUNT]
+Payment terms: [PAYMENT_TERMS]
+
+CURRENT STATUS:
+- Payment NOT received
+- Days overdue: [DAYS]
+- Outstanding amount: USD [OUTSTANDING]
+
+CHARTER PARTY PROVISIONS:
+C/P Clause [CLAUSE] - Hire Payment:
+"Hire to be paid [ADVANCE/ARREARS] every [PERIOD] days to [BANK_ACCOUNT]"
+
+C/P Clause [CLAUSE] - Withdrawal:
+"In default of payment, Owners shall give [HOURS] hours notice of intention to withdraw vessel"
+
+OWNERS' POSITION:
+This is FORMAL NOTICE that:
+
+1. Charterers are in DEFAULT of Charter Party payment obligations
+
+2. Owners hereby give [HOURS] HOURS NOTICE of intention to WITHDRAW vessel from Charterers' service
+
+3. If payment not received within [HOURS] hours (deadline: [DEADLINE_DATE] at [TIME]), Owners will:
+   - WITHDRAW vessel
+   - Refuse all Charterers' orders
+   - Exercise LIEN over cargo/sub-freights
+   - Claim DAMAGES for breach
+
+AMOUNTS DUE:
+- Hire for period [PERIOD]: USD [HIRE_AMOUNT]
+- Port disbursements: USD [DISB_AMOUNT]
+- Bunkers supplied: USD [BUNKER_AMOUNT]
+- Other: USD [OTHER]
+TOTAL: USD [TOTAL_DUE]
+
+PAYMENT INSTRUCTIONS:
+Bank: [BANK_NAME]
+Account: [ACCOUNT_NUMBER]
+SWIFT: [SWIFT_CODE]
+Reference: [REFERENCE]
+
+Payment must be RECEIVED (not just sent) within notice period.
+
+CONSEQUENCES OF NON-PAYMENT:
+- Vessel withdrawn
+- Cargo operations stopped immediately
+- Freight/sub-freight arrested
+- Cargo held under lien
+- Legal action commenced
+- Charterers liable for all losses
+- Arbitration/Litigation costs
+
+CURRENT VOYAGE:
+Cargo: [CARGO]
+Load port: [PORT]
+Discharge port: [PORT]
+Status: [LOADING/DISCHARGE/AT_SEA]
+
+If withdrawal occurs mid-voyage, vessel will proceed to nearest safe port and discharge cargo under Owners' lien.
+
+This notice is WITHOUT PREJUDICE to all other rights and remedies available to Owners under Charter Party and law.
+
+PAYMENT MUST BE RECEIVED BEFORE: [DEADLINE_DATE_TIME]
+
+Failure to pay will result in immediate withdrawal.
+
+Yours faithfully,
+_______________________
+[OWNERS_NAME]
+Owners of M/V [VESSEL_NAME]
+
+URGENT COPY TO: Charterers' Bank, Cargo Interests, Sub-Charterers, P&I Club`
+        },
+        
+        // ===== BUNKER/FUEL ISSUES (2 new) =====
+        "bunker_shortage": {
+            title: "Letter of Protest - Bunker Quantity Shortage",
+            category: "Bunker Quality",
+            template: `LETTER OF PROTEST - BUNKER QUANTITY SHORTAGE
+
+To: [BUNKER_SUPPLIER_NAME]
+Date: [DATE]
+Port: [BUNKERING_PORT]
+
+Dear Sirs,
+
+RE: PROTEST - BUNKER QUANTITY SHORTAGE
+
+VESSEL: M/V [VESSEL_NAME], IMO [IMO_NUMBER]
+
+BUNKER SUPPLY DETAILS:
+BDN Number: [BDN_NUMBER]
+Date: [DATE]
+Supplier: [SUPPLIER_NAME]
+Barge: [BARGE_NAME]
+Fuel grade: [FUEL_GRADE]
+
+ORDERED QUANTITY:
+As per purchase order [PO_NUMBER]: [ORDERED_QUANTITY] MT
+
+SUPPLIER'S CLAIM (per BDN):
+Delivered quantity: [BDN_QUANTITY] MT
+
+VESSEL'S MEASUREMENTS:
+Method: [SOUNDING/FLOW_METER/MASS_FLOW_METER]
+
+ROB Before: [ROB_BEFORE] MT
+ROB After: [ROB_AFTER] MT
+Difference (Received): [RECEIVED_QUANTITY] MT
+
+SHORTAGE:
+BDN quantity: [BDN_QUANTITY] MT
+Actual received: [RECEIVED_QUANTITY] MT
+SHORTAGE: [SHORTAGE] MT ([PERCENTAGE]%)
+
+EVIDENCE:
+1. Sounding records:
+   - Tank [TANK_1]: Before [BEFORE_1]mm / After [AFTER_1]mm
+   - Tank [TANK_2]: Before [BEFORE_2]mm / After [AFTER_2]mm
+   - [OTHER_TANKS]
+
+2. Ullage/Sounding tables: Vessel's approved tables dated [DATE]
+
+3. Temperature corrections: Applied per ISO standards
+   - Observed temp: [TEMP]°C
+   - Standard temp: 15°C
+   - Density @ 15°C: [DENSITY] kg/m³
+
+4. Witnesses:
+   - Chief Engineer: [NAME]
+   - Surveyor: [SURVEYOR_NAME] (if present)
+   - Barge representative: [NAME]
+
+SUPPLIER'S POSITION:
+Barge claims delivered [BDN_QUANTITY] MT based on:
+- [BARGE_MEASUREMENT_METHOD]
+
+DISPUTE:
+We dispute BDN quantity. Vessel's measurements are accurate:
+- Tanks calibrated: [DATE]
+- Flow meter certified: [CERT_NUMBER]
+- Daily sounding routine
+
+CLAIM:
+Shortage value: [SHORTAGE] MT × USD [PRICE_PER_MT] = USD [CLAIM_AMOUNT]
+
+ACTION REQUIRED:
+1. Supply additional [SHORTAGE] MT immediately, OR
+2. Credit note for USD [CLAIM_AMOUNT]
+3. Response within 48 hours
+
+If not resolved, claim will be submitted to:
+- P&I Club
+- Bunker quality/quantity arbitrator
+- [APPLICABLE_COURT]
+
+We reserve all rights including claiming consequential damages if vessel's operations are affected by insufficient fuel.
+
+Yours faithfully,
+_______________________
+Chief Engineer / Master
+M/V [VESSEL_NAME]
+
+cc: Owners, P&I Club, Bunker Surveyor`
+        },
+        "bunker_delivery_delay": {
+            title: "Letter of Protest - Bunker Delivery Delay",
+            category: "Bunker Quality",
+            template: `LETTER OF PROTEST - BUNKER DELIVERY DELAY
+
+To: [BUNKER_SUPPLIER_NAME]
+Date: [DATE]
+Port: [PORT_NAME]
+
+Dear Sirs,
+
+RE: PROTEST - BUNKER DELIVERY DELAY
+
+VESSEL: M/V [VESSEL_NAME]
+POSITION: [ANCHORAGE/BERTH]
+
+BUNKER ORDER:
+- Purchase Order: [PO_NUMBER]
+- Date ordered: [ORDER_DATE]
+- Fuel type: [VLSFO/MGO/OTHER]
+- Quantity: [QUANTITY] MT
+- Delivery requested: [REQUESTED_DATE] at [REQUESTED_TIME]
+
+SCHEDULED DELIVERY:
+Per supplier's confirmation:
+- Barge: [BARGE_NAME]
+- ETA: [ETA_DATE] at [ETA_TIME]
+
+ACTUAL DELIVERY:
+- Barge arrived: [ARRIVAL_DATE] at [ARRIVAL_TIME]
+- DELAY: [HOURS] hours
+
+REASON PROVIDED BY SUPPLIER:
+[SUPPLIER_REASON]
+
+IMPACT ON VESSEL:
+1. DEPARTURE DELAY:
+   - Planned departure: [PLANNED_DEPARTURE]
+   - Actual departure: [ACTUAL_DEPARTURE]
+   - Delay: [HOURS] hours
+
+2. COMMERCIAL IMPACT:
+   - Charter Party: [CP_TYPE]
+   - Laytime/Hire: [IMPACT]
+   - Missed tide window: [YES/NO]
+   - Pilot delay: [YES/NO]
+
+3. FINANCIAL LOSSES:
+   - Port charges for extra time: USD [PORT_CHARGES]
+   - Demurrage (if on voyage C/P): USD [DEMURRAGE]
+   - Opportunity loss: USD [OTHER_COSTS]
+   - TOTAL: USD [TOTAL_LOSS]
+
+4. NEXT PORT:
+   - Committed ETA: [NEXT_PORT_ETA]
+   - Delay consequences: [CONSEQUENCES]
+
+CHARTER PARTY CONSEQUENCES:
+[TIME_CHARTER: Off-hire claim possible]
+[VOYAGE_CHARTER: Laytime exceeded, demurrage accruing]
+
+BUNKER CONTRACT TERMS:
+- Delivery window: [WINDOW]
+- Penalty clause: [PENALTY_TERMS]
+- Liquidated damages: USD [AMOUNT] per hour delay
+
+SUPPLIERS'S LIABILITY:
+This delay was solely due to supplier's failure to deliver as contracted. Vessel was ready to receive bunkers at agreed time.
+
+CLAIM:
+1. Liquidated damages: USD [LD_AMOUNT]
+2. Additional port costs: USD [PORT_COSTS]
+3. Charter Party related losses: USD [CP_LOSSES]
+TOTAL CLAIM: USD [TOTAL_CLAIM]
+
+If bunker suppliers frequently cause delays at this port, Owners may:
+- Blacklist supplier
+- Report to industry databases (BIMCO, ICS)
+- Change bunkering port in future
+
+Payment terms: [ORIGINAL_TERMS]
+We reserve right to offset claim amount against payment due.
+
+Urgent response required within 48 hours.
+
+All rights reserved.
+
+Yours faithfully,
+_______________________
+Master / Owners' Representative
+M/V [VESSEL_NAME]
+
+cc: Owners, P&I Club, Charterers (if applicable)`
         }
     }
 };
