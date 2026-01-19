@@ -2468,8 +2468,8 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         // OTP'yi temizle
         otpStore.delete(email);
 
-        // Token oluştur
-        const token = jwt.sign({ id: newUser._id, email: newUser.email }, SECRET_KEY, { expiresIn: '24h' });
+        // Token oluştur (7 gün geçerli)
+        const token = jwt.sign({ id: newUser._id, email: newUser.email }, SECRET_KEY, { expiresIn: '7d' });
 
         const userData = {
             id: newUser._id,
@@ -2504,7 +2504,7 @@ app.post('/api/auth/login', async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Hatalı şifre." });
 
-        const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY, { expiresIn: '24h' });
+        const token = jwt.sign({ id: user._id, email: user.email }, SECRET_KEY, { expiresIn: '7d' });
         
         const userData = {
             id: user._id,

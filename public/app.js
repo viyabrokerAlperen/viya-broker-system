@@ -636,6 +636,18 @@ async function openChat(userId, userName, vesselId) {
     try {
         const token = localStorage.getItem('viya_token');
         const res = await fetch(`/api/messages/conversation/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        
+        // Token expire kontrolü
+        if (res.status === 401) {
+            console.error('❌ Token expired, logging out');
+            localStorage.removeItem('viya_token');
+            localStorage.removeItem('viya_user');
+            currentUser = null;
+            alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+            location.reload();
+            return;
+        }
+        
         const data = await res.json();
         
         console.log('📬 Loaded messages:', data);
@@ -751,6 +763,17 @@ async function sendMessage() {
             body: JSON.stringify({ toUserId: currentChatUserId, message: message, vesselListingId: currentChatVesselId })
         });
         
+        // Token expire kontrolü
+        if (res.status === 401) {
+            console.error('❌ Token expired, logging out');
+            localStorage.removeItem('viya_token');
+            localStorage.removeItem('viya_user');
+            currentUser = null;
+            alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+            location.reload();
+            return;
+        }
+        
         const data = await res.json();
         
         if (data.success) {
@@ -770,6 +793,19 @@ async function openInbox() {
     try {
         const token = localStorage.getItem('viya_token');
         const res = await fetch('/api/messages/inbox', { headers: { 'Authorization': `Bearer ${token}` } });
+        
+        // Token expire kontrolü
+        if (res.status === 401) {
+            console.error('❌ Token expired, logging out');
+            localStorage.removeItem('viya_token');
+            localStorage.removeItem('viya_user');
+            currentUser = null;
+            document.getElementById('inboxModal').style.display = 'none';
+            alert('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.');
+            location.reload();
+            return;
+        }
+        
         const data = await res.json();
         const content = document.getElementById('inboxContent');
         
