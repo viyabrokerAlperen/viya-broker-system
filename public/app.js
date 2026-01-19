@@ -2710,16 +2710,59 @@ Fuel Consumption: [CONS] MT/day</p>
         }
     ];
     
+    const categoryColors = {
+        'Charter Party Forms': '#0066FF',
+        'Bills of Lading': '#D4A853',
+        'Notices & Statements': '#10B981',
+        'Vessel Certificates': '#7C3AED',
+        'Cargo Documents': '#F59E0B',
+        'Operational Forms': '#EF4444'
+    };
+    
+    const categoryIcons = {
+        'Charter Party Forms': 'fa-file-contract',
+        'Bills of Lading': 'fa-file-invoice',
+        'Notices & Statements': 'fa-bell',
+        'Vessel Certificates': 'fa-certificate',
+        'Cargo Documents': 'fa-boxes-stacked',
+        'Operational Forms': 'fa-clipboard-list'
+    };
+    
     container.innerHTML = "";
     data.forEach(cat => {
         let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
+        const color = categoryColors[cat.category] || '#0066FF';
+        const icon = categoryIcons[cat.category] || 'fa-file';
+        
         cat.items.forEach(item => {
             const safeContent = item.content.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-            html += `<div class="doc-card">
-                <i class="fa-solid fa-file-contract doc-icon" style="color:var(--neon-cyan)"></i>
-                <div class="doc-title">${item.title}</div>
-                <div class="doc-desc">${item.desc}</div>
-                <button class="btn-download" onclick='openContentModal("${item.title}", \`${safeContent}\`)'><i class="fa-solid fa-eye"></i> ${t.btn_read || 'READ'}</button>
+            const code = item.title;
+            const extraInfo = item.extraInfo || 'Standard Template';
+            
+            html += `<div class="doc-card" style="cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                    <i class="fa-solid ${icon} doc-icon" style="color:${color};font-size:40px;"></i>
+                    <span style="background:${color}20;color:${color};padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;">
+                        ${cat.category.toUpperCase()}
+                    </span>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:${color};margin-bottom:6px;letter-spacing:0.5px;">
+                    ${code}
+                </div>
+                <div class="doc-title" style="font-size:18px;margin-bottom:8px;color:#111827;">
+                    ${item.desc}
+                </div>
+                <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    ${item.desc}
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280;margin-bottom:16px;padding-top:12px;border-top:1px solid #e5e7eb;">
+                    <i class="fa-solid fa-code"></i>
+                    <span>${extraInfo}</span>
+                </div>
+                <button class="btn-download" style="width:100%;" onclick='openContentModal("${item.title}", \`${safeContent}\`)'>
+                    <i class="fa-solid fa-eye"></i>
+                    ${t.btn_read || 'VIEW DOCUMENT'}
+                </button>
             </div>`;
         });
         html += '</div>';
