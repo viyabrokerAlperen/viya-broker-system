@@ -623,50 +623,117 @@ function viewMyListings() { closeModal('profileModal'); switchView('marketplace'
 async function openChat(userId, userName, vesselId) {
     if (!currentUser) { alert('Lütfen giriş yapın.'); return; }
     
+    console.log('💬 Opening chat with:', { userId, userName, currentUser: currentUser.id });
+    
     currentChatUserId = userId;
     currentChatUserName = userName;
     currentChatVesselId = vesselId;
     
     document.getElementById('chatWithName').innerText = `Chat: ${userName}`;
-    document.getElementById('messageHistory').innerHTML = '<div style="text-align:center;color:#64748b;">Loading...</div>';
+    document.getElementById('messageHistory').innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">Loading messages...</div>';
     document.getElementById('messagingModal').style.display = 'block';
     
     try {
         const token = localStorage.getItem('viya_token');
         const res = await fetch(`/api/messages/conversation/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
         const data = await res.json();
+        
+        console.log('📬 Loaded messages:', data);
+        
         const history = document.getElementById('messageHistory');
         history.innerHTML = '';
         
-        if (data.success && data.messages.length > 0) {
+        if (data.success && data.messages && data.messages.length > 0) {
+            console.log(`✅ Displaying ${data.messages.length} messages`);
             data.messages.forEach(msg => displayMessage(msg));
         } else {
-            history.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">Henüz mesaj yok.</div>';
+            console.log('ℹ️ No messages found');
+            history.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">Henüz mesaj yok. İlk mesajı siz gönderin!</div>';
         }
-        history.scrollTop = history.scrollHeight;
-    } catch (e) { console.error(e); }
+        
+        // Scroll to bottom with animation
+        setTimeout(() => {
+            history.scrollTop = history.scrollHeight;
+        }, 200);
+    } catch (e) { 
+        console.error('❌ Error loading messages:', e);
+        const history = document.getElementById('messageHistory');
+        history.innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px;">Mesajlar yüklenirken hata oluştu.</div>';
+    }
 }
 
 function displayMessage(msg) {
     const history = document.getElementById('messageHistory');
-    if (!history) return;
+    if (!history) {
+        console.error('❌ messageHistory element not found!');
+        return;
+    }
     
-    if (history.querySelector('div[style*="text-align:center"]')) history.innerHTML = '';
+    // Loading yazısını temizle
+    const loadingDiv = history.querySelector('div[style*="text-align:center"]');
+    if (loadingDiv && loadingDiv.textContent.includes('Loading')) {
+        history.innerHTML = '';
+    }
     
-    const isOwn = currentUser && (msg.from === currentUser.id || msg.from?._id === currentUser.id);
+    // Debug log
+    console.log('📨 Display Message:', {
+        message: msg.message,
+        from: msg.from,
+        fromName: msg.fromName,
+        currentUserId: currentUser?.id,
+        timestamp: msg.timestamp
+    });
+    
+    // currentUser kontrolü - DETAYLI
+    let isOwn = false;
+    if (currentUser) {
+        const msgFrom = typeof msg.from === 'object' ? msg.from._id : msg.from;
+        const userId = typeof currentUser.id === 'object' ? currentUser.id._id : currentUser.id;
+        
+        if (msgFrom === userId || 
+            msgFrom?.toString() === userId?.toString() ||
+            msg.from === currentUser.email) {
+            isOwn = true;
+        }
+    }
+    
+    console.log(`   → isOwn: ${isOwn}`);
+    
     const msgDiv = document.createElement('div');
-    msgDiv.style.cssText = `margin-bottom:10px;text-align:${isOwn ? 'right' : 'left'};`;
+    msgDiv.className = 'message-item';
+    msgDiv.style.cssText = `
+        margin-bottom: 12px; 
+        text-align: ${isOwn ? 'right' : 'left'};
+        animation: messageSlideIn 0.3s ease;
+    `;
     
     msgDiv.innerHTML = `
-        <div style="display:inline-block;max-width:70%;background:${isOwn ? '#1e3a8a' : '#1a1a1a'};padding:10px 15px;border-radius:12px;">
-            <div style="font-size:0.75rem;color:#94a3b8;margin-bottom:5px;">${isOwn ? 'You' : (msg.fromName || 'User')}</div>
-            <div style="color:#fff;">${msg.message}</div>
-            <div style="font-size:0.7rem;color:#64748b;margin-top:5px;">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+        <div style="
+            display: inline-block; 
+            max-width: 70%; 
+            background: ${isOwn ? '#1e3a8a' : '#1a1a1a'}; 
+            padding: 12px 16px; 
+            border-radius: ${isOwn ? '12px 12px 4px 12px' : '12px 12px 12px 4px'};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        ">
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; font-weight: 600;">
+                ${isOwn ? 'You' : (msg.fromName || 'User')}
+            </div>
+            <div style="color: #fff; line-height: 1.5; word-wrap: break-word;">
+                ${msg.message}
+            </div>
+            <div style="font-size: 0.7rem; color: #64748b; margin-top: 6px;">
+                ${new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+            </div>
         </div>
     `;
     
     history.appendChild(msgDiv);
-    history.scrollTop = history.scrollHeight;
+    
+    // Smooth scroll to bottom
+    setTimeout(() => {
+        history.scrollTop = history.scrollHeight;
+    }, 100);
 }
 
 async function sendMessage() {
