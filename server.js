@@ -2811,16 +2811,42 @@ app.get('/api/marketplace/my-listings', async (req, res) => {
 // Mesaj gönder
 app.post('/api/messages/send', async (req, res) => {
     try {
+        // Auth kontrolü
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        if (!token) {
+            console.error('❌ [SEND] No token provided');
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         
-        const decoded = jwt.verify(token, SECRET_KEY);
+        // Token verify
+        let decoded;
+        try {
+            decoded = jwt.verify(token, SECRET_KEY);
+        } catch (err) {
+            console.error('❌ [SEND] Invalid token:', err.message);
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        
         const user = await User.findById(decoded.id);
-        if (!user) return res.status(401).json({ error: 'User not found' });
+        if (!user) {
+            console.error('❌ [SEND] User not found:', decoded.id);
+            return res.status(401).json({ error: 'User not found' });
+        }
         
         const { toUserId, message, vesselListingId } = req.body;
+        
+        if (!toUserId || !message) {
+            console.error('❌ [SEND] Missing required fields');
+            return res.status(400).json({ error: 'Missing toUserId or message' });
+        }
+        
         const toUser = await User.findById(toUserId);
-        if (!toUser) return res.status(404).json({ error: 'Recipient not found' });
+        if (!toUser) {
+            console.error('❌ [SEND] Recipient not found:', toUserId);
+            return res.status(404).json({ error: 'Recipient not found' });
+        }
+        
+        console.log(`📤 [SEND] ${user.fullName} → ${toUser.fullName}: "${message.substring(0, 50)}..."`);
         
         const newMessage = await Message.create({
             from: user._id,
@@ -2834,21 +2860,36 @@ app.post('/api/messages/send', async (req, res) => {
         // Socket.io ile gerçek zamanlı bildirim
         io.to(toUserId).emit('new_message', newMessage);
         
+        console.log('✅ [SEND] Message sent successfully');
         res.json({ success: true, message: newMessage });
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('❌ [SEND] Error:', e);
+        res.status(500).json({ error: 'Failed to send message', details: e.message });
     }
 });
 
 // İki kullanıcı arasındaki sohbet
 app.get('/api/messages/conversation/:userId', async (req, res) => {
     try {
+        // Auth kontrolü
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        if (!token) {
+            console.error('❌ [CONVERSATION] No token provided');
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         
-        const decoded = jwt.verify(token, SECRET_KEY);
+        // Token verify
+        let decoded;
+        try {
+            decoded = jwt.verify(token, SECRET_KEY);
+        } catch (err) {
+            console.error('❌ [CONVERSATION] Invalid token:', err.message);
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+        
         const otherUserId = req.params.userId;
+        
+        console.log(`📬 [CONVERSATION] Loading chat between ${decoded.id} and ${otherUserId}`);
         
         const messages = await Message.find({
             $or: [
@@ -2858,31 +2899,63 @@ app.get('/api/messages/conversation/:userId', async (req, res) => {
         }).sort({ timestamp: 1 });
         
         // Okunmamış mesajları okundu işaretle
-        await Message.updateMany(
+        const updateResult = await Message.updateMany(
             { from: otherUserId, to: decoded.id, read: false },
             { read: true }
         );
         
+        if (updateResult.modifiedCount > 0) {
+            console.log(`   📖 Marked ${updateResult.modifiedCount} messages as read`);
+        }
+        
+        console.log(`✅ [CONVERSATION] Loaded ${messages.length} messages`);
+        
         res.json({ success: true, messages });
     } catch (e) {
-        res.status(500).json({ error: 'Failed to load messages' });
+        console.error('❌ [CONVERSATION] Error:', e);
+        res.status(500).json({ error: 'Failed to load messages', details: e.message });
     }
 });
 
 // Kullanıcının tüm sohbetleri (inbox)
 app.get('/api/messages/inbox', async (req, res) => {
     try {
+        // Auth kontrolü
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'Unauthorized' });
+        if (!token) {
+            console.error('❌ [INBOX] No token provided');
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         
-        const decoded = jwt.verify(token, SECRET_KEY);
+        // Token verify
+        let decoded;
+        try {
+            decoded = jwt.verify(token, SECRET_KEY);
+        } catch (err) {
+            console.error('❌ [INBOX] Invalid token:', err.message);
+            return res.status(401).json({ error: 'Invalid token' });
+        }
         
+        console.log('✅ [INBOX] User:', decoded.id);
+        
+        // ObjectId conversion helper
+        const ObjectId = mongoose.Types.ObjectId;
+        let userId;
+        
+        try {
+            userId = new ObjectId(decoded.id);
+        } catch (err) {
+            console.error('❌ [INBOX] Invalid ObjectId:', decoded.id);
+            return res.status(400).json({ error: 'Invalid user ID format' });
+        }
+        
+        // Aggregate query
         const messages = await Message.aggregate([
             {
                 $match: {
                     $or: [
-                        { from: new mongoose.Types.ObjectId(decoded.id) }, 
-                        { to: new mongoose.Types.ObjectId(decoded.id) }
+                        { from: userId }, 
+                        { to: userId }
                     ]
                 }
             },
@@ -2891,7 +2964,7 @@ app.get('/api/messages/inbox', async (req, res) => {
                 $group: {
                     _id: {
                         $cond: [
-                            { $eq: ['$from', new mongoose.Types.ObjectId(decoded.id)] },
+                            { $eq: ['$from', userId] },
                             '$to',
                             '$from'
                         ]
@@ -2900,10 +2973,12 @@ app.get('/api/messages/inbox', async (req, res) => {
                     unreadCount: {
                         $sum: {
                             $cond: [
-                                { $and: [
-                                    { $eq: ['$to', new mongoose.Types.ObjectId(decoded.id)] }, 
-                                    { $eq: ['$read', false] }
-                                ]},
+                                { 
+                                    $and: [
+                                        { $eq: ['$to', userId] }, 
+                                        { $eq: ['$read', false] }
+                                    ]
+                                },
                                 1,
                                 0
                             ]
@@ -2913,10 +2988,16 @@ app.get('/api/messages/inbox', async (req, res) => {
             }
         ]);
         
+        console.log(`✅ [INBOX] Found ${messages.length} conversations`);
+        
         res.json({ success: true, conversations: messages });
+        
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: 'Failed to load inbox' });
+        console.error('❌ [INBOX] Error:', e);
+        res.status(500).json({ 
+            error: 'Failed to load inbox',
+            details: e.message 
+        });
     }
 });
 
