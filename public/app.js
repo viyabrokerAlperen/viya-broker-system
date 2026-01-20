@@ -1154,6 +1154,21 @@ async function answerCall(data) {
         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
         console.log('✅ Remote description set');
         
+        // Buffer'daki ICE candidate'leri ekle
+        if (pendingIceCandidates.length > 0) {
+            console.log(`📥 Adding ${pendingIceCandidates.length} buffered ICE candidates...`);
+            for (const candidate of pendingIceCandidates) {
+                try {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log('✅ Buffered candidate added');
+                } catch (error) {
+                    console.error('❌ Error adding buffered candidate:', error);
+                }
+            }
+            pendingIceCandidates = [];
+            console.log('✅ All buffered candidates processed');
+        }
+        
         console.log('📝 Creating answer...');
         const answer = await peerConnection.createAnswer();
         console.log('✅ Answer created:', answer.type);
@@ -1248,24 +1263,37 @@ async function createPeerConnection() {
         
         // İki track da eklendiğinde play et
         if (remoteStream.getTracks().length === 2) {
-            console.log('✅ Both tracks received, starting playback...');
+            console.log('✅ Both tracks received, waiting for metadata...');
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) {
-                console.log('  - Remote video element found');
-                console.log('  - srcObject:', !!remoteVideo.srcObject);
-                console.log('  - paused:', remoteVideo.paused);
-                console.log('  - readyState:', remoteVideo.readyState);
-                remoteVideo.play()
-                    .then(() => {
-                        console.log('✅ Remote video playing!');
-                        console.log('  - Playing:', !remoteVideo.paused);
-                        console.log('  - currentTime:', remoteVideo.currentTime);
-                    })
-                    .catch(err => {
-                        console.error('❌ Play error:', err);
-                        console.error('  - Error name:', err.name);
-                        console.error('  - Error message:', err.message);
-                    });
+                // Metadata yüklenene kadar bekle
+                remoteVideo.onloadedmetadata = () => {
+                    console.log('✅ Metadata loaded, starting playback...');
+                    console.log('  - readyState:', remoteVideo.readyState);
+                    remoteVideo.play()
+                        .then(() => {
+                            console.log('✅✅✅ REMOTE VIDEO PLAYING!');
+                            console.log('  - paused:', remoteVideo.paused);
+                            console.log('  - currentTime:', remoteVideo.currentTime);
+                        })
+                        .catch(err => {
+                            console.error('❌ Play error:', err);
+                            // Son çare: 1 saniye bekle
+                            setTimeout(() => {
+                                remoteVideo.play()
+                                    .then(() => console.log('✅ Play success (retry)'))
+                                    .catch(e => console.error('❌ Retry failed:', e));
+                            }, 1000);
+                        });
+                };
+                
+                // Eğer metadata zaten yüklüyse direkt play et
+                if (remoteVideo.readyState >= 2) {
+                    console.log('✅ Metadata already loaded, playing immediately...');
+                    remoteVideo.play()
+                        .then(() => console.log('✅✅✅ REMOTE VIDEO PLAYING!'))
+                        .catch(err => console.error('❌ Play error:', err));
+                }
             } else {
                 console.error('❌ Remote video element not found!');
             }
@@ -1314,21 +1342,6 @@ async function createPeerConnection() {
     peerConnection.onsignalingstatechange = () => {
         console.log('📡 Signaling State Changed:', peerConnection.signalingState);
     };
-    
-    // Buffer'daki ICE candidate'leri ekle
-    if (pendingIceCandidates.length > 0) {
-        console.log(`📥 Adding ${pendingIceCandidates.length} buffered ICE candidates...`);
-        for (const candidate of pendingIceCandidates) {
-            try {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                console.log('✅ Buffered candidate added');
-            } catch (error) {
-                console.error('❌ Error adding buffered candidate:', error);
-            }
-        }
-        pendingIceCandidates = []; // Buffer'ı temizle
-        console.log('✅ All buffered candidates processed');
-    }
 }
 
 function toggleMute() {
