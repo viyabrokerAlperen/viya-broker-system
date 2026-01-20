@@ -17,6 +17,7 @@ let uploadedImages = [];
 let localStream = null;
 let peerConnection = null;
 let remoteStream = null;
+let pendingIceCandidates = [];
 let currentRoomId = null;
 let isMuted = false;
 let isVideoOff = false;
@@ -216,7 +217,14 @@ function initSocket() {
         console.log('🧊 ICE candidate event received');
         console.log('  - Candidate data:', data.candidate);
         
-        if (peerConnection && data.candidate) {
+        if (!peerConnection) {
+            console.warn('⚠️ Buffering ICE candidate, peer connection not ready yet');
+            pendingIceCandidates.push(data.candidate);
+            console.log('  - Buffered candidates count:', pendingIceCandidates.length);
+            return;
+        }
+        
+        if (data.candidate) {
             try {
                 console.log('➕ Adding remote ICE candidate...');
                 await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
@@ -1240,11 +1248,26 @@ async function createPeerConnection() {
         
         // İki track da eklendiğinde play et
         if (remoteStream.getTracks().length === 2) {
+            console.log('✅ Both tracks received, starting playback...');
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) {
+                console.log('  - Remote video element found');
+                console.log('  - srcObject:', !!remoteVideo.srcObject);
+                console.log('  - paused:', remoteVideo.paused);
+                console.log('  - readyState:', remoteVideo.readyState);
                 remoteVideo.play()
-                    .then(() => console.log('✅ Remote video playing!'))
-                    .catch(err => console.error('❌ Play error:', err));
+                    .then(() => {
+                        console.log('✅ Remote video playing!');
+                        console.log('  - Playing:', !remoteVideo.paused);
+                        console.log('  - currentTime:', remoteVideo.currentTime);
+                    })
+                    .catch(err => {
+                        console.error('❌ Play error:', err);
+                        console.error('  - Error name:', err.name);
+                        console.error('  - Error message:', err.message);
+                    });
+            } else {
+                console.error('❌ Remote video element not found!');
             }
         }
     };
@@ -1291,6 +1314,21 @@ async function createPeerConnection() {
     peerConnection.onsignalingstatechange = () => {
         console.log('📡 Signaling State Changed:', peerConnection.signalingState);
     };
+    
+    // Buffer'daki ICE candidate'leri ekle
+    if (pendingIceCandidates.length > 0) {
+        console.log(`📥 Adding ${pendingIceCandidates.length} buffered ICE candidates...`);
+        for (const candidate of pendingIceCandidates) {
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                console.log('✅ Buffered candidate added');
+            } catch (error) {
+                console.error('❌ Error adding buffered candidate:', error);
+            }
+        }
+        pendingIceCandidates = []; // Buffer'ı temizle
+        console.log('✅ All buffered candidates processed');
+    }
 }
 
 function toggleMute() {
@@ -1330,6 +1368,7 @@ function endVideoCall() {
     document.getElementById('videoCallModal').style.display = 'none';
     isMuted = false; isVideoOff = false; currentRoomId = null;
     remoteStream = null;
+    pendingIceCandidates = [];
 }
 
 function copyRoomLink() {
