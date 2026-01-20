@@ -22,11 +22,12 @@ let isMuted = false;
 let isVideoOff = false;
 let otpEmail = null; // OTP için email saklama
 
-const ICE_SERVERS = { 
+const ICE_SERVERS = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        {
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { 
             urls: 'turn:openrelay.metered.ca:80',
             username: 'openrelayproject',
             credential: 'openrelayproject'
