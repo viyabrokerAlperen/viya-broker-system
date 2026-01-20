@@ -1874,81 +1874,166 @@ async function loadDocs() {
                 {
                     title: "GENCON 94",
                     desc: "General Purpose Voyage Charter Party",
-                    content: `<h3>CODE NAME: "GENCON 94"</h3>
-<p><strong>THE BALTIC AND INTERNATIONAL MARITIME COUNCIL (BIMCO)</strong><br>
-UNIFORM GENERAL CHARTER (AS REVISED 1922, 1976 and 1994)</p>
+                    level: "Beginner",
+                    duration: "2.5 hours",
+                    content: `<h3>📚 GENCON 94 - Voyage Charter Party</h3>
 
-<h4>PART I</h4>
+<div style="background:#dbeafe;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #1e40af;">
+<h4 style="margin-top:0;">🎯 Bu Evrak Nedir?</h4>
+<p>GENCON 94 (General Conditions), dünya genelinde en yaygın kullanılan <strong>voyage charter party</strong> (sefer çarteri) formudur. BIMCO (Baltic and International Maritime Council) tarafından geliştirilmiş standart bir sözleşme şablonudur.</p>
+<p>Bir gemi sahibi ile yük taşıtacak kişi (charterer) arasında, <strong>belirli bir sefer</strong> için yapılan anlaşmayı düzenler.</p>
+</div>
+
+<div style="background:#fef3c7;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #92400e;">
+<h4 style="margin-top:0;">📍 Nerede Kullanılır?</h4>
+<ul>
+<li><strong>Kuru dökme yük taşımacılığında:</strong> Tahıl, kömür, demir cevheri, çimento vb.</li>
+<li><strong>Genel kargo taşımacılığında:</strong> Paketli mallar, konteyner dışı yükler</li>
+<li><strong>Tek seferlik taşımalarda:</strong> Belirli bir limandan başka bir limana</li>
+<li><strong>Spot piyasa işlemlerinde:</strong> Anlık yük taşıma ihtiyaçlarında</li>
+</ul>
+<p><strong>Örnek Senaryo:</strong> Türkiye'den 50,000 ton buğday Mısır'a taşınacak. Gemi sahibi ile yük sahibi GENCON 94 kullanarak anlaşır.</p>
+</div>
+
+<div style="background:#fee2e2;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #991b1b;">
+<h4 style="margin-top:0;">⚠️ Neden Önemlidir?</h4>
+<ul>
+<li><strong>Hukuki Koruma:</strong> Her iki tarafın hak ve yükümlülüklerini net şekilde belirler</li>
+<li><strong>Uluslararası Standart:</strong> Tüm dünyada tanınır ve kabul edilir</li>
+<li><strong>Risk Yönetimi:</strong> Gecikme (demurrage), hasar, sorumlulukları tanımlar</li>
+<li><strong>Finansal Güvenlik:</strong> Navlun ödemesi, laytime hesabı gibi kritik konuları düzenler</li>
+<li><strong>Anlaşmazlık Çözümü:</strong> Arbitrasyon ve hukuk yolu açıkça belirtilir</li>
+</ul>
+</div>
+
+<h4>📋 GENCON 94 - Temel Bölümler</h4>
+
+<h5>PART I - BOX LAYOUT (Temel Bilgiler)</h5>
 <p><strong>1. Shipbroker:</strong> [BROKER_NAME]</p>
 <p><strong>2. Place and Date:</strong> [PLACE], [DATE]</p>
-<p><strong>3. Owners/Disponent Owners:</strong> [OWNERS_NAME]<br>Place of business: [ADDRESS]</p>
-<p><strong>4. Charterers:</strong> [CHARTERERS_NAME]<br>Place of business: [ADDRESS]</p>
-<p><strong>5. Vessel's name:</strong> [VESSEL_NAME]</p>
+<p><strong>3. Owners:</strong> [OWNERS_NAME]<br>[ADDRESS]</p>
+<p><strong>4. Charterers:</strong> [CHARTERERS_NAME]<br>[ADDRESS]</p>
+<p><strong>5. Vessel's name:</strong> M/V [VESSEL_NAME]</p>
 <p><strong>6. GT/NT:</strong> [GT] / [NT]</p>
-<p><strong>7. DWT:</strong> [DWT] metric tons (abt) on summer freeboard</p>
+<p><strong>7. DWT:</strong> [DWT] metric tons on summer freeboard</p>
 <p><strong>8. Present position:</strong> [POSITION]</p>
-<p><strong>9. Expected ready to load (abt):</strong> [DATE]</p>
-<p><strong>10. Loading port or place:</strong> [LOAD_PORT]</p>
-<p><strong>11. Discharging port or place:</strong> [DISCHARGE_PORT]</p>
-<p><strong>12. Cargo:</strong> [CARGO_TYPE]<br>Quantity (abt): [QUANTITY] metric tons</p>
-<p><strong>13. Freight rate:</strong> [RATE] per metric ton</p>
-<p><strong>14. Freight payment:</strong> Prepaid / On right delivery<br>Final payment: [TERMS]</p>
-<p><strong>15. Loading rate:</strong> [RATE] MT per WWD of 24 hours</p>
-<p><strong>16. Discharging rate:</strong> [RATE] MT per WWD of 24 hours</p>
-<p><strong>17. Laytime:</strong> Commence at [TIME] on [CONDITIONS]</p>
+<p><strong>9. Expected ready to load:</strong> [DATE]</p>
+<p><strong>10. Loading port:</strong> [LOAD_PORT]</p>
+<p><strong>11. Discharging port:</strong> [DISCHARGE_PORT]</p>
+<p><strong>12. Cargo:</strong> [CARGO_TYPE] - [QUANTITY] MT (±5% charterers' option)</p>
+<p><strong>13. Freight rate:</strong> USD [RATE] per metric ton</p>
+<p><strong>14. Freight payment:</strong> [  ] Prepaid [  ] On delivery</p>
+<p><strong>15. Loading rate:</strong> [RATE] MT per WWD SHINC/SHEX</p>
+<p><strong>16. Discharging rate:</strong> [RATE] MT per WWD SHINC/SHEX</p>
+<p><strong>17. Laytime:</strong> Commence [WHEN]</p>
 <p><strong>18. Demurrage:</strong> USD [AMOUNT] per day pro rata</p>
 <p><strong>19. Despatch:</strong> [%] of demurrage rate</p>
-<p><strong>20. General Average:</strong> York-Antwerp Rules [YEAR]</p>
+<p><strong>20. General Average:</strong> York-Antwerp Rules 2016</p>
 
-<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
+<div style="background:#d1fae5;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #10b981;">
+<h4 style="margin-top:0;">📖 Terimler Sözlüğü</h4>
+<p><strong>WWD:</strong> Weather Working Days (Hava müsait çalışma günleri)</p>
+<p><strong>SHINC:</strong> Sundays and Holidays Included (Pazar ve tatiller dahil)</p>
+<p><strong>SHEX:</strong> Sundays and Holidays Excluded (Pazar ve tatiller hariç)</p>
+<p><strong>Laytime:</strong> Yükleme/boşaltma için tanınan süre</p>
+<p><strong>Demurrage:</strong> Laytime aşılırsa ödenen ceza</p>
+<p><strong>Despatch:</strong> Laytime erken biterse ödenen ödül</p>
+</div>
+
+<div style="background:#f3f4f6;padding:15px;margin:20px 0;border-radius:8px;text-align:center;">
+<button onclick="showExampleDocument('GENCON94')" style="background:#0066FF;color:white;border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:600;">
+<i class="fa-solid fa-file-contract" style="margin-right:8px;"></i>
+Örnek Evrak Görüntüle - M/V VIYA STAR
+</button>
+</div>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
 <strong>⚠️ TEMPLATE DOCUMENT</strong><br>
-This is a template for reference only. Professional legal review required before execution.
+Bu bir eğitim şablonudur. Gerçek kullanımda profesyonel denizcilik hukuku danışmanı ile çalışılmalıdır.
 </div>`
                 },
                 {
                     title: "NYPE 2015",
                     desc: "New York Produce Exchange Time Charter",
-                    content: `<h3>CODE NAME: "NYPE 2015"</h3>
-<p><strong>NEW YORK PRODUCE EXCHANGE TIME CHARTER</strong> (As amended 2015)</p>
+                    level: "Intermediate",
+                    duration: "3 hours",
+                    content: `<h3>📚 NYPE 2015 - Time Charter Party</h3>
 
-<h4>PART I</h4>
+<div style="background:#fef3c7;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #92400e;">
+<h4 style="margin-top:0;">🎯 Bu Evrak Nedir?</h4>
+<p>NYPE (New York Produce Exchange) Time Charter, geminin <strong>belirli bir süre</strong> için kiralanmasını düzenleyen standarttır.</p>
+<p><strong>Voyage Charter'dan farkı:</strong> GENCON'da tek sefer kiralanır, NYPE'de gemi aylar/yıllar boyunca charterer'ın emrindedir.</p>
+<p><strong>Önemli:</strong> Gemi charterer'ın talimatıyla çalışır, ama gemi sahibi geminin bakımından, mürettebatından sorumludur.</p>
+</div>
+
+<div style="background:#dbeafe;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #1e40af;">
+<h4 style="margin-top:0;">📍 Nerede Kullanılır?</h4>
+<ul>
+<li><strong>Uzun dönem taşımacılıkta:</strong> 6 ay, 1 yıl, hatta 5 yıllık sözleşmeler</li>
+<li><strong>Düzenli ticaret hatlarında:</strong> Aynı rota sürekli işletiliyorsa</li>
+<li><strong>Proje taşımacılığında:</strong> Büyük projeler için özel taşımalar</li>
+<li><strong>Operasyonel esneklik gerektiğinde:</strong> Charterer rotaları belirler</li>
+</ul>
+<p><strong>Örnek Senaryo:</strong> Bir şirket 12 ay boyunca düzenli olarak Karadeniz'den Akdeniz'e yük taşıyacak. NYPE ile gemiyi kiralar, istediği limanlara gönderir.</p>
+</div>
+
+<div style="background:#fee2e2;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #991b1b;">
+<h4 style="margin-top:0;">⚠️ Neden Önemlidir?</h4>
+<ul>
+<li><strong>Maliyet Öngörülebilirliği:</strong> Günlük sabit kira (hire) - bütçe planlaması kolay</li>
+<li><strong>Operasyonel Kontrol:</strong> Charterer geminin nereye gideceğine karar verir</li>
+<li><strong>Off-Hire Koruması:</strong> Gemi arızalanırsa kira ödenmez</li>
+<li><strong>Yakıt Yönetimi:</strong> Charterer yakıtı sağlar ve yönetir</li>
+<li><strong>Uzun Vadeli Güvenlik:</strong> Gemiye uzun süre erişim garantisi</li>
+</ul>
+</div>
+
+<h4>📋 NYPE 2015 - Temel Bilgiler</h4>
+
 <p><strong>1. Shipbroker:</strong> [BROKER_NAME]</p>
 <p><strong>2. Place and Date:</strong> [PLACE], [DATE]</p>
 <p><strong>3. Owners:</strong> [OWNERS_NAME] | Email: [EMAIL]</p>
 <p><strong>4. Charterers:</strong> [CHARTERERS_NAME] | Email: [EMAIL]</p>
-<p><strong>5. Vessel's Name:</strong> [VESSEL_NAME]</p>
-<p><strong>6. GT/NT:</strong> [GT] / [NT]</p>
-<p><strong>7. DWT:</strong> [DWT] metric tons on summer draft</p>
-<p><strong>8. Grain capacity:</strong> [CAPACITY] cubic meters</p>
-<p><strong>9. Delivery Port:</strong> [DELIVERY_PORT]</p>
-<p><strong>10. Date of Delivery:</strong> [DATE] (Cancelling: [DATE])</p>
-<p><strong>11. Redelivery Port:</strong> [REDELIVERY_PORT]</p>
-<p><strong>12. Period:</strong> [MONTHS] months +/- [OPTIONS]</p>
+<p><strong>5. Vessel:</strong> [VESSEL_NAME]</p>
+<p><strong>6-7. GT/NT & DWT:</strong> [GT]/[NT] | [DWT] MT</p>
+<p><strong>9. Delivery Port:</strong> [PORT]</p>
+<p><strong>10. Delivery Date:</strong> [DATE] (Cancelling: [CANCEL_DATE])</p>
+<p><strong>11. Redelivery Port:</strong> [PORT]</p>
+<p><strong>12. Charter Period:</strong> [MONTHS] months +/- [OPTIONS]</p>
 <p><strong>13. Hire Rate:</strong> USD [AMOUNT] per day</p>
 <p><strong>14. Payment:</strong> Semi-monthly in advance</p>
-<p><strong>15. Trading Limits:</strong> [TRADING_AREA]</p>
+<p><strong>15. Trading Limits:</strong> Worldwide / Specific area</p>
 <p><strong>16. Speed & Consumption:</strong><br>
-- Laden: About [SPEED] kts on about [CONS] mt IFO/day<br>
-- Ballast: About [SPEED] kts on about [CONS] mt IFO/day<br>
-- Idle: About [CONS] mt IFO/day</p>
-<p><strong>17. Bunkers on Delivery:</strong> About [QTY] mt IFO, [QTY] mt MGO</p>
-<p><strong>18. Cargo Exclusions:</strong> [EXCLUDED_CARGOES]</p>
+Laden: [SPEED] kts on [CONS] MT/day<br>
+Ballast: [SPEED] kts on [CONS] MT/day</p>
 
-<h4>KEY CLAUSES</h4>
-<p><strong>1. Description:</strong> Owners guarantee class, speed, consumption<br>
-<strong>2. Period:</strong> Charter period as Box 12<br>
-<strong>3. Payment:</strong> Hire payable semi-monthly advance<br>
-<strong>4. Off-hire:</strong> Vessel off-hire when unable to perform<br>
-<strong>5. Withdrawal:</strong> Owners may withdraw for non-payment</p>
+<div style="background:#d1fae5;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #10b981;">
+<h4 style="margin-top:0;">📖 Kritik Terimler</h4>
+<p><strong>Hire:</strong> Günlük kira bedeli</p>
+<p><strong>Off-Hire:</strong> Geminin arızalandığı/çalışamadığı dönem (kira ödenmez)</p>
+<p><strong>Withdrawal:</strong> Ödeme yapılmazsa gemi sahibi gemiyi geri alır</p>
+<p><strong>Delivery:</strong> Geminin charterer'a teslimi</p>
+<p><strong>Redelivery:</strong> Geminin geri verilmesi</p>
+<p><strong>Bunkers:</strong> Yakıt (charterer sağlar)</p>
+</div>
 
-<div style="background:#f3f4f6;padding:12px;margin:15px 0;border-left:4px solid #3b82f6;">
-<strong>⚠️ TEMPLATE DOCUMENT</strong><br>
-Legal review mandatory before execution.
+<div style="background:#f3f4f6;padding:15px;margin:20px 0;border-radius:8px;text-align:center;">
+<button onclick="showExampleDocument('NYPE2015')" style="background:#0066FF;color:white;border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:600;">
+<i class="fa-solid fa-file-contract" style="margin-right:8px;"></i>
+Örnek Evrak Görüntüle - M/V VIYA STAR
+</button>
+</div>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
+<strong>⚠️ TEMPLATE</strong><br>
+Eğitim amaçlı şablondur. Gerçek kullanımda uzman danışman gereklidir.
 </div>`
                 },
                 {
                     title: "BALTIME 2001",
                     desc: "Uniform Time Charter Party",
+                    level: "Intermediate",
+                    duration: "2 hours",
                     content: `<h3>CODE NAME: "BALTIME 2001"</h3>
 <p><strong>UNIFORM TIME CHARTER PARTY (BIMCO)</strong></p>
 
@@ -1971,6 +2056,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "SHELLVOY 6",
                     desc: "Shell Tanker Voyage Charter Party",
+                    level: "Advanced",
+                    duration: "3.5 hours",
                     content: `<h3>CODE NAME: "SHELLVOY 6"</h3>
 <p><strong>SHELL TANKER VOYAGE CHARTER PARTY</strong></p>
 
@@ -1996,6 +2083,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "BPVOY 4",
                     desc: "BP Voyage Charter Party",
+                    level: "Advanced",
+                    duration: "3 hours",
                     content: `<h3>CODE NAME: "BPVOY 4"</h3>
 <p><strong>BP VOYAGE CHARTER PARTY (Edition 4)</strong></p>
 
@@ -2831,6 +2920,13 @@ Fuel Consumption: [CONS] MT/day</p>
         'Operational Forms': 'fa-clipboard-list'
     };
     
+    // Level colors
+    const levelColors = {
+        'Beginner': { bg: '#dbeafe', color: '#1e40af' },
+        'Intermediate': { bg: '#fef3c7', color: '#92400e' },
+        'Advanced': { bg: '#fee2e2', color: '#991b1b' }
+    };
+    
     container.innerHTML = "";
     data.forEach(cat => {
         let html = `<div class="category-header">${cat.category}</div><div class="docs-grid">`;
@@ -2839,32 +2935,32 @@ Fuel Consumption: [CONS] MT/day</p>
         
         cat.items.forEach(item => {
             const safeContent = item.content.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-            const code = item.title;
-            const extraInfo = item.extraInfo || 'Standard Template';
+            const levelStyle = levelColors[item.level] || levelColors['Beginner'];
             
             html += `<div class="doc-card" style="cursor:pointer;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
                     <i class="fa-solid ${icon} doc-icon" style="color:${color};font-size:40px;"></i>
-                    <span style="background:${color}20;color:${color};padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;">
-                        ${cat.category.toUpperCase()}
+                    <span style="background:${levelStyle.bg};color:${levelStyle.color};padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;">
+                        ${item.level}
                     </span>
                 </div>
-                <div style="font-size:15px;font-weight:700;color:${color};margin-bottom:6px;letter-spacing:0.5px;">
-                    ${code}
-                </div>
-                <div class="doc-title" style="font-size:18px;margin-bottom:8px;color:#111827;">
-                    ${item.desc}
-                </div>
+                <div class="doc-title" style="font-size:19px;margin-bottom:8px;">${item.title}</div>
                 <div class="doc-desc" style="margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
                     ${item.desc}
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280;margin-bottom:16px;padding-top:12px;border-top:1px solid #e5e7eb;">
-                    <i class="fa-solid fa-code"></i>
-                    <span>${extraInfo}</span>
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:16px;font-size:13px;color:#6b7280;padding-top:12px;border-top:1px solid #e5e7eb;">
+                    <span style="display:flex;align-items:center;gap:5px;">
+                        <i class="fa-solid fa-clock"></i>
+                        ${item.duration}
+                    </span>
+                    <span style="display:flex;align-items:center;gap:5px;">
+                        <i class="fa-solid fa-signal"></i>
+                        ${item.level}
+                    </span>
                 </div>
                 <button class="btn-download" style="width:100%;" onclick='openContentModal("${item.title}", \`${safeContent}\`)'>
-                    <i class="fa-solid fa-eye"></i>
-                    ${t.btn_read || 'VIEW DOCUMENT'}
+                    <i class="fa-solid fa-book-open"></i>
+                    ${t.btn_read || 'READ'}
                 </button>
             </div>`;
         });
@@ -4406,4 +4502,207 @@ async function loadNews() {
         console.error('❌ News error:', error);
         newsGrid.innerHTML = '<div style="text-align:center; padding:50px; color:#ef4444;">Haberler yüklenirken hata oluştu.</div>';
     }
+}
+
+// Örnek Evrak Göster (M/V VIYA STAR)
+function showExampleDocument(docType) {
+    let exampleContent = '';
+    
+    if (docType === 'GENCON94') {
+        exampleContent = `<h3>📄 ÖRNEK EVRAK: GENCON 94</h3>
+<h4 style="text-align:center;color:#0066FF;margin:20px 0;">M/V VIYA STAR - Voyage Charter Party</h4>
+
+<div style="background:#f3f4f6;padding:20px;margin:15px 0;border-radius:8px;">
+<h5>PART I - BOX LAYOUT</h5>
+
+<p><strong>1. Shipbroker:</strong> Viya Maritime Brokers Ltd.</p>
+<p><strong>2. Place and Date:</strong> Istanbul, Turkey - 15th January 2026</p>
+
+<p><strong>3. Owners:</strong><br>
+Viya Shipping Co. Ltd.<br>
+Registered Office: Barbaros Bulvarı No:145, Beşiktaş, Istanbul, Turkey<br>
+Email: operations@viyashipping.com</p>
+
+<p><strong>4. Charterers:</strong><br>
+Global Grain Trading Inc.<br>
+Registered Office: 123 Commerce Street, New York, NY 10005, USA<br>
+Email: chartering@globalgraintrading.com</p>
+
+<p><strong>5. Vessel's name:</strong> M/V VIYA STAR</p>
+
+<p><strong>6. GT/NT:</strong> 32,450 / 19,850</p>
+
+<p><strong>7. DWT:</strong> 58,000 metric tons (about) on summer freeboard</p>
+
+<p><strong>8. Present position:</strong> Gemlik, Turkey - Discharging</p>
+
+<p><strong>9. Expected ready to load (about):</strong> 25th January 2026</p>
+
+<p><strong>10. Loading port or place:</strong> Bandırma, Turkey<br>
+<em>One safe berth, always afloat</em></p>
+
+<p><strong>11. Discharging port or place:</strong> Alexandria, Egypt<br>
+<em>One safe berth, always afloat</em></p>
+
+<p><strong>12. Cargo:</strong> Bulk Wheat in Bulk<br>
+Quantity: 55,000 metric tons (about)<br>
+<strong>5% more or less at Charterers' option</strong></p>
+
+<p><strong>13. Freight rate:</strong> USD 28.50 per metric ton</p>
+
+<p><strong>14. Freight payment:</strong> ☑ Prepaid within 3 banking days of B/L date</p>
+
+<p><strong>15. Loading rate:</strong> 7,500 metric tons per weather working day<br>
+of 24 consecutive hours, Sundays and holidays excluded (SHEX)</p>
+
+<p><strong>16. Discharging rate:</strong> 6,000 metric tons per weather working day<br>
+of 24 consecutive hours, Sundays and holidays excluded (SHEX)</p>
+
+<p><strong>17. Laytime:</strong> Laytime to commence at 08:00 hours on the first working day<br>
+after Notice of Readiness has been accepted</p>
+
+<p><strong>18. Demurrage:</strong> USD 18,000 per day or pro rata for any part of a day</p>
+
+<p><strong>19. Despatch money:</strong> 50% of demurrage rate per day or pro rata</p>
+
+<p><strong>20. General Average:</strong> York-Antwerp Rules 2016, adjusted in London</p>
+
+<p><strong>21. Law and Arbitration:</strong> English Law - Arbitration in London (LMAA Terms)</p>
+</div>
+
+<div style="background:#d1fae5;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #10b981;">
+<h5>📊 HESAPLAMALAR (Bu Seferden Örnek)</h5>
+
+<p><strong>Navlun Hesabı:</strong><br>
+Taşınan Yük: 55,000 MT<br>
+Navlun Oranı: USD 28.50/MT<br>
+<strong>Toplam Navlun: USD 1,567,500</strong></p>
+
+<p><strong>Laytime Kullanımı:</strong><br>
+Yükleme: 55,000 ÷ 7,500 = 7.33 gün<br>
+Boşaltma: 55,000 ÷ 6,000 = 9.17 gün<br>
+<strong>Toplam Allowed Time: 16.5 gün</strong></p>
+
+<p><strong>Gerçekleşen Süre:</strong><br>
+Yükleme: 8 gün (0.67 gün demurrage)<br>
+Boşaltma: 8.5 gün (0.67 gün despatch)<br>
+<strong>Net: Balans (demurrage = despatch)</strong></p>
+</div>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
+<strong>📌 NOT:</strong> Bu örnek evrak eğitim amaçlıdır. M/V VIYA STAR gerçek bir gemidir ve bu bilgiler örnek senaryoya dayalıdır.
+</div>`;
+    } else if (docType === 'NYPE2015') {
+        exampleContent = `<h3>📄 ÖRNEK EVRAK: NYPE 2015</h3>
+<h4 style="text-align:center;color:#0066FF;margin:20px 0;">M/V VIYA STAR - Time Charter Party</h4>
+
+<div style="background:#f3f4f6;padding:20px;margin:15px 0;border-radius:8px;">
+<h5>PART I - BOX LAYOUT</h5>
+
+<p><strong>1. Shipbroker:</strong> Viya Maritime Brokers Ltd.<br>
+Commission: 2.5% on hire</p>
+
+<p><strong>2. Place and Date:</strong> Istanbul, Turkey - 1st March 2026</p>
+
+<p><strong>3. Owners:</strong><br>
+Viya Shipping Co. Ltd.<br>
+Barbaros Bulvarı No:145, Beşiktaş, Istanbul 34353, Turkey<br>
+Email: operations@viyashipping.com<br>
+Phone: +90 212 555 1234</p>
+
+<p><strong>4. Charterers:</strong><br>
+Mediterranean Trading Co. S.A.<br>
+Piraeus Tower, 2-4 Massalias Street, Piraeus 18535, Greece<br>
+Email: chartering@medtrading.gr<br>
+Phone: +30 210 555 6789</p>
+
+<p><strong>5. Vessel's Name:</strong> M/V VIYA STAR</p>
+
+<p><strong>6. IMO Number:</strong> IMO 9876543</p>
+
+<p><strong>7. Flag:</strong> Marshall Islands</p>
+
+<p><strong>8. Type:</strong> Bulk Carrier (Handymax)</p>
+
+<p><strong>9. Built:</strong> 2018 (8 years old)</p>
+
+<p><strong>10. Classification:</strong> Lloyd's Register (LR)<br>
+Class Notation: ✠ 100A1 Bulk Carrier ESP, BC-A, BWTS</p>
+
+<p><strong>11. GRT/NRT:</strong> 32,450 / 19,850</p>
+
+<p><strong>12. Total DWT:</strong> 58,000 metric tons on summer draft (13.2m)</p>
+
+<p><strong>13. Grain/Bale Capacity:</strong> 68,500 / 66,200 cubic meters</p>
+
+<p><strong>14. Speed & Consumption:</strong><br>
+Laden: About 13.5 knots on about 28 MT IFO/day + 0.5 MT MGO/day<br>
+Ballast: About 14.0 knots on about 26 MT IFO/day + 0.5 MT MGO/day<br>
+Idle: About 3 MT IFO/day + 0.2 MT MGO/day<br>
+<em>(All speeds in good weather, max Beaufort 4)</em></p>
+
+<p><strong>15. Delivery Port:</strong> Gemlik, Turkey</p>
+
+<p><strong>16. Delivery Date:</strong> 15th March 2026<br>
+<strong>Cancelling Date:</strong> 20th March 2026</p>
+
+<p><strong>17. Redelivery Port:</strong> 1 safe port Mediterranean<br>
+Range: Gibraltar - Suez Canal (both inclusive)</p>
+
+<p><strong>18. Charter Period:</strong> 12 months ±15 days (Charterers' option)</p>
+
+<p><strong>19. Hire Rate:</strong> USD 15,500 per day</p>
+
+<p><strong>20. Payment Method:</strong><br>
+Semi-monthly in advance (15th calendar day)<br>
+Bank: İş Bankası, Levent Branch, Istanbul<br>
+Account: TR33 0006 4000 0011 2345 6789 01<br>
+SWIFT: ISBKTRISXXX</p>
+
+<p><strong>21. Trading Limits:</strong> Worldwide (excluding war zones)</p>
+
+<p><strong>22. Cargo Exclusions:</strong><br>
+Livestock, bulk acids, radioactive materials, explosives,<br>
+noxious/hazardous cargoes without prior approval</p>
+
+<p><strong>23. Bunkers on Delivery:</strong><br>
+IFO 380: About 850 MT at USD 520/MT = USD 442,000<br>
+MGO: About 120 MT at USD 680/MT = USD 81,600<br>
+<strong>Total Bunkers Value: USD 523,600</strong></p>
+
+<p><strong>24. Bunkers on Redelivery:</strong><br>
+To be purchased by Owners at market price on redelivery date<br>
+Estimated: 800 MT IFO + 100 MT MGO</p>
+</div>
+
+<div style="background:#d1fae5;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #10b981;">
+<h5>📊 FİNANSAL ÖZET (12 Aylık Dönem)</h5>
+
+<p><strong>Toplam Hire Geliri:</strong><br>
+12 ay × 30 gün × USD 15,500/gün = <strong>USD 5,580,000</strong></p>
+
+<p><strong>Yakıt Maliyeti (Charterer):</strong><br>
+Ortalama 200 gün seyrüsefer × 28 MT/gün × USD 520/MT = USD 2,912,000<br>
+Ortalama 165 gün limanda × 3 MT/gün × USD 520/MT = USD 257,400<br>
+<strong>Toplam Yakıt: ~USD 3,170,000</strong></p>
+
+<p><strong>Owners Maliyetleri:</strong><br>
+Mürettebat: USD 60,000/ay × 12 = USD 720,000<br>
+Bakım/Onarım: USD 400,000<br>
+Sigorta: USD 200,000<br>
+Yönetim: USD 180,000<br>
+<strong>Toplam: USD 1,500,000</strong></p>
+
+<p><strong>Net Kar (Owners):</strong><br>
+Hire: USD 5,580,000<br>
+Maliyetler: (USD 1,500,000)<br>
+<strong>Net: USD 4,080,000</strong></p>
+</div>
+
+<div style="background:#fff3cd;padding:12px;margin:15px 0;border-left:4px solid #ffc107;">
+<strong>📌 NOT:</strong> Bu örnek evrak eğitim amaçlıdır. Gerçek finansal veriler piyasa koşullarına göre değişir.
+</div>`;
+    }
+    
+    openContentModal('Örnek Evrak - M/V VIYA STAR', exampleContent);
 }
