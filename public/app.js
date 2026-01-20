@@ -16,6 +16,7 @@ let currentChatVesselId = null;
 let uploadedImages = [];
 let localStream = null;
 let peerConnection = null;
+let remoteStream = null;
 let currentRoomId = null;
 let isMuted = false;
 let isVideoOff = false;
@@ -1214,89 +1215,37 @@ async function createPeerConnection() {
     console.log('✅ All tracks added to peer connection');
     
     peerConnection.ontrack = (event) => {
-        console.log('🎥 ========== ONTRACK EVENT TRIGGERED ==========');
-        console.log('  - Event received:', !!event);
-        console.log('  - Event streams:', event.streams ? event.streams.length : 'NULL');
-        console.log('  - Event track:', event.track);
-        console.log('  - Track kind:', event.track.kind);
-        console.log('  - Track ID:', event.track.id);
-        console.log('  - Track label:', event.track.label);
-        console.log('  - Track enabled:', event.track.enabled);
-        console.log('  - Track readyState:', event.track.readyState);
-        console.log('  - Track muted:', event.track.muted);
+        console.log('🎥 Track received:', event.track.kind);
         
-        if (!event.streams || event.streams.length === 0) {
-            console.error('❌ No streams in ontrack event!');
-            alert('⚠️ Uzak video stream alınamadı. Bağlantı kuruluyor...');
-            return;
+        // İlk track geldiğinde stream oluştur
+        if (!remoteStream) {
+            remoteStream = new MediaStream();
+            console.log('✅ Created new remote MediaStream');
+            
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo) {
+                remoteVideo.srcObject = remoteStream;
+                remoteVideo.autoplay = true;
+                remoteVideo.playsInline = true;
+                remoteVideo.muted = false;
+                console.log('📺 Remote video element configured');
+            }
         }
         
-        const remoteStream = event.streams[0];
-        console.log('✅ Remote stream found!');
-        console.log('  - Stream ID:', remoteStream.id);
-        console.log('  - Stream active:', remoteStream.active);
-        console.log('  - Stream tracks:', remoteStream.getTracks().length);
+        // Her track'i ekle
+        remoteStream.addTrack(event.track);
+        console.log('➕ Added', event.track.kind, 'track to remote stream');
+        console.log('  - Total tracks now:', remoteStream.getTracks().length);
         
-        remoteStream.getTracks().forEach((track, index) => {
-            console.log(`  - Track ${index} (${track.kind}):`, track.label);
-            console.log(`    - Enabled: ${track.enabled}`);
-            console.log(`    - ReadyState: ${track.readyState}`);
-            console.log(`    - Muted: ${track.muted}`);
-        });
-        
-        console.log('📺 Setting remote video element...');
-        const remoteVideo = document.getElementById('remoteVideo');
-        
-        if (!remoteVideo) {
-            console.error('❌ remoteVideo element not found!');
-            alert('❌ Video elementi bulunamadı. Lütfen sayfayı yenileyin.');
-            return;
+        // İki track da eklendiğinde play et
+        if (remoteStream.getTracks().length === 2) {
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo) {
+                remoteVideo.play()
+                    .then(() => console.log('✅ Remote video playing!'))
+                    .catch(err => console.error('❌ Play error:', err));
+            }
         }
-        
-        console.log('  - remoteVideo element found');
-        console.log('  - Previous srcObject:', remoteVideo.srcObject);
-        
-        // Set the stream
-        remoteVideo.srcObject = remoteStream;
-        console.log('  - srcObject set to new stream');
-        
-        // Ensure all necessary attributes are set
-        remoteVideo.autoplay = true;
-        remoteVideo.playsInline = true;
-        
-        console.log('  - Attributes configured:');
-        console.log('    - autoplay:', remoteVideo.autoplay);
-        console.log('    - playsInline:', remoteVideo.playsInline);
-        console.log('    - muted:', remoteVideo.muted);
-        console.log('    - paused:', remoteVideo.paused);
-        
-        // Force play
-        console.log('▶️ Attempting to play remote video...');
-        remoteVideo.play()
-            .then(() => {
-                console.log('✅ Remote video playing successfully!');
-                console.log('  - Video paused:', remoteVideo.paused);
-                console.log('  - Video currentTime:', remoteVideo.currentTime);
-                console.log('  - Video readyState:', remoteVideo.readyState);
-            })
-            .catch(err => {
-                console.error('❌ Remote video play error:', err);
-                console.error('  - Error name:', err.name);
-                console.error('  - Error message:', err.message);
-                
-                // Try to play again after a short delay
-                console.log('🔄 Retrying play after 500ms...');
-                setTimeout(() => {
-                    remoteVideo.play()
-                        .then(() => console.log('✅ Remote video playing after retry'))
-                        .catch(retryErr => {
-                            console.error('❌ Retry failed:', retryErr);
-                            alert('⚠️ Uzak video oynatılamadı. Lütfen sayfayı yenileyin.');
-                        });
-                }, 500);
-            });
-        
-        console.log('========== ONTRACK EVENT COMPLETED ==========');
     };
     
     peerConnection.onicecandidate = (event) => {
@@ -1379,6 +1328,7 @@ function endVideoCall() {
     document.getElementById('remoteVideo').srcObject = null;
     document.getElementById('videoCallModal').style.display = 'none';
     isMuted = false; isVideoOff = false; currentRoomId = null;
+    remoteStream = null;
 }
 
 function copyRoomLink() {
