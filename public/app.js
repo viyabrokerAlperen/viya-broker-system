@@ -2107,6 +2107,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "ASBATANKVOY",
                     desc: "American Tanker Voyage Charter",
+                    level: "Advanced",
+                    duration: "3 hours",
                     content: `<h3>ASBATANKVOY</h3>
 <p><strong>AMERICAN STANDARD TANKER VOYAGE CHARTER</strong></p>
 
@@ -2123,6 +2125,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "BARECON 2017",
                     desc: "Bareboat Charter Party",
+                    level: "Advanced",
+                    duration: "4 hours",
                     content: `<h3>CODE NAME: "BARECON 2017"</h3>
 <p><strong>BAREBOAT CHARTER (BIMCO Standard Form)</strong></p>
 
@@ -2141,6 +2145,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "SUPPLYTIME 2017",
                     desc: "Offshore Supply Vessel Time Charter",
+                    level: "Intermediate",
+                    duration: "2.5 hours",
                     content: `<h3>CODE NAME: "SUPPLYTIME 2017"</h3>
 <p><strong>OFFSHORE SUPPLY VESSEL TIME CHARTER</strong></p>
 
@@ -2162,6 +2168,8 @@ About [SPEED] knots on about [CONS] tons fuel oil per day</p>
                 {
                     title: "CONGENBILL 2016",
                     desc: "BIMCO General Purpose Bill of Lading",
+                    level: "Beginner",
+                    duration: "1.5 hours",
                     content: `<h3>BILL OF LADING - CODE NAME: "CONGENBILL 2016"</h3>
 
 <p><strong>Shipper:</strong> [SHIPPER_NAME], [ADDRESS]</p>
@@ -2198,6 +2206,8 @@ Subject to complete T&Cs on reverse.
                 {
                     title: "CONLINEBILL 2016",
                     desc: "BIMCO Liner Bill of Lading",
+                    level: "Beginner",
+                    duration: "1.5 hours",
                     content: `<h3>LINER BILL OF LADING - "CONLINEBILL 2016"</h3>
 
 <p><strong>Carrier:</strong> [LINER_COMPANY]<br>
@@ -2226,6 +2236,8 @@ Subject to complete T&Cs on reverse.
                 {
                     title: "MULTIDOC 95",
                     desc: "Multimodal Transport B/L (BIMCO)",
+                    level: "Intermediate",
+                    duration: "2 hours",
                     content: `<h3>MULTIDOC 95 - MULTIMODAL TRANSPORT B/L</h3>
 
 <p><strong>Place of Receipt:</strong> [PLACE]<br>
@@ -2246,6 +2258,8 @@ Subject to complete T&Cs on reverse.
                 {
                     title: "SEA WAYBILL",
                     desc: "Non-negotiable Sea Waybill",
+                    level: "Beginner",
+                    duration: "1 hour",
                     content: `<h3>SEA WAYBILL (Non-negotiable)</h3>
 
 <p><strong>Carrier:</strong> [CARRIER]<br>
@@ -2271,6 +2285,8 @@ Cargo deliverable to named Consignee without presentation of original.</p>
                 {
                     title: "MATE'S RECEIPT",
                     desc: "Mate's Receipt Template",
+                    level: "Beginner",
+                    duration: "0.5 hours",
                     content: `<h3>MATE'S RECEIPT</h3>
 
 <p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
@@ -2301,6 +2317,8 @@ Date/Time: [DATE] [TIME]</p>
                 {
                     title: "SWITCH B/L",
                     desc: "Switch Bill of Lading Template",
+                    level: "Intermediate",
+                    duration: "1.5 hours",
                     content: `<h3>SWITCH BILL OF LADING</h3>
 
 <p><strong>Original B/L No:</strong> [ORIGINAL_BL_NO]<br>
@@ -2330,6 +2348,8 @@ Date/Time: [DATE] [TIME]</p>
                 {
                     title: "NOTICE OF READINESS (NOR)",
                     desc: "Notice of Readiness Template",
+                    level: "Beginner",
+                    duration: "1 hour",
                     content: `<h3>NOTICE OF READINESS</h3>
 
 <p><strong>To:</strong> [CHARTERERS/RECEIVERS/SHIPPERS]<br>
@@ -2382,6 +2402,8 @@ Master, M/V [VESSEL_NAME]</p>
                 {
                     title: "STATEMENT OF FACTS (SOF)",
                     desc: "Port Operations Time Sheet",
+                    level: "Intermediate",
+                    duration: "2 hours",
                     content: `<h3>STATEMENT OF FACTS</h3>
 
 <p><strong>Vessel:</strong> M/V [VESSEL_NAME] | Voyage: [VOY]<br>
@@ -2424,6 +2446,8 @@ Signed without prejudice, subject to verification.
                 {
                     title: "TIME SHEET",
                     desc: "Laytime Calculation Statement",
+                    level: "Intermediate",
+                    duration: "2.5 hours",
                     content: `<h3>LAYTIME STATEMENT / TIME SHEET</h3>
 
 <p><strong>Vessel:</strong> M/V [VESSEL_NAME]<br>
@@ -2480,6 +2504,8 @@ Subject to verification and C/P arbitration clause.
                 {
                     title: "LETTER OF INDEMNITY (LOI)",
                     desc: "Letter of Indemnity for delivering without B/L",
+                    level: "Advanced",
+                    duration: "2 hours",
                     content: `<h3>LETTER OF INDEMNITY</h3>
 
 <p><strong>To:</strong> [CARRIER_NAME] (The Carrier)<br>
@@ -2570,6 +2596,8 @@ Authorized Claims Manager<br>
                 {
                     title: "COMMERCIAL INVOICE",
                     desc: "Commercial Invoice Template",
+                    level: "Beginner",
+                    duration: "1 hour",
                     content: `<h3>COMMERCIAL INVOICE</h3>
 
 <p><strong>Invoice No:</strong> [INV_NUMBER]<br>
@@ -2607,6 +2635,8 @@ Authorized Signature</p>`
                 {
                     title: "PACKING LIST",
                     desc: "Packing List Template",
+                    level: "Beginner",
+                    duration: "0.5 hours",
                     content: `<h3>PACKING LIST</h3>
 
 <p><strong>Ref:</strong> [REF_NO] | <strong>Date:</strong> [DATE]</p>
@@ -2628,6 +2658,8 @@ Authorized Signature</p>`
                 {
                     title: "CERTIFICATE OF ORIGIN",
                     desc: "Certificate of Origin",
+                    level: "Beginner",
+                    duration: "0.5 hours",
                     content: `<h3>CERTIFICATE OF ORIGIN</h3>
 
 <p><strong>Certificate No:</strong> [CERT_NO]<br>
@@ -2653,6 +2685,8 @@ Chamber of Commerce<br>
                 {
                     title: "FUMIGATION CERTIFICATE",
                     desc: "Fumigation Certificate",
+                    level: "Beginner",
+                    duration: "0.5 hours",
                     content: `<h3>FUMIGATION CERTIFICATE</h3>
 
 <p><strong>Certificate No:</strong> [CERT_NO]<br>
@@ -2684,6 +2718,8 @@ License No: [LICENSE]</p>`
                 {
                     title: "DOC/SMC",
                     desc: "Document of Compliance / Safety Management Certificate",
+                    level: "Intermediate",
+                    duration: "2 hours",
                     content: `<h3>SAFETY MANAGEMENT CERTIFICATE (SMC)</h3>
 
 <p><strong>Issued under ISM CODE (SOLAS Chapter IX)</strong></p>
@@ -2716,6 +2752,8 @@ Place: [PORT]</p>
                 {
                     title: "TONNAGE CERTIFICATE",
                     desc: "International Tonnage Certificate",
+                    level: "Beginner",
+                    duration: "1 hour",
                     content: `<h3>INTERNATIONAL TONNAGE CERTIFICATE (1969)</h3>
 
 <p><strong>Vessel:</strong> [VESSEL_NAME]<br>
