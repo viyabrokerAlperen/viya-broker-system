@@ -899,29 +899,99 @@ async function openInbox() {
 // 7. VIDEO CALL (WebRTC)
 // ==========================================
 async function startVideoCall() {
-    if (!currentUser) { alert('Lütfen giriş yapın.'); return; }
-    if (!currentChatUserId) { alert('Önce bir kullanıcıyla sohbet başlatın.'); return; }
+    if (!currentUser) { 
+        alert('❌ Lütfen önce giriş yapın.');
+        console.error('❌ User not logged in');
+        return; 
+    }
+    if (!currentChatUserId) { 
+        alert('❌ Önce bir kullanıcıyla sohbet başlatın.');
+        console.error('❌ No chat user selected');
+        return; 
+    }
     
-    console.log('📹 Starting video call...');
+    console.log('📹 ========== STARTING VIDEO CALL ==========');
     console.log('  - Current User:', currentUser.fullName, '(ID:', currentUser.id + ')');
     console.log('  - Target User ID:', currentChatUserId);
     console.log('  - Vessel Listing ID:', currentChatVesselId);
+    console.log('  - Current localStream state:', localStream ? 'EXISTS' : 'NULL');
     
     try {
-        console.log('🎥 Requesting user media (video + audio)...');
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        console.log('✅ Got local stream:', localStream.id);
-        console.log('  - Video tracks:', localStream.getVideoTracks());
-        console.log('  - Audio tracks:', localStream.getAudioTracks());
+        // Check if localStream already exists and is active
+        if (localStream) {
+            console.log('⚠️ LocalStream already exists, stopping old tracks...');
+            localStream.getTracks().forEach(track => {
+                console.log(`  - Stopping ${track.kind} track:`, track.label);
+                track.stop();
+            });
+            localStream = null;
+        }
         
+        console.log('🎥 Requesting user media (video + audio)...');
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            console.log('✅ Got local stream successfully!');
+            console.log('  - Stream ID:', localStream.id);
+            console.log('  - Video tracks:', localStream.getVideoTracks().length);
+            console.log('  - Audio tracks:', localStream.getAudioTracks().length);
+            
+            localStream.getVideoTracks().forEach((track, index) => {
+                console.log(`  - Video Track ${index}:`, track.label, '- Enabled:', track.enabled, '- ReadyState:', track.readyState);
+            });
+            localStream.getAudioTracks().forEach((track, index) => {
+                console.log(`  - Audio Track ${index}:`, track.label, '- Enabled:', track.enabled, '- ReadyState:', track.readyState);
+            });
+        } catch (mediaError) {
+            console.error('❌ getUserMedia failed:', mediaError);
+            console.error('  - Error name:', mediaError.name);
+            console.error('  - Error message:', mediaError.message);
+            
+            let errorMessage = 'Kamera veya mikrofona erişilemedi. ';
+            if (mediaError.name === 'NotAllowedError' || mediaError.name === 'PermissionDeniedError') {
+                errorMessage += 'Lütfen tarayıcı ayarlarından kamera ve mikrofon izni verin.';
+            } else if (mediaError.name === 'NotFoundError' || mediaError.name === 'DevicesNotFoundError') {
+                errorMessage += 'Kamera veya mikrofon bulunamadı. Lütfen cihazlarınızı kontrol edin.';
+            } else if (mediaError.name === 'NotReadableError' || mediaError.name === 'TrackStartError') {
+                errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
+            } else {
+                errorMessage += mediaError.message;
+            }
+            
+            alert('❌ ' + errorMessage);
+            throw mediaError;
+        }
+        
+        if (!localStream) {
+            console.error('❌ localStream is still null after getUserMedia!');
+            alert('❌ Kamera/mikrofon stream oluşturulamadı. Lütfen tekrar deneyin.');
+            return;
+        }
+        
+        console.log('📺 Setting local video element...');
         const localVideo = document.getElementById('localVideo');
+        if (!localVideo) {
+            console.error('❌ localVideo element not found!');
+            alert('❌ Video elementi bulunamadı. Lütfen sayfayı yenileyin.');
+            return;
+        }
+        
         localVideo.srcObject = localStream;
         localVideo.autoplay = true;
         localVideo.muted = true;
         localVideo.playsInline = true;
-        console.log('✅ Local video srcObject set');
+        console.log('✅ Local video element configured');
+        console.log('  - srcObject set:', !!localVideo.srcObject);
+        console.log('  - autoplay:', localVideo.autoplay);
+        console.log('  - muted:', localVideo.muted);
+        console.log('  - playsInline:', localVideo.playsInline);
         
         const token = localStorage.getItem('viya_token');
+        if (!token) {
+            console.error('❌ No authentication token found');
+            alert('❌ Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
+            return;
+        }
+        
         console.log('📡 Creating video room...');
         const roomRes = await fetch('/api/video/create-room', {
             method: 'POST',
@@ -933,21 +1003,22 @@ async function startVideoCall() {
         console.log('📡 Room creation response:', roomData);
         if (!roomData.success) { 
             console.error('❌ Room creation failed:', roomData);
-            alert('Room oluşturulamadı.'); 
+            alert('❌ Video odası oluşturulamadı. Lütfen tekrar deneyin.'); 
             return; 
         }
         
         currentRoomId = roomData.room.roomId;
-        console.log('✅ Room created:', currentRoomId);
+        console.log('✅ Room created successfully:', currentRoomId);
         document.getElementById('currentRoomId').innerText = currentRoomId;
         document.getElementById('videoCallModal').style.display = 'block';
         closeModal('messagingModal');
         
+        console.log('🔗 Creating peer connection...');
         await createPeerConnection();
         
         console.log('📝 Creating offer...');
         const offer = await peerConnection.createOffer();
-        console.log('✅ Offer created:', offer);
+        console.log('✅ Offer created:', offer.type);
         
         console.log('💾 Setting local description...');
         await peerConnection.setLocalDescription(offer);
@@ -962,41 +1033,111 @@ async function startVideoCall() {
             offer: offer 
         });
         console.log('✅ Offer sent successfully');
+        console.log('========== VIDEO CALL INITIATED ==========');
         
     } catch (e) {
-        console.error('❌ Video call error:', e);
+        console.error('❌ ========== VIDEO CALL ERROR ==========');
         console.error('  - Error name:', e.name);
         console.error('  - Error message:', e.message);
         console.error('  - Error stack:', e.stack);
-        alert('Kamera/mikrofon hatası: ' + e.message);
+        console.error('=========================================');
+        
+        // Clean up if error occurs
+        if (localStream) {
+            console.log('🧹 Cleaning up local stream due to error...');
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        
+        if (!e.message.includes('Kamera') && !e.message.includes('mikrofon')) {
+            alert('❌ Video arama başlatılamadı: ' + e.message);
+        }
     }
 }
 
 async function answerCall(data) {
-    console.log('📞 Answering call...');
-    console.log('  - Call data:', data);
+    console.log('📞 ========== ANSWERING CALL ==========');
+    console.log('  - Call data received:', !!data);
     console.log('  - From:', data.fromName, '(ID:', data.from + ')');
     console.log('  - Room ID:', data.roomId);
+    console.log('  - Offer received:', !!data.offer);
+    console.log('  - Current localStream state:', localStream ? 'EXISTS' : 'NULL');
     
     try {
-        console.log('🎥 Requesting user media (video + audio)...');
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        console.log('✅ Got local stream:', localStream.id);
-        console.log('  - Video tracks:', localStream.getVideoTracks());
-        console.log('  - Audio tracks:', localStream.getAudioTracks());
+        // Check if localStream already exists and is active
+        if (localStream) {
+            console.log('⚠️ LocalStream already exists, stopping old tracks...');
+            localStream.getTracks().forEach(track => {
+                console.log(`  - Stopping ${track.kind} track:`, track.label);
+                track.stop();
+            });
+            localStream = null;
+        }
         
+        console.log('🎥 Requesting user media (video + audio)...');
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            console.log('✅ Got local stream successfully!');
+            console.log('  - Stream ID:', localStream.id);
+            console.log('  - Video tracks:', localStream.getVideoTracks().length);
+            console.log('  - Audio tracks:', localStream.getAudioTracks().length);
+            
+            localStream.getVideoTracks().forEach((track, index) => {
+                console.log(`  - Video Track ${index}:`, track.label, '- Enabled:', track.enabled, '- ReadyState:', track.readyState);
+            });
+            localStream.getAudioTracks().forEach((track, index) => {
+                console.log(`  - Audio Track ${index}:`, track.label, '- Enabled:', track.enabled, '- ReadyState:', track.readyState);
+            });
+        } catch (mediaError) {
+            console.error('❌ getUserMedia failed:', mediaError);
+            console.error('  - Error name:', mediaError.name);
+            console.error('  - Error message:', mediaError.message);
+            
+            let errorMessage = 'Kamera veya mikrofona erişilemedi. ';
+            if (mediaError.name === 'NotAllowedError' || mediaError.name === 'PermissionDeniedError') {
+                errorMessage += 'Lütfen tarayıcı ayarlarından kamera ve mikrofon izni verin.';
+            } else if (mediaError.name === 'NotFoundError' || mediaError.name === 'DevicesNotFoundError') {
+                errorMessage += 'Kamera veya mikrofon bulunamadı. Lütfen cihazlarınızı kontrol edin.';
+            } else if (mediaError.name === 'NotReadableError' || mediaError.name === 'TrackStartError') {
+                errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor olabilir.';
+            } else {
+                errorMessage += mediaError.message;
+            }
+            
+            alert('❌ ' + errorMessage);
+            throw mediaError;
+        }
+        
+        if (!localStream) {
+            console.error('❌ localStream is still null after getUserMedia!');
+            alert('❌ Kamera/mikrofon stream oluşturulamadı. Lütfen tekrar deneyin.');
+            return;
+        }
+        
+        console.log('📺 Setting local video element...');
         const localVideo = document.getElementById('localVideo');
+        if (!localVideo) {
+            console.error('❌ localVideo element not found!');
+            alert('❌ Video elementi bulunamadı. Lütfen sayfayı yenileyin.');
+            return;
+        }
+        
         localVideo.srcObject = localStream;
         localVideo.autoplay = true;
         localVideo.muted = true;
         localVideo.playsInline = true;
-        console.log('✅ Local video srcObject set');
+        console.log('✅ Local video element configured');
+        console.log('  - srcObject set:', !!localVideo.srcObject);
+        console.log('  - autoplay:', localVideo.autoplay);
+        console.log('  - muted:', localVideo.muted);
+        console.log('  - playsInline:', localVideo.playsInline);
         
         currentRoomId = data.roomId;
         document.getElementById('currentRoomId').innerText = currentRoomId;
         document.getElementById('remoteUserName').innerText = data.fromName;
         document.getElementById('videoCallModal').style.display = 'block';
         
+        console.log('🔗 Creating peer connection...');
         await createPeerConnection();
         
         console.log('📝 Setting remote description (offer)...');
@@ -1005,7 +1146,7 @@ async function answerCall(data) {
         
         console.log('📝 Creating answer...');
         const answer = await peerConnection.createAnswer();
-        console.log('✅ Answer created:', answer);
+        console.log('✅ Answer created:', answer.type);
         
         console.log('💾 Setting local description (answer)...');
         await peerConnection.setLocalDescription(answer);
@@ -1014,54 +1155,148 @@ async function answerCall(data) {
         console.log('📤 Sending answer to user:', data.from);
         socket.emit('answer_call', { toUserId: data.from, answer: answer });
         console.log('✅ Answer sent successfully');
+        console.log('========== CALL ANSWERED ==========');
         
     } catch (e) { 
-        console.error('❌ Answer call error:', e);
+        console.error('❌ ========== ANSWER CALL ERROR ==========');
         console.error('  - Error name:', e.name);
         console.error('  - Error message:', e.message);
         console.error('  - Error stack:', e.stack);
+        console.error('=========================================');
+        
+        // Clean up if error occurs
+        if (localStream) {
+            console.log('🧹 Cleaning up local stream due to error...');
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        
+        if (!e.message.includes('Kamera') && !e.message.includes('mikrofon')) {
+            alert('❌ Aramayı yanıtlarken hata oluştu: ' + e.message);
+        }
     }
 }
 
 async function createPeerConnection() {
-    console.log('🔧 Creating peer connection with ICE servers:', ICE_SERVERS);
+    console.log('🔧 ========== CREATING PEER CONNECTION ==========');
+    console.log('  - ICE Servers:', ICE_SERVERS);
+    console.log('  - localStream state:', localStream ? 'EXISTS' : 'NULL');
+    
+    // Critical null check for localStream
+    if (!localStream) {
+        console.error('❌ CRITICAL: localStream is NULL! Cannot create peer connection.');
+        alert('❌ Video stream bulunamadı. Lütfen aramayı tekrar başlatın.');
+        throw new Error('localStream is null - cannot create peer connection');
+    }
+    
+    console.log('  - localStream ID:', localStream.id);
+    console.log('  - localStream tracks:', localStream.getTracks().length);
+    
     peerConnection = new RTCPeerConnection(ICE_SERVERS);
+    console.log('✅ RTCPeerConnection created');
     
     console.log('➕ Adding local tracks to peer connection...');
-    localStream.getTracks().forEach(track => {
+    const tracks = localStream.getTracks();
+    if (tracks.length === 0) {
+        console.error('❌ No tracks in localStream!');
+        alert('❌ Video/audio track bulunamadı. Lütfen kamera/mikrofon izinlerini kontrol edin.');
+        throw new Error('No tracks in localStream');
+    }
+    
+    tracks.forEach(track => {
         console.log(`  - Adding ${track.kind} track:`, track.label);
+        console.log(`    - ID: ${track.id}`);
+        console.log(`    - Enabled: ${track.enabled}`);
+        console.log(`    - ReadyState: ${track.readyState}`);
+        console.log(`    - Muted: ${track.muted}`);
         peerConnection.addTrack(track, localStream);
     });
+    console.log('✅ All tracks added to peer connection');
     
     peerConnection.ontrack = (event) => {
-        console.log('🎥 ontrack event triggered!');
-        console.log('  - Event streams:', event.streams);
+        console.log('🎥 ========== ONTRACK EVENT TRIGGERED ==========');
+        console.log('  - Event received:', !!event);
+        console.log('  - Event streams:', event.streams ? event.streams.length : 'NULL');
         console.log('  - Event track:', event.track);
         console.log('  - Track kind:', event.track.kind);
+        console.log('  - Track ID:', event.track.id);
+        console.log('  - Track label:', event.track.label);
         console.log('  - Track enabled:', event.track.enabled);
         console.log('  - Track readyState:', event.track.readyState);
+        console.log('  - Track muted:', event.track.muted);
         
-        if (event.streams && event.streams[0]) {
-            console.log('✅ Setting remote video srcObject with stream:', event.streams[0].id);
-            const remoteVideo = document.getElementById('remoteVideo');
-            remoteVideo.srcObject = event.streams[0];
-            
-            // Ensure autoplay attributes are set
-            remoteVideo.autoplay = true;
-            remoteVideo.playsInline = true;
-            
-            // Force play in case autoplay doesn't work
-            remoteVideo.play().then(() => {
-                console.log('✅ Remote video playing successfully');
-            }).catch(err => {
-                console.error('❌ Remote video play error:', err);
-            });
-            
-            console.log('  - Remote video srcObject set:', remoteVideo.srcObject);
-            console.log('  - Remote video tracks:', event.streams[0].getTracks());
-        } else {
+        if (!event.streams || event.streams.length === 0) {
             console.error('❌ No streams in ontrack event!');
+            alert('⚠️ Uzak video stream alınamadı. Bağlantı kuruluyor...');
+            return;
         }
+        
+        const remoteStream = event.streams[0];
+        console.log('✅ Remote stream found!');
+        console.log('  - Stream ID:', remoteStream.id);
+        console.log('  - Stream active:', remoteStream.active);
+        console.log('  - Stream tracks:', remoteStream.getTracks().length);
+        
+        remoteStream.getTracks().forEach((track, index) => {
+            console.log(`  - Track ${index} (${track.kind}):`, track.label);
+            console.log(`    - Enabled: ${track.enabled}`);
+            console.log(`    - ReadyState: ${track.readyState}`);
+            console.log(`    - Muted: ${track.muted}`);
+        });
+        
+        console.log('📺 Setting remote video element...');
+        const remoteVideo = document.getElementById('remoteVideo');
+        
+        if (!remoteVideo) {
+            console.error('❌ remoteVideo element not found!');
+            alert('❌ Video elementi bulunamadı. Lütfen sayfayı yenileyin.');
+            return;
+        }
+        
+        console.log('  - remoteVideo element found');
+        console.log('  - Previous srcObject:', remoteVideo.srcObject);
+        
+        // Set the stream
+        remoteVideo.srcObject = remoteStream;
+        console.log('  - srcObject set to new stream');
+        
+        // Ensure all necessary attributes are set
+        remoteVideo.autoplay = true;
+        remoteVideo.playsInline = true;
+        
+        console.log('  - Attributes configured:');
+        console.log('    - autoplay:', remoteVideo.autoplay);
+        console.log('    - playsInline:', remoteVideo.playsInline);
+        console.log('    - muted:', remoteVideo.muted);
+        console.log('    - paused:', remoteVideo.paused);
+        
+        // Force play
+        console.log('▶️ Attempting to play remote video...');
+        remoteVideo.play()
+            .then(() => {
+                console.log('✅ Remote video playing successfully!');
+                console.log('  - Video paused:', remoteVideo.paused);
+                console.log('  - Video currentTime:', remoteVideo.currentTime);
+                console.log('  - Video readyState:', remoteVideo.readyState);
+            })
+            .catch(err => {
+                console.error('❌ Remote video play error:', err);
+                console.error('  - Error name:', err.name);
+                console.error('  - Error message:', err.message);
+                
+                // Try to play again after a short delay
+                console.log('🔄 Retrying play after 500ms...');
+                setTimeout(() => {
+                    remoteVideo.play()
+                        .then(() => console.log('✅ Remote video playing after retry'))
+                        .catch(retryErr => {
+                            console.error('❌ Retry failed:', retryErr);
+                            alert('⚠️ Uzak video oynatılamadı. Lütfen sayfayı yenileyin.');
+                        });
+                }, 500);
+            });
+        
+        console.log('========== ONTRACK EVENT COMPLETED ==========');
     };
     
     peerConnection.onicecandidate = (event) => {
