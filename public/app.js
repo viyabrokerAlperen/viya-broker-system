@@ -25,24 +25,44 @@ let otpEmail = null; // OTP için email saklama
 
 const ICE_SERVERS = {
     iceServers: [
+        // Google STUN servers
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
-        { 
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        
+        // Metered.ca FREE TURN servers (100GB/month - ücretsiz)
+        {
+            urls: 'turn:a.relay.metered.ca:80',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
         },
         {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
+            urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
         },
         {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
+            urls: 'turn:a.relay.metered.ca:443',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
+        },
+        {
+            urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
+        },
+        {
+            urls: 'turns:a.relay.metered.ca:443',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
+        },
+        {
+            urls: 'turns:a.relay.metered.ca:443?transport=tcp',
+            username: 'c5ae809e4a3edfd7bf5d679b',
+            credential: 'S8L+TmzqqJLAVSYH',
+        },
     ]
 };
 const LANG_NAMES = { en: "English", tr: "Turkish", de: "German", it: "Italian", fr: "French", es: "Spanish", gr: "Greek" };
