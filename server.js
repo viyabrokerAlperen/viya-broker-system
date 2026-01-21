@@ -3244,7 +3244,16 @@ app.post('/api/analyze', async (req, res) => {
             if(voyage && genAI) {
                  try {
                     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-                    const r = await model.generateContent(`Act as a professional shipbroker. Analyze this voyage: ${loadPort} to ${dischPort}. Cargo: ${cargo}. Expected Profit: $${Math.floor(voyage.financials.profit)}. Give a short professional comment (2-3 sentences) about market conditions and recommendation.`);
+                    const r = await model.generateContent(`Act as a professional shipbroker. Analyze this voyage: ${loadPort} to ${dischPort}. Cargo: ${cargo}. Expected Profit: $${Math.floor(voyage.financials.profit)}.
+
+Financial Metrics:
+- TCE (Time Charter Equivalent): $${voyage.financials.tce.toFixed(0)}/day
+- Daily OPEX: $${voyage.breakdown.opex.daily}
+- TCE Coverage: ${(voyage.financials.tce / voyage.breakdown.opex.daily).toFixed(2)}x
+- Break-even Rate: $${voyage.financials.breakEvenRate.toFixed(2)}/ton
+- Freight Rate: $${voyage.params.freightRate}/ton
+
+Provide a brief professional analysis (2-3 sentences) focusing on profitability and risk.`);
                     voyage.aiAnalysis = r.response.text();
                  } catch(e){
                     console.error("AI Analysis error:", e);

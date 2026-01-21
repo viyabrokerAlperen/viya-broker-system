@@ -438,7 +438,9 @@ function showDetails(v, el) {
     
     document.getElementById('financialDetails').innerHTML = `
         <div class="detail-row"><span class="d-lbl">Duration</span><span class="d-val">${v.duration.total} days</span></div>
-        <div class="detail-row"><span class="d-lbl">Break-Even</span><span class="d-val">$${v.financials.breakEvenRate.toFixed(2)}/ton</span></div>
+        <div class="detail-row"><span class="d-lbl">Daily OPEX</span><span class="d-val" style="color:#f59e0b;">$${v.breakdown?.opex?.daily?.toLocaleString() || 'N/A'}</span></div>
+        <div class="detail-row"><span class="d-lbl">Break-Even</span><span class="d-val" style="color:#ef4444;">$${v.financials.breakEvenRate.toFixed(2)}/ton</span></div>
+        <div class="detail-row"><span class="d-lbl">TCE Coverage</span><span class="d-val" style="color:#10b981;">${v.breakdown?.opex?.daily ? (v.financials.tce / v.breakdown.opex.daily).toFixed(2) + 'x' : 'N/A'}</span></div>
         <hr style="border-color:#334155;margin:8px 0;">
         ${distHTML}
     `;
