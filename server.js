@@ -3225,11 +3225,54 @@ async function analyzeVoyage(loadPort, dischPort, cargo, quantity, shipLat, ship
     // AI analysis ekle
     if (genAI) {
         try {
-            const analysis = generateAnalysis(voyage, specs);
-            voyage.aiAnalysis = analysis;
+            const tceCoverage = voyage.breakdown?.opex?.daily 
+                ? (voyage.financials.tce / voyage.breakdown.opex.daily).toFixed(2) 
+                : 0;
+            
+            const profitMargin = voyage.breakdown?.revenue 
+                ? ((voyage.financials.profit / voyage.breakdown.revenue) * 100).toFixed(1)
+                : 0;
+
+            const aiPrompt = `You are VIYA AI, a professional maritime financial analyst. Analyze this voyage with these metrics:
+
+ROUTE: ${voyage.params.loadPort} → ${voyage.params.dischPort}
+CARGO: ${voyage.params.cargo} (${Math.floor(voyage.params.qty / 1000)}k tons)
+DURATION: ${voyage.duration.total} days (Sea: ${voyage.duration.sea}d, Port: ${voyage.duration.port}d)
+
+FINANCIAL PERFORMANCE:
+- Gross Revenue: $${Math.floor(voyage.breakdown.revenue).toLocaleString()}
+- Net Profit: $${Math.floor(voyage.financials.profit).toLocaleString()} (${profitMargin}% margin)
+- TCE: $${Math.floor(voyage.financials.tce).toLocaleString()}/day
+- Daily OPEX: $${voyage.breakdown.opex.daily.toLocaleString()}/day
+- TCE Coverage: ${tceCoverage}x OPEX
+- Break-even Rate: $${voyage.financials.breakEvenRate.toFixed(2)}/ton
+- Freight Rate: $${voyage.params.freightRate}/ton
+
+COST BREAKDOWN:
+- Bunkers: $${Math.floor(voyage.breakdown.voyage_costs.fuel.total).toLocaleString()}
+- Port Costs: $${Math.floor(voyage.breakdown.voyage_costs.port.total).toLocaleString()}
+- OPEX (${voyage.duration.total}d): $${Math.floor(voyage.breakdown.opex.total).toLocaleString()}
+- Commission: $${Math.floor(voyage.breakdown.voyage_costs.commission).toLocaleString()}
+
+Provide a professional analysis (2-3 sentences max) covering:
+1. Profitability assessment (use TCE coverage as main metric)
+2. Key risk or opportunity
+3. Brief recommendation
+
+Be concise, direct, and use maritime industry terminology. Format with simple HTML (<strong>, <span style="color:...">).`;
+
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const r = await model.generateContent(aiPrompt);
+            let aiText = r.response.text();
+            
+            // Markdown cleanup
+            aiText = aiText.replace(/```html/g, '').replace(/```/g, '').trim();
+            
+            voyage.aiAnalysis = aiText;
+            
         } catch (e) {
             console.error("AI Analysis error:", e);
-            voyage.aiAnalysis = "<div>AI analysis unavailable.</div>";
+            voyage.aiAnalysis = "<div style='color:#94a3b8;'>AI analysis temporarily unavailable.</div>";
         }
     }
 
