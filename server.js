@@ -18,6 +18,7 @@ import { Server } from 'socket.io';
 import http from 'http';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import { calculateFullVoyage, VESSEL_SPECS, generateAnalysis } from './utils/calculations.js';
 
 dotenv.config();
 
@@ -3187,49 +3188,52 @@ function findNearestPorts(shipLat, shipLng, limit = 5) {
     return ports.slice(0, limit + 1).filter(p => p.dist >= 0); 
 }
 
-async function analyzeVoyage(loadPort, dischPort, cargo, quantity, shipLat, shipLng) {
+async function analyzeVoyage(loadPort, dischPort, cargo, quantity, shipLat, shipLng, vesselType = "HANDYSIZE", shipSpeed = null, loadRate = null, dischRate = null, frRate = null) {
     const cleanLoad = cleanPortName(loadPort);
     const cleanDisch = cleanPortName(dischPort);
+    const loadPortName = cleanLoad;
+    const dischPortName = cleanDisch;
     const loadGeo = PORT_DB[cleanLoad];
     const dischGeo = PORT_DB[cleanDisch];
     if (!loadGeo || !dischGeo) return null;
 
-    const ballastDist = calculateDistance(shipLat, shipLng, loadGeo.lat, loadGeo.lng);
-    const ladenDist = calculateDistance(loadGeo.lat, loadGeo.lng, dischGeo.lat, dischGeo.lng);
-    const totalDist = ballastDist + ladenDist;
-    const totalDuration = Math.ceil((totalDist / (13.0 * 24)) + 5);
-    const qty = quantity || 50000;
-
-    const canalInfo = checkCanals(loadGeo, dischGeo);
-    const totalVoyageCost = (totalDuration * 24 * 640) + 35000 + canalInfo.total;
-    const totalCost = totalVoyageCost + (totalDuration * 5500);
-
-    const marketData = MARKET_RATES[cargo] || MARKET_RATES["General Cargo"];
-    const simulatedRate = marketData.base + ((Math.random() * marketData.volatility * 2) - marketData.volatility);
-    const grossFreight = qty * simulatedRate;
-    const commission = grossFreight * 0.0375;
-    const profit = grossFreight - commission - totalCost;
+    const cargoQty = quantity || 50000;
     
-    let aiText = profit > 0 ? "Strong opportunity." : "Market is tough.";
-    
-    return {
-        params: { loadPort, dischPort, cargo, qty, freightRate: simulatedRate.toFixed(2) },
-        dist: { total: totalDist, ballast: ballastDist, laden: ladenDist },
-        duration: { total: totalDuration, sea: Math.round(totalDist/(13*24)), port: 5 },
-        loadGeo, dischGeo,
-        financials: { revenue: grossFreight, profit: profit, tce: (grossFreight - commission - totalVoyageCost) / totalDuration, breakEvenRate: (totalCost / qty) },
-        breakdown: {
-            revenue: grossFreight,
-            voyage_costs: { 
-                fuel: { total: totalDuration*24*640, main: totalDuration*24*640*0.9, aux: totalDuration*24*640*0.08, lubes: totalDuration*24*640*0.02 }, 
-                port: { total: 35000, dues: 15000, pilot: 12000, tow: 8000 }, 
-                cargo_canal: { total: canalInfo.total, canal: canalInfo.total, names: canalInfo.names.join('+') || 'None' }, 
-                commission: commission 
-            },
-            opex: { total: totalDuration*5500, daily: 5500 }
+    // Get vessel specs from VESSEL_DB or VESSEL_SPECS
+    const specs = VESSEL_DB[vesselType] || VESSEL_SPECS[vesselType] || VESSEL_SPECS["HANDYSIZE"];
+
+    const voyage = calculateFullVoyage(
+        shipLat,
+        shipLng,
+        loadPortName,
+        loadGeo,
+        dischPortName,
+        dischGeo,
+        specs,
+        {
+            vlsfo: cachedMarketData.vlsfo || 620,
+            mgo: cachedMarketData.mgo || 910,
+            portDuesFactor: 1.25,
+            freightRate: frRate
         },
-        aiAnalysis: aiText
-    };
+        shipSpeed,
+        cargoQty,
+        loadRate,
+        dischRate
+    );
+
+    // AI analysis ekle
+    if (genAI) {
+        try {
+            const analysis = generateAnalysis(voyage, specs);
+            voyage.aiAnalysis = analysis;
+        } catch (e) {
+            console.error("AI Analysis error:", e);
+            voyage.aiAnalysis = "<div>AI analysis unavailable.</div>";
+        }
+    }
+
+    return voyage;
 }
 
 app.post('/api/analyze', async (req, res) => {
