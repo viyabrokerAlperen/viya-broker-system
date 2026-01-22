@@ -179,6 +179,76 @@ async function loadMarketData() {
     } catch (e) { console.error("Market error:", e); }
 }
 
+async function askVoyageAI() {
+    if (!currentVoyageData) return;
+    
+    const input = document.getElementById('voyageChatInput');
+    const question = input.value.trim();
+    if (!question) return;
+    
+    const chatDiv = document.getElementById('voyageChat');
+    
+    // User message
+    const userMsg = document.createElement('div');
+    userMsg.style.cssText = 'background:rgba(14,165,233,0.2);border-left:3px solid #0ea5e9;padding:10px;margin-bottom:12px;border-radius:6px;';
+    userMsg.innerHTML = `<strong style="color:#0ea5e9;">You:</strong> <span style="color:#f1f5f9;">${question}</span>`;
+    chatDiv.appendChild(userMsg);
+    
+    // AI thinking
+    const thinkingMsg = document.createElement('div');
+    thinkingMsg.style.cssText = 'background:rgba(148,163,184,0.1);padding:10px;margin-bottom:12px;border-radius:6px;color:#94a3b8;';
+    thinkingMsg.innerHTML = '🤖 VIYA AI is analyzing...';
+    chatDiv.appendChild(thinkingMsg);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+    
+    input.value = '';
+    
+    try {
+        const v = currentVoyageData;
+        const bd = v.breakdown;
+        
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: `CONTEXT: Analyzing voyage ${v.params.loadPort} → ${v.params.dischPort}, ${v.params.cargo} (${Math.floor(v.params.qty/1000)}k MT). 
+                
+Financial Data:
+- Revenue: $${Math.floor(bd.revenue).toLocaleString()}
+- Profit: $${Math.floor(v.financials.profit).toLocaleString()}
+- TCE: $${Math.floor(v.financials.tce).toLocaleString()}/day
+- Daily OPEX: $${bd.opex.daily.toLocaleString()}
+- Bunkers: $${Math.floor(bd.voyage_costs.fuel.total).toLocaleString()}
+- Duration: ${v.duration.total} days
+- Freight Rate: $${v.params.freightRate}/MT
+- Break-even: $${v.financials.breakEvenRate.toFixed(2)}/MT
+
+USER QUESTION: ${question}
+
+Provide a concise, professional answer (2-3 sentences max) with specific numbers from this voyage.`
+            })
+        });
+        
+        const data = await response.json();
+        
+        chatDiv.removeChild(thinkingMsg);
+        
+        const aiMsg = document.createElement('div');
+        aiMsg.style.cssText = 'background:rgba(16,185,129,0.1);border-left:3px solid #10b981;padding:10px;margin-bottom:12px;border-radius:6px;';
+        aiMsg.innerHTML = `<strong style="color:#10b981;">VIYA AI:</strong> <span style="color:#f1f5f9;">${data.reply}</span>`;
+        chatDiv.appendChild(aiMsg);
+        
+    } catch (error) {
+        chatDiv.removeChild(thinkingMsg);
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:10px;margin-bottom:12px;border-radius:6px;';
+        errorMsg.innerHTML = `<strong style="color:#ef4444;">Error:</strong> <span style="color:#f1f5f9;">Could not reach AI.</span>`;
+        chatDiv.appendChild(errorMsg);
+    }
+    
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
 window.onload = init;
 
 // ==========================================
@@ -715,6 +785,41 @@ function showFinancials() {
                     </tr>
                 </tbody>
             </table>
+
+            <!-- AI VOYAGE ASSISTANT -->
+            <div style="margin-top:32px;border-top:2px solid #334155;padding-top:24px;">
+                <h3 style="color:#0ea5e9;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <span>🤖</span> AI Voyage Assistant
+                </h3>
+                
+                <div id="voyageChat" style="background:rgba(15,23,42,0.6);border:1px solid rgba(148,163,184,0.2);border-radius:8px;padding:16px;margin-bottom:12px;max-height:300px;overflow-y:auto;min-height:200px;">
+                    <div style="color:#94a3b8;text-align:center;padding:20px;">
+                        💬 Ask me anything about this voyage...
+                    </div>
+                </div>
+                
+                <div style="display:flex;gap:8px;">
+                    <input 
+                        type="text" 
+                        id="voyageChatInput" 
+                        placeholder="e.g., 'What if fuel price increases 10%?'"
+                        style="flex:1;background:rgba(15,23,42,0.8);border:1px solid rgba(148,163,184,0.3);color:#f1f5f9;padding:12px;border-radius:6px;font-size:0.9rem;"
+                        onkeypress="if(event.key === 'Enter') askVoyageAI()"
+                    />
+                    <button 
+                        onclick="askVoyageAI()" 
+                        style="background:linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);color:white;border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-weight:600;"
+                    >
+                        Ask AI
+                    </button>
+                </div>
+                
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button onclick="document.getElementById('voyageChatInput').value='What if bunker price increases by 15%?'; askVoyageAI()" style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);color:#0ea5e9;padding:6px 12px;border-radius:16px;font-size:0.8rem;cursor:pointer;">⛽ Bunker sensitivity</button>
+                    <button onclick="document.getElementById('voyageChatInput').value='Compare this with industry average TCE'; askVoyageAI()" style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);color:#0ea5e9;padding:6px 12px;border-radius:16px;font-size:0.8rem;cursor:pointer;">📊 Industry comparison</button>
+                    <button onclick="document.getElementById('voyageChatInput').value='What are the main risks?'; askVoyageAI()" style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);color:#0ea5e9;padding:6px 12px;border-radius:16px;font-size:0.8rem;cursor:pointer;">⚠️ Risk analysis</button>
+                </div>
+            </div>
 
         </div>
     `;
