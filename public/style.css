@@ -1344,3 +1344,18 @@ body.dark-mode .message-item div[style*="background: #1e3a8a"] {
 .message-item:hover [style*="font-size: 0.7rem"] {
     opacity: 1;
 }
+
+/* ================================================
+   MAP ROUTE ANIMATIONS
+   ================================================ */
+
+/* Animated dashed line for ballast route */
+@keyframes dash {
+    to {
+        stroke-dashoffset: -20;
+    }
+}
+
+.route-line-ballast {
+    animation: dash 1s linear infinite;
+}

@@ -469,11 +469,79 @@ function showDetails(v, el) {
     const loadPos = [v.loadGeo?.lat || 0, v.loadGeo?.lng || 0];
     const dischPos = [v.dischGeo?.lat || 0, v.dischGeo?.lng || 0];
     
-    L.circleMarker(shipPos, { radius: 8, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.8 }).addTo(shipLayer).bindPopup("<b>SHIP</b>");
-    L.circleMarker(loadPos, { radius: 8, color: '#eab308', fillColor: '#eab308', fillOpacity: 0.8 }).addTo(shipLayer).bindPopup(`<b>LOAD:</b> ${v.params.loadPort}`);
-    L.circleMarker(dischPos, { radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8 }).addTo(shipLayer).bindPopup(`<b>DISCH:</b> ${v.params.dischPort}`);
+    // Custom ship marker icon with glow effect
+    const shipIcon = L.divIcon({
+        html: '<div style="background:#3b82f6;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.8);"></div>',
+        className: '',
+        iconSize: [16, 16]
+    });
     
-    map.fitBounds(L.latLngBounds([shipPos, loadPos, dischPos]), { padding: [50, 50] });
+    // Custom load port icon
+    const loadIcon = L.divIcon({
+        html: '<div style="background:#eab308;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(234,179,8,0.8);"></div>',
+        className: '',
+        iconSize: [14, 14]
+    });
+    
+    // Custom discharge port icon
+    const dischIcon = L.divIcon({
+        html: '<div style="background:#ef4444;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(239,68,68,0.8);"></div>',
+        className: '',
+        iconSize: [14, 14]
+    });
+    
+    // Add markers with custom icons and enhanced popups
+    L.marker(shipPos, {icon: shipIcon}).addTo(shipLayer)
+        .bindPopup(`<div style="color:#1e293b;font-weight:600;">🚢 VESSEL POSITION</div>`);
+        
+    L.marker(loadPos, {icon: loadIcon}).addTo(shipLayer)
+        .bindPopup(`<div style="color:#1e293b;"><strong>LOAD PORT</strong><br>${v.params.loadPort}<br>ETA: ${Math.ceil(v.duration.sea / 2)} days</div>`);
+        
+    L.marker(dischPos, {icon: dischIcon}).addTo(shipLayer)
+        .bindPopup(`<div style="color:#1e293b;"><strong>DISCH PORT</strong><br>${v.params.dischPort}<br>ETA: ${Math.ceil(parseFloat(v.duration.total))} days</div>`);
+    
+    // Route polyline - ballast leg (animated dashed line)
+    const routeLine1 = L.polyline([shipPos, loadPos], {
+        color: '#eab308',
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '10, 10',
+        className: 'route-line-ballast'
+    }).addTo(shipLayer);
+    
+    // Route polyline - laden leg (solid line)
+    const routeLine2 = L.polyline([loadPos, dischPos], {
+        color: '#10b981',
+        weight: 4,
+        opacity: 0.8,
+        className: 'route-line-laden'
+    }).addTo(shipLayer);
+    
+    // Distance labels on route midpoints
+    const midPoint1 = [(shipPos[0] + loadPos[0]) / 2, (shipPos[1] + loadPos[1]) / 2];
+    const midPoint2 = [(loadPos[0] + dischPos[0]) / 2, (loadPos[1] + dischPos[1]) / 2];
+    
+    L.marker(midPoint1, {
+        icon: L.divIcon({
+            html: `<div style="background:rgba(234,179,8,0.9);color:white;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">⚓ ${Math.floor(v.dist?.ballast || 0)} nm</div>`,
+            className: '',
+            iconSize: [60, 20]
+        })
+    }).addTo(shipLayer);
+    
+    L.marker(midPoint2, {
+        icon: L.divIcon({
+            html: `<div style="background:rgba(16,185,129,0.9);color:white;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">📦 ${Math.floor(v.dist?.laden || 0)} nm</div>`,
+            className: '',
+            iconSize: [60, 20]
+        })
+    }).addTo(shipLayer);
+    
+    // Fit bounds with padding and zoom limit
+    map.fitBounds(L.latLngBounds([shipPos, loadPos, dischPos]), { 
+        padding: [80, 80],
+        maxZoom: 6
+    });
 }
 
 function showFinancials() {
