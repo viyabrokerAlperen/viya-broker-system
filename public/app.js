@@ -546,31 +546,178 @@ function showDetails(v, el) {
 
 function showFinancials() {
     if (!currentVoyageData) return;
+    
     const t = TRANSLATIONS[currentLang] || TRANSLATIONS['en'];
-    const bd = currentVoyageData.breakdown;
+    const v = currentVoyageData;
+    const bd = v.breakdown;
     const vc = bd.voyage_costs;
     const ox = bd.opex;
+    const dur = v.duration;
     
     const html = `
-        <table class="fin-table">
-            <tr><th colspan="2" style="border-bottom:2px solid var(--neon-cyan)">${t.fin_rev || 'REVENUE'}</th></tr>
-            <tr><td>${t.fin_freight || 'Freight'}</td><td class="text-green-400">$${Math.floor(bd.revenue).toLocaleString()}</td></tr>
-            <tr class="fin-section-total"><td>${t.fin_net || 'NET'}</td><td>$${Math.floor(bd.revenue - vc.commission).toLocaleString()}</td></tr>
+        <div style="max-height:70vh;overflow-y:auto;padding:20px;">
             
-            <tr><th colspan="2" style="padding-top:20px;border-bottom:2px solid var(--neon-cyan)">${t.fin_voy || 'VOYAGE COSTS'}</th></tr>
-            <tr><td>${t.fin_bunkers || 'Bunkers'}</td><td class="text-red-300">-$${Math.floor(vc.fuel.total).toLocaleString()}</td></tr>
-            <tr><td>${t.fin_port || 'Port'}</td><td class="text-red-300">-$${Math.floor(vc.port.total).toLocaleString()}</td></tr>
-            <tr><td>${t.fin_canal || 'Canal'} (${vc.cargo_canal.names || 'None'})</td><td class="text-red-300">-$${Math.floor(vc.cargo_canal.total).toLocaleString()}</td></tr>
-            <tr><td>${t.fin_comm || 'Commission'}</td><td class="text-red-300">-$${Math.floor(vc.commission).toLocaleString()}</td></tr>
-            
-            <tr><th colspan="2" style="padding-top:20px;border-bottom:2px solid var(--neon-cyan)">${t.fin_opex || 'OPEX'}</th></tr>
-            <tr><td>${t.fin_daily_opex || 'Daily'} ($${ox.daily})</td><td class="text-orange-300">-$${Math.floor(ox.total).toLocaleString()}</td></tr>
-            
-            <tr class="fin-grand-total">
-                <td>${t.fin_profit || 'NET PROFIT'}</td>
-                <td style="color:${currentVoyageData.financials.profit > 0 ? '#4ade80' : '#ef4444'}">$${Math.floor(currentVoyageData.financials.profit).toLocaleString()}</td>
-            </tr>
-        </table>`;
+            <!-- VOYAGE SUMMARY -->
+            <div style="background:linear-gradient(135deg, rgba(14,165,233,0.1) 0%, rgba(6,182,212,0.05) 100%);border-left:4px solid #0ea5e9;padding:16px;margin-bottom:24px;border-radius:8px;">
+                <h3 style="margin:0 0 12px 0;color:#0ea5e9;font-size:1.1rem;">📊 VOYAGE SUMMARY</h3>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:0.9rem;">
+                    <div><strong style="color:#94a3b8;">Route:</strong> <span style="color:#f1f5f9;">${v.params.loadPort} → ${v.params.dischPort}</span></div>
+                    <div><strong style="color:#94a3b8;">Cargo:</strong> <span style="color:#f1f5f9;">${v.params.cargo} (${Math.floor(v.params.qty / 1000)}k MT)</span></div>
+                    <div><strong style="color:#94a3b8;">Distance:</strong> <span style="color:#f1f5f9;">${Math.floor(v.dist?.total || 0)} nm</span></div>
+                    <div><strong style="color:#94a3b8;">Duration:</strong> <span style="color:#f1f5f9;">${dur.total} days</span></div>
+                </div>
+            </div>
+
+            <!-- REVENUE -->
+            <table class="fin-table" style="margin-bottom:24px;">
+                <thead>
+                    <tr><th colspan="2" style="background:#10b981;color:white;padding:12px;">💰 ${t.fin_rev || 'REVENUE'}</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Freight Rate</td>
+                        <td style="text-align:right;font-family:monospace;">$${v.params.freightRate}/MT</td>
+                    </tr>
+                    <tr>
+                        <td>Cargo Quantity</td>
+                        <td style="text-align:right;font-family:monospace;">${v.params.qty.toLocaleString()} MT</td>
+                    </tr>
+                    <tr style="background:rgba(16,185,129,0.1);">
+                        <td><strong>Gross Freight</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong style="color:#10b981;">$${Math.floor(bd.revenue).toLocaleString()}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Less: Commission (${(vc.commission / bd.revenue * 100).toFixed(2)}%)</td>
+                        <td style="text-align:right;font-family:monospace;color:#ef4444;">-$${Math.floor(vc.commission).toLocaleString()}</td>
+                    </tr>
+                    <tr class="fin-section-total">
+                        <td><strong>${t.fin_net || 'NET REVENUE'}</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong>$${Math.floor(bd.revenue - vc.commission).toLocaleString()}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- VOYAGE COSTS -->
+            <table class="fin-table" style="margin-bottom:24px;">
+                <thead>
+                    <tr><th colspan="2" style="background:#f59e0b;color:white;padding:12px;">⛽ VOYAGE COSTS</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="2" style="background:rgba(148,163,184,0.1);font-weight:600;padding:8px;">Bunkers</td></tr>
+                    <tr>
+                        <td style="padding-left:24px;">VLSFO (${dur.sea} days × sea cons)</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.fuel.main).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left:24px;">MGO (${dur.port} days × port cons)</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.fuel.aux).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left:24px;">Lubricants</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.fuel.lubes).toLocaleString()}</td>
+                    </tr>
+                    <tr style="background:rgba(245,158,11,0.1);">
+                        <td style="padding-left:24px;"><strong>Subtotal Bunkers</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong>$${Math.floor(vc.fuel.total).toLocaleString()}</strong></td>
+                    </tr>
+                    
+                    <tr><td colspan="2" style="background:rgba(148,163,184,0.1);font-weight:600;padding:8px;padding-top:16px;">Port Charges</td></tr>
+                    <tr>
+                        <td style="padding-left:24px;">Port Dues (2 ports)</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.port.dues).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left:24px;">Pilotage</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.port.pilot).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left:24px;">Towage</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.port.towage).toLocaleString()}</td>
+                    </tr>
+                    <tr style="background:rgba(245,158,11,0.1);">
+                        <td style="padding-left:24px;"><strong>Subtotal Port</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong>$${Math.floor(vc.port.total).toLocaleString()}</strong></td>
+                    </tr>
+                    
+                    ${vc.cargo_canal.total > 0 ? `
+                    <tr><td colspan="2" style="background:rgba(148,163,184,0.1);font-weight:600;padding:8px;padding-top:16px;">Canal & Cargo</td></tr>
+                    <tr>
+                        <td style="padding-left:24px;">Canal Dues</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.cargo_canal.canal).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left:24px;">Cargo Operations</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(vc.cargo_canal.misc).toLocaleString()}</td>
+                    </tr>
+                    ` : ''}
+                    
+                    <tr class="fin-section-total" style="border-top:2px solid #334155;">
+                        <td><strong>TOTAL VOYAGE COSTS</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong style="color:#f59e0b;">$${Math.floor(vc.total).toLocaleString()}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- OPEX -->
+            <table class="fin-table" style="margin-bottom:24px;">
+                <thead>
+                    <tr><th colspan="2" style="background:#8b5cf6;color:white;padding:12px;">🔧 OPERATING EXPENSES (${dur.total} days)</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Daily OPEX</td>
+                        <td style="text-align:right;font-family:monospace;">$${ox.daily.toLocaleString()}/day</td>
+                    </tr>
+                    <tr class="fin-section-total">
+                        <td><strong>Total OPEX</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong style="color:#8b5cf6;">$${Math.floor(ox.total).toLocaleString()}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PROFITABILITY -->
+            <table class="fin-table">
+                <thead>
+                    <tr><th colspan="2" style="background:${v.financials.profit > 0 ? '#10b981' : '#ef4444'};color:white;padding:12px;">📈 PROFITABILITY ANALYSIS</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Net Revenue</td>
+                        <td style="text-align:right;font-family:monospace;">$${Math.floor(bd.revenue - vc.commission).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Less: Voyage Costs</td>
+                        <td style="text-align:right;font-family:monospace;color:#ef4444;">-$${Math.floor(vc.total).toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td>Less: OPEX</td>
+                        <td style="text-align:right;font-family:monospace;color:#ef4444;">-$${Math.floor(ox.total).toLocaleString()}</td>
+                    </tr>
+                    <tr class="fin-grand-total" style="background:${v.financials.profit > 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'};font-size:1.1rem;">
+                        <td><strong>NET PROFIT</strong></td>
+                        <td style="text-align:right;font-family:monospace;"><strong style="color:${v.financials.profit > 0 ? '#10b981' : '#ef4444'};">${v.financials.profit > 0 ? '+' : ''}$${Math.floor(v.financials.profit).toLocaleString()}</strong></td>
+                    </tr>
+                    <tr style="border-top:1px solid #334155;">
+                        <td>TCE (Time Charter Equivalent)</td>
+                        <td style="text-align:right;font-family:monospace;font-weight:600;color:#0ea5e9;">$${Math.floor(v.financials.tce).toLocaleString()}/day</td>
+                    </tr>
+                    <tr>
+                        <td>TCE Coverage (TCE / Daily OPEX)</td>
+                        <td style="text-align:right;font-family:monospace;font-weight:600;color:#10b981;">${(v.financials.tce / ox.daily).toFixed(2)}x</td>
+                    </tr>
+                    <tr>
+                        <td>Break-even Rate</td>
+                        <td style="text-align:right;font-family:monospace;font-weight:600;color:#ef4444;">$${v.financials.breakEvenRate.toFixed(2)}/MT</td>
+                    </tr>
+                    <tr>
+                        <td>Profit Margin</td>
+                        <td style="text-align:right;font-family:monospace;font-weight:600;">${((v.financials.profit / bd.revenue) * 100).toFixed(1)}%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    `;
     
     document.getElementById('finBody').innerHTML = html;
     document.getElementById('finModal').style.display = 'block';
