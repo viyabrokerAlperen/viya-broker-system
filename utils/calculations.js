@@ -84,16 +84,14 @@ export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dis
     const loadRate = parseFloat(userLoadRate) || 15000;
     const dischRate = parseFloat(userDischRate) || 10000;
     
-    // Laytime calculation (Cargo handling)
-    const loadLaytime = qty / loadRate; // Pure loading time
-    const dischLaytime = qty / dischRate; // Pure discharge time
+    // Laytime calculation
+    const loadLaytime = qty / loadRate;
+    const dischLaytime = qty / dischRate;
 
-    // Port operations (Turn time, customs, berthing)
-    const loadTurnTime = 1.0; // Berthing, unberthing, customs
+    // Port operations
+    const loadTurnTime = 1.0;
     const dischTurnTime = 1.0;
-
-    // Anchor waiting (Congestion, weather)
-    const loadAnchorTime = 0.5; // Average waiting
+    const loadAnchorTime = 0.5;
     const dischAnchorTime = 0.5;
 
     // Total port time
@@ -101,9 +99,23 @@ export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dis
     const dischPortDays = dischLaytime + dischTurnTime + dischAnchorTime;
     const portDays = loadPortDays + dischPortDays;
     
-    // Weather delay at sea
-    const weatherDelay = (seaDays * 0.05); // 5% average delay
+    // Weather delay
+    const weatherDelay = seaDays * 0.05;
     const adjustedSeaDays = seaDays + weatherDelay;
+
+    // Canal transit
+    let canalTransitDays = 0;
+    let costCanal = 0;
+    // Gelişmiş Kanal Kontrolü (Hata vermez)
+    if (loadGeo && dischGeo) {
+        if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) {
+             costCanal = 200000; // Süveyş
+             canalTransitDays = 0.5; // Süveyş/Panama average transit
+        }
+    }
+
+    // TOTAL DAYS - EN SONDA HESAPLA
+    const totalDays = adjustedSeaDays + portDays + canalTransitDays;
 
     // --- DETAYLI GİDER HESAPLAMASI (VIYA BROKER LOGIC) ---
 
@@ -130,20 +142,7 @@ export function calculateFullVoyage(shipLat, shipLng, loadPortName, loadGeo, dis
     const costStevedoring = 0; // Owner için 0
     const costDunnage = qty * 0.15;
     const costCleaning = 4000;
-    
-    let costCanal = 0;
-    let canalTransitDays = 0;
-    // Gelişmiş Kanal Kontrolü (Hata vermez)
-    if (loadGeo && dischGeo) {
-        if ((loadGeo.lng < 35 && dischGeo.lng > 45) || (loadGeo.lng > 45 && dischGeo.lng < 35)) {
-             costCanal = 200000; // Süveyş
-             canalTransitDays = 0.5; // Süveyş/Panama average transit
-        }
-    }
     const totalCargoCanal = costStevedoring + costDunnage + costCleaning + costCanal;
-    
-    // Total voyage duration
-    const totalDays = adjustedSeaDays + portDays + canalTransitDays;
 
     // D. OPEX (İŞLETME MALİYETLERİ) - HATA DÜZELTİLDİ
     const dailyOpex = calculateDailyOpex(specs.opex_details); // Dinamik toplama
